@@ -54,7 +54,6 @@
 		6236DA9010C234AD0042B7D3 /* ConvertIdentifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ConvertIdentifier.cpp; path = ../../cpp/PTToAST/ConvertIdentifier.cpp; sourceTree = SOURCE_ROOT; };
 		6236DA9110C234AD0042B7D3 /* ConvertIdentifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ConvertIdentifier.h; path = ../../cpp/PTToAST/ConvertIdentifier.h; sourceTree = SOURCE_ROOT; };
 		6236DB0C10C23D830042B7D3 /* doc */ = {isa = PBXFileReference; lastKnownFileType = folder; name = doc; path = ../../doc; sourceTree = SOURCE_ROOT; };
-		6274EB801168E78E00896B59 /* untitled2 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = untitled2; path = ../../../../untitled2; sourceTree = SOURCE_ROOT; };
 		62C2ADAF10D3D88D00DD13AA /* GenerateParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GenerateParser.cpp; sourceTree = "<group>"; };
 		62C2ADB010D3D88D00DD13AA /* GenerateParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GenerateParser.h; sourceTree = "<group>"; };
 		62C2ADC710D3F77300DD13AA /* FlattenGrammar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlattenGrammar.h; sourceTree = "<group>"; };
@@ -76,7 +75,6 @@
 		08FB7794FE84155DC02AAC07 /* ipg */ = {
 			isa = PBXGroup;
 			children = (
-				6274EB801168E78E00896B59 /* untitled2 */,
 				6236DB0C10C23D830042B7D3 /* doc */,
 				6236DA7610C234AD0042B7D3 /* cpp */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
