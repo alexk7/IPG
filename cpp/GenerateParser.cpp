@@ -15,7 +15,7 @@ public:
 	Tabs(size_t _tabLevel = 0) : mTabLevel(_tabLevel) {}
 	Tabs& operator++() { ++mTabLevel; return *this; }
 	Tabs& operator--() { --mTabLevel; return *this; }
-	size_t GetTabLevel() { return mTabLevel; }
+	size_t GetTabLevel() const { return mTabLevel; }
 
 private:
 	size_t mTabLevel;
@@ -43,58 +43,55 @@ static void EscapeChar(std::ostream& _os, char _char)
 	}
 }
 
-static void GenerateParseStatement(std::ofstream& _source, Tabs& _tabs, const char* _resultVar, const Expression& _expression, const char* _firstVar)
+static void GenerateParseStatement(std::ofstream& _source, Tabs& _tabs, std::string _resultVar, const Expression& _expression, std::string _firstVar)
 {
-	_source << _tabs << _resultVar << " = ";
-	
 	ExpressionType type = _expression.GetType();
 	assert(!IsGroup(type));
 	
 	switch (type)
 	{
 		case ExpressionType_Empty:
-			_source << "(";
+            if (_resultVar != _firstVar)
+                _source << _tabs << _resultVar << " = " << _firstVar << ";\n";
 			break;
 
 		case ExpressionType_And:
-			_source << "ParseAnd(Parse_" << _expression.GetChild().GetNonTerminal() << ", ";
+			_source << _tabs << _resultVar << " = ParseAnd(Parse_" << _expression.GetChild().GetNonTerminal() << ", " << _firstVar << ");\n";
 			break;
 
 		case ExpressionType_Not:
-			_source << "ParseNot(Parse_" << _expression.GetChild().GetNonTerminal() << ", ";
+			_source << _tabs << _resultVar << " = ParseNot(Parse_" << _expression.GetChild().GetNonTerminal() << ", " << _firstVar << ");\n";
 			break;
 
 		case ExpressionType_Optional:
-			_source << "ParseOptional(Parse_" << _expression.GetChild().GetNonTerminal() << ", ";
+			_source << _tabs << _resultVar << " = ParseOptional(Parse_" << _expression.GetChild().GetNonTerminal() << ", " << _firstVar << ");\n";
 			break;
 
 		case ExpressionType_ZeroOrMore:
-			_source << "ParseZeroOrMore(Parse_" << _expression.GetChild().GetNonTerminal() << ", ";
+			_source << _tabs << _resultVar << " = ParseZeroOrMore(Parse_" << _expression.GetChild().GetNonTerminal() << ", " << _firstVar << ");\n";
 			break;
 
 		case ExpressionType_NonTerminal:
-			_source << "Parse_" << _expression.GetNonTerminal() << "(";
+			_source << _tabs << _resultVar << " = Parse_" << _expression.GetNonTerminal() << "(" << _firstVar << ");\n";
 			break;
 
 		case ExpressionType_Dot:
-			_source << "ParseAnyChar("; break;
+			_source << _tabs << _resultVar << " = ParseAnyChar(" << _firstVar << ");\n"; break;
 			
 		case ExpressionType_Char:
-			_source << "ParseChar(\'";
+			_source << _tabs << _resultVar << " = ParseChar(\'";
 			EscapeChar(_source, _expression.GetChar());
-			_source << "\', ";
+			_source << "\', " << _firstVar << ");\n";
 			break;
 			
 		case ExpressionType_Range:
-			_source << "ParseRange(\'";
+			_source << _tabs << _resultVar << " = ParseRange(\'";
 			EscapeChar(_source, _expression.GetFirst());
 			_source << "\', \'";
 			EscapeChar(_source, _expression.GetLast());
-			_source << "\', ";
+			_source << "\', " << _firstVar << ");\n";
 			break;
 	}
-	
-	_source << _firstVar << ");\n";
 }
 
 static void GenerateSymbolParseFunctionDecl(std::ofstream& _source, Grammar::Defs::const_iterator _iDef)
@@ -102,19 +99,27 @@ static void GenerateSymbolParseFunctionDecl(std::ofstream& _source, Grammar::Def
 	_source << "PTNodeItr Parse_" << _iDef->first << "(PTNodeItr _first);\n";
 }
 
+static std::string GetResultVar(int _resultIndex)
+{
+    std::ostringstream oss;
+    oss << "r" << _resultIndex;
+    return oss.str();
+}
+
 static void GenerateParseSequence(std::ofstream& _source, Tabs& _tabs, const Expressions& _children)
 {
-	GenerateParseStatement(_source, _tabs, "result", _children[0], "_first");
-	_source << _tabs << "if (result)\n";
+    std::string resultVar = GetResultVar(0);
+	GenerateParseStatement(_source, _tabs, resultVar, _children[0], "_first");
+	_source << _tabs << "if (" << resultVar << ")\n";
 	size_t last = _children.size()-1;
 	for (size_t i = 1; i < last; ++i)
 	{
 		_source << _tabs << "{\n";
-		GenerateParseStatement(_source, ++_tabs, "result", _children[i], "result");
-		_source << _tabs << "if (result)\n";
+		GenerateParseStatement(_source, ++_tabs, resultVar, _children[i], resultVar);
+		_source << _tabs << "if (" << resultVar << ")\n";
 	}
 	_source << _tabs << "{\n";
-	GenerateParseStatement(_source, ++_tabs, "result", _children[last], "result");
+	GenerateParseStatement(_source, ++_tabs, resultVar, _children[last], resultVar);
 	for (size_t i = last; i > 0; --i)
 	{
 		_source << --_tabs << "}\n";
@@ -123,14 +128,15 @@ static void GenerateParseSequence(std::ofstream& _source, Tabs& _tabs, const Exp
 
 static void GenerateParseChoice(std::ofstream& _source, Tabs& _tabs, const Expressions& _children)
 {
+    std::string resultVar = GetResultVar(0);
 	size_t last = _children.size()-1;
 	for (size_t i = 0; i < last; ++i, ++_tabs)
 	{
-		GenerateParseStatement(_source, _tabs, "result", _children[i], "_first");
-		_source << _tabs << "if (!result)\n";
+		GenerateParseStatement(_source, _tabs, resultVar, _children[i], "_first");
+		_source << _tabs << "if (!" << resultVar << ")\n";
 		_source << _tabs << "{\n";
 	}
-	GenerateParseStatement(_source, _tabs, "result", _children[last], "_first");
+	GenerateParseStatement(_source, _tabs, resultVar, _children[last], "_first");
 	for (size_t i = last; i > 0; --i)
 	{
 		_source << --_tabs << "}\n";
@@ -139,22 +145,24 @@ static void GenerateParseChoice(std::ofstream& _source, Tabs& _tabs, const Expre
 
 static void GenerateSymbolParseFunction(std::ofstream& _source, Grammar::Defs::const_iterator _iDef, bool _memoized)
 {
+	Tabs tabs(1);
+    std::string resultVar = GetResultVar(0);
+    
 	_source <<
 		"\nPTNodeItr Parse_" << _iDef->first << "(PTNodeItr _first)\n"
 		"{\n"
-		"    PTNodeItr result;\n";
+		"    PTNodeItr " << resultVar << ";\n";
 	
 	if (_memoized)
 	{
 		_source <<
-			"    result = _first->end.Get(PTNodeType_" << _iDef->first << ");\n"
-			"    if (result)\n"
-			"        return result;\n";
+			"    " << resultVar << " = _first->end.Get(PTNodeType_" << _iDef->first << ");\n"
+			"    if (" << resultVar << ")\n"
+			"        return " << resultVar << ";\n";
 	}
 
 	const Expression& expression = _iDef->second;
 	ExpressionType type = expression.GetType();
-	Tabs tabs(1);
 	if (IsGroup(type))
 	{
 		const Expressions& children = expression.GetChildren();
@@ -171,17 +179,17 @@ static void GenerateSymbolParseFunction(std::ofstream& _source, Grammar::Defs::c
 	}
 	else
 	{
-		GenerateParseStatement(_source, tabs, "result", expression, "_first");
+		GenerateParseStatement(_source, tabs, resultVar, expression, "_first");
 	}
 	
 	if (_memoized)
 	{
 		_source <<
-			"    if (result)\n"
-			"        _first->end.Set(PTNodeType_" << _iDef->first << ", result);\n";
+			"    if (" << resultVar << ")\n"
+			"        _first->end.Set(PTNodeType_" << _iDef->first << ", " << resultVar << ");\n";
 	}
 	
-	_source << "    return result;\n}\n";
+	_source << "    return " << resultVar << ";\n}\n";
 }
 
 void GenerateParserSource(std::string _folder, std::string _name, const Grammar& _grammar)
