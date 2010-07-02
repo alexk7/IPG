@@ -17,7 +17,6 @@
 		6236DA9B10C234AD0042B7D3 /* ConvertGrammar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6236DA8E10C234AD0042B7D3 /* ConvertGrammar.cpp */; };
 		6236DA9C10C234AD0042B7D3 /* ConvertIdentifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6236DA9010C234AD0042B7D3 /* ConvertIdentifier.cpp */; };
 		62C2ADB110D3D88D00DD13AA /* GenerateParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62C2ADAF10D3D88D00DD13AA /* GenerateParser.cpp */; };
-		62C2ADC910D3F77300DD13AA /* FlattenGrammar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62C2ADC810D3F77300DD13AA /* FlattenGrammar.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -56,8 +55,6 @@
 		6236DB0C10C23D830042B7D3 /* doc */ = {isa = PBXFileReference; lastKnownFileType = folder; name = doc; path = ../../doc; sourceTree = SOURCE_ROOT; };
 		62C2ADAF10D3D88D00DD13AA /* GenerateParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GenerateParser.cpp; sourceTree = "<group>"; };
 		62C2ADB010D3D88D00DD13AA /* GenerateParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GenerateParser.h; sourceTree = "<group>"; };
-		62C2ADC710D3F77300DD13AA /* FlattenGrammar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlattenGrammar.h; sourceTree = "<group>"; };
-		62C2ADC810D3F77300DD13AA /* FlattenGrammar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FlattenGrammar.cpp; sourceTree = "<group>"; };
 		8DD76F6C0486A84900D96B5E /* ipg */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ipg; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -104,8 +101,6 @@
 				6236DA8210C234AD0042B7D3 /* ipg.cpp */,
 				6236DA8310C234AD0042B7D3 /* Parser.cpp */,
 				6236DA8410C234AD0042B7D3 /* Parser.h */,
-				62C2ADC710D3F77300DD13AA /* FlattenGrammar.h */,
-				62C2ADC810D3F77300DD13AA /* FlattenGrammar.cpp */,
 			);
 			name = cpp;
 			path = ../../cpp;
@@ -211,7 +206,6 @@
 				6236DA9B10C234AD0042B7D3 /* ConvertGrammar.cpp in Sources */,
 				6236DA9C10C234AD0042B7D3 /* ConvertIdentifier.cpp in Sources */,
 				62C2ADB110D3D88D00DD13AA /* GenerateParser.cpp in Sources */,
-				62C2ADC910D3F77300DD13AA /* FlattenGrammar.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

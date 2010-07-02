@@ -10,7 +10,6 @@
 #include "AST/Grammar.h"
 #include "PTToAST/ConvertGrammar.h"
 #include "Parser.h"
-#include "FlattenGrammar.h"
 #include "GenerateParser.h"
 
 bool ReadFile(std::vector<char>& _text, const char* _filename)
@@ -78,9 +77,6 @@ int main(int argc, char* argv[])
             Grammar grammar;
             ConvertGrammar(grammar, &symbols[0]);
             std::cout << grammar;
-            
-            FlattenGrammar(grammar);
-            //std::cout << grammar;
             
             GenerateParserSource(argv[2], argv[3], grammar);
             GenerateParserHeader(argv[2], argv[3], grammar);

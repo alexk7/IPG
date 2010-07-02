@@ -26,7 +26,9 @@ enum ExpressionType
 	ExpressionType_NonTerminal,
 	ExpressionType_Range,
 	ExpressionType_Char,
-	ExpressionType_Dot
+	ExpressionType_Dot,
+    
+    ExpressionType_Count
 };
 
 class Expression;
