@@ -23,5 +23,4 @@ static void Print(std::ostream& _os, const Grammar::Defs& _defs)
 void Print(std::ostream& _os, const Grammar& _grammar)
 {
     Print(_os, _grammar.defs);
-    Print(_os, _grammar.subDefs);
 }

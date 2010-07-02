@@ -15,7 +15,6 @@ class Grammar
 public:
 	typedef std::map<std::string, Expression> Defs;
 	Defs defs;
-	Defs subDefs;
 };
 
 void Print(std::ostream& _os, const Grammar& _grammar);

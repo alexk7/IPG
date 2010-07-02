@@ -303,10 +303,6 @@ void GenerateParserSource(std::string _folder, std::string _name, const Grammar&
 	iEnd = _grammar.defs.end();
 	for (i = _grammar.defs.begin(); i != iEnd; ++i)
 		GenerateSymbolParseFunction(source, i, true);
-
-	iEnd = _grammar.subDefs.end();
-	for (i = _grammar.subDefs.begin(); i != iEnd; ++i)
-		GenerateSymbolParseFunction(source, i, false);
 }
 
 static void GenerateSymbolParseFunctionDecl(std::ofstream& _source, Grammar::Defs::const_iterator _iDef)
@@ -355,10 +351,6 @@ void GenerateParserHeader(std::string _folder, std::string _name, const Grammar&
 	
 	Grammar::Defs::const_iterator i, iEnd = _grammar.defs.end();
 	for (i = _grammar.defs.begin(); i != iEnd; ++i)
-		GenerateSymbolParseFunctionDecl(header, i);
-	
-	iEnd = _grammar.subDefs.end();
-	for (i = _grammar.subDefs.begin(); i != iEnd; ++i)
 		GenerateSymbolParseFunctionDecl(header, i);
 	
 	header <<
