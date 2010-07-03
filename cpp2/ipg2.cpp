@@ -204,7 +204,7 @@ int main(int argc, char* argv[])
 	std::vector<PTNode> nodes;
 	if (ReadFile(nodes, argv[1]))
 	{
-		bool bParsed = (Parse_Grammar(&nodes[0]) != NULL);
+		bool bParsed = (Parse_Grammar(&nodes[0]) == &nodes.back());
 		
 		std::cout << "Parsing " << (bParsed ? "succeeded" : "failed") << ".\n";
 		/*

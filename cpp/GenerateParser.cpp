@@ -21,7 +21,7 @@ private:
 	size_t mTabLevel;
 };
 
-std::ostream& operator<<(std::ostream& _os, Tabs _tabs)
+static std::ostream& operator<<(std::ostream& _os, Tabs _tabs)
 {
 	size_t tabLevel = _tabs.GetTabLevel();
 	for (size_t i = 0; i < tabLevel; ++i)
@@ -29,154 +29,186 @@ std::ostream& operator<<(std::ostream& _os, Tabs _tabs)
 	return _os;
 }
 
-static void EscapeChar(std::ostream& _os, char _char)
+struct EscapeChar
 {
-	switch (_char)
+    EscapeChar(char _c) : c(_c) {}
+    char c;
+};
+
+static std::ostream& operator<<(std::ostream& _os, EscapeChar _escapeChar)
+{
+	switch (_escapeChar.c)
 	{
-		case '\\': _os << "\\\\";  break;
-		case '\n': _os << "\\n";   break;
-		case '\r': _os << "\\r";   break;
-		case '\t': _os << "\\t";   break;
-		case '\'': _os << "\\\'";   break;
-		case '\"': _os << "\\\"";   break;
-		default:   _os.put(_char); break;
+		case '\\': _os << "\\\\"; break;
+		case '\n': _os << "\\n";  break;
+		case '\r': _os << "\\r";  break;
+		case '\t': _os << "\\t";  break;
+		case '\'': _os << "\\\'"; break;
+		case '\"': _os << "\\\""; break;
+		default: _os.put(_escapeChar.c);
 	}
+    return _os;
 }
 
-static void DeclareResultVariable(std::ostream& _os, Tabs& _tabs, int _resultIndex)
-{
-    _os << _tabs << "PTNodeItr i" << _resultIndex << ";\n";
-}
+static int GenerateParseStatement(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, int _resultIndex, const Expression& _expression);
 
-static int GenerateParseStatement(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, const Expression& _expression);
-
-static int GenerateParseEmpty(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, const Expression& _expression)
+static int GenerateParseEmpty(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, int _resultIndex, const Expression& _expression)
 {
     return _firstIndex;
 }
 
-static int GenerateParseAnd(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, const Expression& _expression)
+static int GenerateParseAnd(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, int _resultIndex, const Expression& _expression)
 {
-    int tempIndex = GenerateParseStatement(_os, _tabs, _nextVarIndex, _firstIndex, _expression.GetChild());
-    int resultIndex = _nextVarIndex++;
-    _os << _tabs << "PTNodeItr i" << resultIndex << " = i" << tempIndex << " ? i" << _firstIndex << " : NULL;\n";
-    return resultIndex;
+    if (_resultIndex == _firstIndex)
+        _resultIndex = -1;
+    _resultIndex = GenerateParseStatement(_os, _tabs, _nextVarIndex, _firstIndex, _resultIndex, _expression.GetChild());
+    _os << _tabs << "i" << _resultIndex << " = i" << _resultIndex << " ? i" << _firstIndex << " : NULL;\n";
+    return _resultIndex;
 }
 
-static int GenerateParseNot(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, const Expression& _expression)
+static int GenerateParseNot(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, int _resultIndex, const Expression& _expression)
 {
-    int tempIndex = GenerateParseStatement(_os, _tabs, _nextVarIndex, _firstIndex, _expression.GetChild());
-    int resultIndex = _nextVarIndex++;
-    _os << _tabs << "PTNodeItr i" << resultIndex << " = i" << tempIndex << " ? NULL : i" << _firstIndex << ";\n";
-    return resultIndex;
+    if (_resultIndex == _firstIndex)
+        _resultIndex = -1;
+    _resultIndex = GenerateParseStatement(_os, _tabs, _nextVarIndex, _firstIndex, _resultIndex, _expression.GetChild());
+    _os << _tabs << "i" << _resultIndex << " = i" << _resultIndex << " ? NULL : i" << _firstIndex << ";\n";
+    return _resultIndex;
 }
 
-static int GenerateParseOptional(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, const Expression& _expression)
+static int GenerateParseOptional(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, int _resultIndex, const Expression& _expression)
 {
-    int tempIndex = GenerateParseStatement(_os, _tabs, _nextVarIndex, _firstIndex, _expression.GetChild());
-    int resultIndex = _nextVarIndex++;
-    _os << _tabs << "PTNodeItr i" << resultIndex << " = i" << tempIndex << " ? i" << tempIndex << " : i" << _firstIndex << ";\n";
-    return resultIndex;
+    if (_resultIndex == _firstIndex)
+        _resultIndex = -1;
+    _resultIndex = GenerateParseStatement(_os, _tabs, _nextVarIndex, _firstIndex, _resultIndex, _expression.GetChild());
+    _os << _tabs << "if (!i" << _resultIndex << ") i" << _resultIndex << " = i" << _firstIndex << ";\n";
+    return _resultIndex;
 }
 
-static int GenerateParseZeroOrMore(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, const Expression& _expression)
+static int GenerateParseZeroOrMore(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, int _resultIndex, const Expression& _expression)
 {
-    int resultIndex = _nextVarIndex++;
-    _os << _tabs << "PTNodeItr i" << resultIndex << " = i" << _firstIndex << ";\n";
+    if (_resultIndex != _firstIndex)
+    {
+        _os << _tabs;
+        if (_resultIndex == -1)
+        {
+            _resultIndex = _nextVarIndex++;
+            _os << "PTNodeItr ";
+        }
+        _os << "i" << _resultIndex << " = i" << _firstIndex << ";\n";
+    }
     _os << _tabs << "for (;;)\n";
     _os << _tabs << "{\n";
-    int tempIndex = GenerateParseStatement(_os, ++_tabs, _nextVarIndex, resultIndex, _expression.GetChild());
+    int tempIndex = GenerateParseStatement(_os, ++_tabs, _nextVarIndex, _resultIndex, -1, _expression.GetChild());
     _os << _tabs << "if (!i" << tempIndex << ")\n";
     _os << ++_tabs << "break;\n";
-    _os << --_tabs << "i" << resultIndex << " = i" << tempIndex << ";\n";
+    _os << --_tabs << "i" << _resultIndex << " = i" << tempIndex << ";\n";
     _os << --_tabs << "}\n";
-    return resultIndex;
+    return _resultIndex;
 }
 
-static int GenerateParseNonTerminal(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, const Expression& _expression)
+static int GenerateParseNonTerminal(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, int _resultIndex, const Expression& _expression)
 {
-    int resultIndex = _nextVarIndex++;
-    _os << _tabs << "PTNodeItr i" << resultIndex << " = Parse_" << _expression.GetNonTerminal() << "(i" << _firstIndex << ");\n";
-    return resultIndex;
+    _os << _tabs;
+    if (_resultIndex == -1)
+    {
+        _resultIndex = _nextVarIndex++;
+        _os << "PTNodeItr ";
+    }
+    _os << "i" << _resultIndex << " = Parse_" << _expression.GetNonTerminal() << "(i" << _firstIndex << ");\n";
+    return _resultIndex;
 }
 
-static int GenerateParseDot(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, const Expression& _expression)
+static int GenerateParseDot(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, int _resultIndex, const Expression& _expression)
 {
-    int resultIndex = _nextVarIndex++;
-    _os << _tabs << "PTNodeItr i" << resultIndex << " = ParseAnyChar(i" << _firstIndex << ");\n";
-    return resultIndex;
+    _os << _tabs;
+    if (_resultIndex == -1)
+    {
+        _resultIndex = _nextVarIndex++;
+        _os << "PTNodeItr ";
+    }
+    _os << "i" << _resultIndex << " = ParseAnyChar(i" << _firstIndex << ");\n";
+    return _resultIndex;
 }
 
-static int GenerateParseChar(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, const Expression& _expression)
+static int GenerateParseChar(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, int _resultIndex, const Expression& _expression)
 {
-    int resultIndex = _nextVarIndex++;
-    _os << _tabs << "PTNodeItr i" << resultIndex << " = ParseChar(\'";
-    EscapeChar(_os, _expression.GetChar());
-    _os << "\', i" << _firstIndex << ");\n";
-    return resultIndex;
+    _os << _tabs;
+    if (_resultIndex == -1)
+    {
+        _resultIndex = _nextVarIndex++;
+        _os << "PTNodeItr ";
+    }
+    _os << "i" << _resultIndex << " = ParseChar(\'" << EscapeChar(_expression.GetChar()) << "\', i" << _firstIndex << ");\n";
+    return _resultIndex;
 }
 
-static int GenerateParseRange(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, const Expression& _expression)
+static int GenerateParseRange(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, int _resultIndex, const Expression& _expression)
 {
-    int resultIndex = _nextVarIndex++;
-    _os << _tabs << "PTNodeItr i" << resultIndex << " = ParseRange(\'";
-    EscapeChar(_os, _expression.GetFirst());
-    _os << "\', \'";
-    EscapeChar(_os, _expression.GetLast());
-    _os << "\', i" << _firstIndex << ");\n";
-    return resultIndex;
+    _os << _tabs;
+    if (_resultIndex == -1)
+    {
+        _resultIndex = _nextVarIndex++;
+        _os << "PTNodeItr ";
+    }
+    EscapeChar c1(_expression.GetFirst());
+    EscapeChar c2(_expression.GetLast());
+    _os << "i" << _resultIndex << " = ParseRange(\'" << c1 << "\', \'" << c2 << "\', i" << _firstIndex << ");\n";
+    return _resultIndex;
 }
 
-static int GenerateParseSequence(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, const Expression& _expression)
+static int GenerateParseSequence(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, int _resultIndex, const Expression& _expression)
 {
-    int resultIndex = _nextVarIndex++;
-    _os << _tabs << "PTNodeItr i" << resultIndex << " = NULL;\n";
     const Expressions& children = _expression.GetChildren();
-    int tempIndex = GenerateParseStatement(_os, _tabs, _nextVarIndex, _firstIndex, children[0]);
+    int tempIndex = GenerateParseStatement(_os, _tabs, _nextVarIndex, _firstIndex, _resultIndex, children[0]);
 	_os << _tabs << "if (i" << tempIndex << ")\n";
+    _resultIndex = tempIndex;
 	size_t last = children.size()-1;
 	for (size_t i = 1; i < last; ++i)
 	{
 		_os << _tabs << "{\n";
-		tempIndex = GenerateParseStatement(_os, ++_tabs, _nextVarIndex, tempIndex, children[i]);
+		tempIndex = GenerateParseStatement(_os, ++_tabs, _nextVarIndex, tempIndex, _resultIndex, children[i]);
 		_os << _tabs << "if (i" << tempIndex << ")\n";
 	}
 	_os << _tabs << "{\n";
-	tempIndex = GenerateParseStatement(_os, ++_tabs, _nextVarIndex, tempIndex, children[last]);
- 	_os << _tabs << "i" << resultIndex << " = i" << tempIndex << ";\n";   
+	tempIndex = GenerateParseStatement(_os, ++_tabs, _nextVarIndex, tempIndex, _resultIndex, children[last]);
+    if (_resultIndex != tempIndex)
+        _os << _tabs << "i" << _resultIndex << " = i" << tempIndex << ";\n";   
 	for (size_t i = last; i > 0; --i)
 	{
 		_os << --_tabs << "}\n";
 	}
-    return resultIndex;
+    return _resultIndex;
 }
 
-static int GenerateParseChoice(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, const Expression& _expression)
+static int GenerateParseChoice(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, int _resultIndex, const Expression& _expression)
 {
-    int resultIndex = _nextVarIndex++;
-    _os << _tabs << "PTNodeItr i" << resultIndex << " = NULL;\n";
+    if (_resultIndex == _firstIndex)
+        _resultIndex = -1;
     const Expressions& children = _expression.GetChildren();
+    int tempIndex = GenerateParseStatement(_os, _tabs, _nextVarIndex, _firstIndex, _resultIndex, children[0]);
+    _os << _tabs << "if (!i" << tempIndex << ")\n";
+    _resultIndex = tempIndex;
 	size_t last = children.size()-1;
-	for (size_t i = 0; i < last; ++i, ++_tabs)
+	for (size_t i = 1; i < last; ++i)
 	{
-		int tempIndex = GenerateParseStatement(_os, _tabs, _nextVarIndex, _firstIndex, children[i]);
-		_os << _tabs << "if (i" << tempIndex << ")\n";
 		_os << _tabs << "{\n";
-		_os << ++_tabs << "i" << resultIndex << " = i" << tempIndex << ";\n";
-		_os << --_tabs << "}\n";
-		_os << _tabs << "else\n";
-		_os << _tabs << "{\n";
+		tempIndex = GenerateParseStatement(_os, ++_tabs, _nextVarIndex, _firstIndex, _resultIndex, children[i]);
+        if (_resultIndex != tempIndex)
+            _os << _tabs << "i" << _resultIndex << " = i" << tempIndex << ";\n";   
+		_os << _tabs << "if (!i" << _resultIndex << ")\n";
 	}
-	int tempIndex = GenerateParseStatement(_os, _tabs, _nextVarIndex, _firstIndex, children[last]);
-    _os << _tabs << "i" << resultIndex << " = i" << tempIndex << ";\n";
+	_os << _tabs << "{\n";
+	tempIndex = GenerateParseStatement(_os, ++_tabs, _nextVarIndex, _firstIndex, _resultIndex, children[last]);
+    if (_resultIndex != tempIndex)
+        _os << _tabs << "i" << _resultIndex << " = i" << tempIndex << ";\n";   
 	for (size_t i = last; i > 0; --i)
 	{
 		_os << --_tabs << "}\n";
 	}
-    return resultIndex;
+    return _resultIndex;
 }
 
-typedef int (*GenerateParseExpressionFn)(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, const Expression& _expression);
+typedef int (*GenerateParseExpressionFn)(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, int _resultIndex, const Expression& _expression);
 static const GenerateParseExpressionFn generateParseExpressionFnTable[ExpressionType_Count] = {
     GenerateParseEmpty,
     GenerateParseChoice,
@@ -191,9 +223,9 @@ static const GenerateParseExpressionFn generateParseExpressionFnTable[Expression
     GenerateParseDot
 };
 
-static int GenerateParseStatement(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, const Expression& _expression)
+static int GenerateParseStatement(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, int _resultIndex, const Expression& _expression)
 {
-    return generateParseExpressionFnTable[_expression.GetType()](_os, _tabs, _nextVarIndex, _firstIndex, _expression);
+    return generateParseExpressionFnTable[_expression.GetType()](_os, _tabs, _nextVarIndex, _firstIndex, _resultIndex, _expression);
 }
 
 static void GenerateSymbolParseFunction(std::ostream& _os, Grammar::Defs::const_iterator _iDef, bool _memoized)
@@ -204,17 +236,16 @@ static void GenerateSymbolParseFunction(std::ostream& _os, Grammar::Defs::const_
 		"\nPTNodeItr Parse_" << _iDef->first << "(PTNodeItr i0)\n"
 		"{\n";
     
-    int nextVarIndex = 1;
 	if (_memoized)
 	{
-        int tempIndex = nextVarIndex++;
 		_os <<
-            "    PTNodeItr i" << tempIndex << " = i0->end.Get(PTNodeType_" << _iDef->first << ");\n"
-			"    if (i" << tempIndex << ")\n"
-			"        return i" << tempIndex << ";\n";
+            "    PTNodeItr i1 = i0->end.Get(PTNodeType_" << _iDef->first << ");\n"
+			"    if (i1)\n"
+			"        return i1;\n";
 	}
     
-    int resultIndex = GenerateParseStatement(_os, tabs, nextVarIndex, 0, _iDef->second);
+    int nextVarIndex = 2;
+    int resultIndex = GenerateParseStatement(_os, tabs, nextVarIndex, 0, 1, _iDef->second);
 	if (_memoized)
 	{
 		_os <<
