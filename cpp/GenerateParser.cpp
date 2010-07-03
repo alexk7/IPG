@@ -59,28 +59,28 @@ static int GenerateParseEmpty(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex
 
 static int GenerateParseAnd(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, int _resultIndex, const Expression& _expression)
 {
-    if (_resultIndex == _firstIndex)
-        _resultIndex = -1;
-    _resultIndex = GenerateParseStatement(_os, _tabs, _nextVarIndex, _firstIndex, _resultIndex, _expression.GetChild());
-    _os << _tabs << "i" << _resultIndex << " = i" << _resultIndex << " ? i" << _firstIndex << " : NULL;\n";
+    int tempIndex = GenerateParseStatement(_os, _tabs, _nextVarIndex, _firstIndex, (_resultIndex == _firstIndex) ? -1 : _resultIndex, _expression.GetChild());
+    if (_resultIndex == -1)
+        _resultIndex = tempIndex;
+    _os << _tabs << "i" << _resultIndex << " = i" << tempIndex << " ? i" << _firstIndex << " : NULL;\n";
     return _resultIndex;
 }
 
 static int GenerateParseNot(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, int _resultIndex, const Expression& _expression)
 {
-    if (_resultIndex == _firstIndex)
-        _resultIndex = -1;
-    _resultIndex = GenerateParseStatement(_os, _tabs, _nextVarIndex, _firstIndex, _resultIndex, _expression.GetChild());
-    _os << _tabs << "i" << _resultIndex << " = i" << _resultIndex << " ? NULL : i" << _firstIndex << ";\n";
+    int tempIndex = GenerateParseStatement(_os, _tabs, _nextVarIndex, _firstIndex, (_resultIndex == _firstIndex) ? -1 : _resultIndex, _expression.GetChild());
+    if (_resultIndex == -1)
+        _resultIndex = tempIndex;
+    _os << _tabs << "i" << _resultIndex << " = i" << tempIndex << " ? NULL : i" << _firstIndex << ";\n";
     return _resultIndex;
 }
 
 static int GenerateParseOptional(std::ostream& _os, Tabs& _tabs, int& _nextVarIndex, int _firstIndex, int _resultIndex, const Expression& _expression)
 {
-    if (_resultIndex == _firstIndex)
-        _resultIndex = -1;
-    _resultIndex = GenerateParseStatement(_os, _tabs, _nextVarIndex, _firstIndex, _resultIndex, _expression.GetChild());
-    _os << _tabs << "if (!i" << _resultIndex << ") i" << _resultIndex << " = i" << _firstIndex << ";\n";
+    int tempIndex = GenerateParseStatement(_os, _tabs, _nextVarIndex, _firstIndex, (_resultIndex == _firstIndex) ? -1 : _resultIndex, _expression.GetChild());
+    if (_resultIndex == -1)
+        _resultIndex = tempIndex;
+    _os << _tabs << "i" << _resultIndex << " = i" << tempIndex << " ? i" << tempIndex << " : i" << _firstIndex << ";\n";
     return _resultIndex;
 }
 
