@@ -58,9 +58,9 @@ bool ReadFile(std::vector<PTNode>& _symbols, const char* _filename)
 	return false;
 }
 
-//PTItr_Definition_Identifier::operator-> return a pointer to its contained PTItr_Identifier
-//(it is a pointer just because of C++ syntax rules)
-//PTItr_Expression_Sequence must contain an additional index parameter to know which occurence of Sequence inside Expression
+
+//PTItr_Expression_Sequence must contain an additional index parameter to know
+//which occurence of Sequence inside Expression
 //SymbolItr is like Symbol* except that * returns pSymbol->value (for now)
 
 /*
@@ -186,7 +186,7 @@ void ConvertGrammar(Grammar& _grammar, PTItr_Grammar _iGrammar)
 	for (PTItr_Grammar_Definition iDef(_iGrammar); iDef; ++iDef)
 	{
 		PTItr_Definition_Identifier iDefId(iDef);
-		PTItr_Definition_Expression iExpr(iId);
+		PTItr_Definition_Expression iExpr(iDefId);
 		
 		Expression expr;
 		ConvertExpression(expr, iExpr);
