@@ -11,7 +11,9 @@
 #define FLATTENGRAMMAR_H_
 
 class Grammar;
+class Expression;
 
 void FlattenGrammar(Grammar& _grammar);
+//bool ReferenceAnyNode(const Defs& _defs, const Expression& _expr, std::set<std::string>& _visited);
 
 #endif

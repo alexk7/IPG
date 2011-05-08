@@ -124,6 +124,8 @@ void Expression::Print(std::ostream& _os, ExpressionType parentType) const
 			_os.put(']');
 			break;
 		}
+            
+        default: assert(false);
 	}
 }
 
@@ -230,20 +232,31 @@ bool IsGroup(ExpressionType _type)
 {
 	switch (_type)
 	{
-		case ExpressionType_Choice:   return true;
+		case ExpressionType_Choice:
 		case ExpressionType_Sequence: return true;
+        default: /* not a group */    return false;
 	}
-	return false;
 }
 
 bool IsContainer(ExpressionType _type)
 {
 	switch (_type)
 	{
-		case ExpressionType_And:        return true;
-		case ExpressionType_Not:        return true;
-		case ExpressionType_Optional:   return true;
+		case ExpressionType_And:
+		case ExpressionType_Not:
+		case ExpressionType_Optional:
 		case ExpressionType_ZeroOrMore: return true;
+        default: /* not a container */  return false;
 	}
-	return false;
+}
+
+bool IsSingleChar(ExpressionType _type)
+{
+	switch (_type)
+	{
+		case ExpressionType_Range:
+		case ExpressionType_Char:
+		case ExpressionType_Dot:         return true;
+        default: /* not a single char */ return false;
+	}
 }

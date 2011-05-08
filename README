@@ -12,4 +12,4 @@ IPG consumes two input: one is the PEG grammar describing the language to recogn
 
 For now, IPG only generates a recognizing parser for a PEG given in the ASCII syntax given at http://pdos.csail.mit.edu/~baford/packrat/popl04/peg-popl04.pdf.
 
-No work is started on the semantic actions. The syntax for the second input to IPG is not yet designed.
+Instead of a special syntax for semantic actions, IPG generates C++ iterators classes to traverse the parse tree directly from the memoized structures. This part is not yet functional.

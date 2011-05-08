@@ -11,6 +11,7 @@
 #include <cstdio>
 #include <cassert>
 #include <limits>
+#include <cstdio>
 
 #include <ostream>
 #include <iostream>
@@ -19,9 +20,13 @@
 
 #include <string>
 #include <vector>
+#include <list>
 #include <map>
+#include <set>
 
 #include <algorithm>
 #include <iterator>
+
+#include <stdexcept>
 
 #endif /* COMMON_H_ */

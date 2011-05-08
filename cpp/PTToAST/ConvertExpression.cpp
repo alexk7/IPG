@@ -140,6 +140,7 @@ struct PrimaryVisitor : ExpressionBuilder
 				expression.SetDot();
 				break;
 			}
+            default: /* don't care */ break;
 		}
 	}
 };
@@ -174,6 +175,7 @@ struct SuffixVisitor : ExpressionBuilder
 				expression.AddGroupItem(ExpressionType_Sequence, zeroOrMore);
 				break;
 			}
+            default: /* don't care */ break;
 		}
 	}
 };
@@ -195,6 +197,7 @@ struct PrefixVisitor : ExpressionBuilder
 				expression.SetContainer(containerType, visitor.expression);
 				break;
 			}
+            default: /* don't care */ break;
 		}
 	}
 };

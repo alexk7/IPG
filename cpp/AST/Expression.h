@@ -22,11 +22,13 @@ enum ExpressionType
 	ExpressionType_Optional,
 	ExpressionType_ZeroOrMore,
 
-	//Misc
-	ExpressionType_NonTerminal,
+	//SingleChar
 	ExpressionType_Range,
 	ExpressionType_Char,
 	ExpressionType_Dot,
+
+    //NonTerminal
+	ExpressionType_NonTerminal,
     
     ExpressionType_Count
 };
@@ -48,7 +50,8 @@ public:
 	void SetDot() { mType = ExpressionType_Dot; }
 	void SetEmpty() { mType = ExpressionType_Empty; }
 	
-	void Print(std::ostream& _os, ExpressionType parentType = ExpressionType_Empty) const;
+	void Print(std::ostream& _os,
+               ExpressionType parentType = ExpressionType_Empty) const;
 	ExpressionType GetType() const { return mType; }
 	
 	char GetChar() const;
@@ -62,9 +65,10 @@ public:
 
 	Expression& GetChild();
 	const Expression& GetChild() const;
-
+    
 private:    
-	void PrintChildren(std::ostream& _os, const char* _separator, ExpressionType _parentType) const;
+	void PrintChildren(std::ostream& _os, const char* _separator,
+                       ExpressionType _parentType) const;
 	void PrintChildWithPrefix(std::ostream& _os, char _prefix) const;
 	void PrintChildWithSuffix(std::ostream& _os, char _prefix) const;
 	static void PrintRangeChar(std::ostream& _os, char _char);
@@ -77,12 +81,18 @@ private:
 
 bool IsGroup(ExpressionType _type);
 bool IsContainer(ExpressionType _type);
+bool IsSingleChar(ExpressionType _type);
 
 namespace std
 {
-	template <> inline void swap(Expression& _e1, Expression& _e2) { _e1.Swap(_e2); }
+	template <>
+    inline void swap(Expression& _e1, Expression& _e2) { _e1.Swap(_e2); }
 }
 
-inline std::ostream& operator<<(std::ostream& _os, const Expression& _expression) { _expression.Print(_os); return _os; }
+inline std::ostream& operator<<(std::ostream& _os, const Expression& _e)
+{
+    _e.Print(_os);
+    return _os;
+}
 
 #endif /* EXPRESSION_H_ */

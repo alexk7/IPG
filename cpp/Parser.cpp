@@ -26,7 +26,7 @@ static Symbol* ParseAnd(SymbolType _type, Symbol* _first)
 static Symbol* ParseZeroOrMore(SymbolType _type, Symbol* _first)
 {
 	Symbol* result;
-	while (result = Parse(_type, _first))
+	while ((result = Parse(_type, _first)))
 		_first = result;
 	return _first;
 }
@@ -42,7 +42,7 @@ static Symbol* ParseOneOrMore(SymbolType _type, Symbol* _first)
 static Symbol* ParseOptional(SymbolType _type, Symbol* _first)
 {
 	Symbol* result;
-	if (result = Parse(_type, _first))
+	if ((result = Parse(_type, _first)))
 		return result;
 	return _first;
 }
@@ -123,7 +123,7 @@ Symbol* Parse(SymbolType _type, Symbol* _first)
             result = Parse(SymbolType_Suffix, result);
             break;
         case SymbolType_Prefix_1:
-            if (result = Parse(SymbolType_AND, _first)) break;
+            if ((result = Parse(SymbolType_AND, _first))) break;
             result = Parse(SymbolType_NOT, _first);
             break;
 
@@ -133,8 +133,8 @@ Symbol* Parse(SymbolType _type, Symbol* _first)
             result = ParseOptional(SymbolType_Suffix_1, result);
             break;
         case SymbolType_Suffix_1:
-            if (result = Parse(SymbolType_QUESTION, _first)) break;
-            if (result = Parse(SymbolType_STAR, _first)) break;
+            if ((result = Parse(SymbolType_QUESTION, _first))) break;
+            if ((result = Parse(SymbolType_STAR, _first))) break;
             result = Parse(SymbolType_PLUS, _first);
             break;
 
@@ -142,10 +142,10 @@ Symbol* Parse(SymbolType _type, Symbol* _first)
         //         / OPEN Expression CLOSE
         //         / Literal / Class / DOT
         case SymbolType_Primary:
-            if (result = Parse(SymbolType_Primary_1, _first)) break;
-            if (result = Parse(SymbolType_Primary_2, _first)) break;
-            if (result = Parse(SymbolType_Literal, _first)) break;
-            if (result = Parse(SymbolType_Class, _first)) break;
+            if ((result = Parse(SymbolType_Primary_1, _first))) break;
+            if ((result = Parse(SymbolType_Primary_2, _first))) break;
+            if ((result = Parse(SymbolType_Literal, _first))) break;
+            if ((result = Parse(SymbolType_Class, _first))) break;
             result = Parse(SymbolType_DOT, _first);
             break;
         case SymbolType_Primary_1:
@@ -167,21 +167,21 @@ Symbol* Parse(SymbolType _type, Symbol* _first)
 
         //IdentStart <- [a-zA-Z_]
         case SymbolType_IdentStart:
-            if (result = ParseRange('a', 'z', _first)) break;
-            if (result = ParseRange('A', 'Z', _first)) break;
+            if ((result = ParseRange('a', 'z', _first))) break;
+            if ((result = ParseRange('A', 'Z', _first))) break;
             result = ParseChar('_', _first);
             break;
 
         //IdentCont <- IdentStart / [0-9]
         case SymbolType_IdentCont:
-            if (result = Parse(SymbolType_IdentStart, _first)) break;
+            if ((result = Parse(SymbolType_IdentStart, _first))) break;
             result = ParseRange('0', '9', _first);
             break;
 
         //Literal <- ['] (!['] Char)* ['] Spacing
         //         / ["] (!["] Char)* ["] Spacing
         case SymbolType_Literal:
-            if (result = Parse(SymbolType_Literal_1, _first)) break;
+            if ((result = Parse(SymbolType_Literal_1, _first))) break;
             result = Parse(SymbolType_Literal_2, _first);
             break;
         case SymbolType_Literal_1:
@@ -230,7 +230,7 @@ Symbol* Parse(SymbolType _type, Symbol* _first)
         //Char <- '\\' ([nrt'"\[\]\\] / [1-9][0-9]*)
         //      / !'\\' .
         case SymbolType_Char:
-            if (result = Parse(SymbolType_Char_1, _first)) break;
+            if ((result = Parse(SymbolType_Char_1, _first))) break;
             result = Parse(SymbolType_Char_2, _first);
             break;
         case SymbolType_Char_1:
@@ -238,17 +238,17 @@ Symbol* Parse(SymbolType _type, Symbol* _first)
             result = Parse(SymbolType_Char_1_1, result);
             break;
         case SymbolType_Char_1_1:
-            if (result = Parse(SymbolType_Char_1_1_1, _first)) break;
+            if ((result = Parse(SymbolType_Char_1_1_1, _first))) break;
             result = Parse(SymbolType_Char_1_1_2, _first);
             break;
         case SymbolType_Char_1_1_1:
-            if (result = ParseChar('n', _first)) break;
-            if (result = ParseChar('r', _first)) break;
-            if (result = ParseChar('t', _first)) break;
-            if (result = ParseChar('\'', _first)) break;
-            if (result = ParseChar('\"', _first)) break;
-            if (result = ParseChar('[', _first)) break;
-            if (result = ParseChar(']', _first)) break;
+            if ((result = ParseChar('n', _first))) break;
+            if ((result = ParseChar('r', _first))) break;
+            if ((result = ParseChar('t', _first))) break;
+            if ((result = ParseChar('\'', _first))) break;
+            if ((result = ParseChar('\"', _first))) break;
+            if ((result = ParseChar('[', _first))) break;
+            if ((result = ParseChar(']', _first))) break;
             result = ParseChar('\\', _first);
             break;
         case SymbolType_Char_1_1_2:
@@ -263,10 +263,15 @@ Symbol* Parse(SymbolType _type, Symbol* _first)
             result = ParseAnyChar(_first);
             break;
 
-        //LEFTARROW <- '<-' Spacing
+        //LEFTARROW <- '<' ('-'/'=') Spacing
         case SymbolType_LEFTARROW:
-            if (!(result = ParseString("<-", _first))) break;
+            if (!(result = ParseChar('<', _first))) break;
+            if (!(result = Parse(SymbolType_LEFTARROW_1, result))) break;
             result = Parse(SymbolType_Spacing, result);
+            break;
+        case SymbolType_LEFTARROW_1:
+            if ((result = ParseChar('-', _first))) break;
+            result = ParseChar('=', _first);
             break;
 
         //SLASH <- '/' Spacing
@@ -328,7 +333,7 @@ Symbol* Parse(SymbolType _type, Symbol* _first)
             result = ParseZeroOrMore(SymbolType_Spacing_1, _first);
             break;
         case SymbolType_Spacing_1:
-            if (result = Parse(SymbolType_Space, _first)) break;
+            if ((result = Parse(SymbolType_Space, _first))) break;
             result = Parse(SymbolType_Comment, _first);
             break;
 
@@ -345,15 +350,15 @@ Symbol* Parse(SymbolType _type, Symbol* _first)
 
         //Space <- ' ' / '\t' / EndOfLine
         case SymbolType_Space:
-            if (result = ParseChar(' ', _first)) break;
-            if (result = ParseChar('\t', _first)) break;
+            if ((result = ParseChar(' ', _first))) break;
+            if ((result = ParseChar('\t', _first))) break;
             result = Parse(SymbolType_EndOfLine, _first);
             break;
 
         //EndOfLine <- '\r\n' / '\n' / '\r'
         case SymbolType_EndOfLine:
-            if (result = ParseString("\r\n", _first)) break;
-            if (result = ParseChar('\n', _first)) break;
+            if ((result = ParseString("\r\n", _first))) break;
+            if ((result = ParseChar('\n', _first))) break;
             result = ParseChar('\r', _first);
             break;
 
@@ -362,6 +367,10 @@ Symbol* Parse(SymbolType _type, Symbol* _first)
             if (ParseAnyChar(_first)) break;
             result = _first;
             break;
+            
+        case SymbolType_Count:
+            assert(false);
+            return NULL;
     }
     if (result)
         _first->result[_type] = result;

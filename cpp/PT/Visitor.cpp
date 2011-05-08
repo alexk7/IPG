@@ -35,16 +35,26 @@ static void VisitOptional(Symbol*& _symbol, SymbolType _type, Visitor& _visitor)
         VisitSymbol(_symbol, _type, _visitor);
 }
 
-struct ChildrenVisitor : Visitor
+struct ChildrenVisitor
 {
-	ChildrenVisitor(Visitor& _visitor) : visitor(_visitor) {}
-	Visitor& visitor;
-	operator Visitor&() const { return *const_cast<ChildrenVisitor*>(this); }
-	virtual void Visit(Symbol* _symbol, SymbolType _type)
-	{
-		visitor.Visit(_symbol, _type);
-		VisitChildren(_symbol, _type, visitor);
-	}
+private:
+    struct HiddenVisitor : Visitor
+    {
+        HiddenVisitor(Visitor& _visitor) : visitor(_visitor) {}
+        Visitor& visitor;
+        virtual void Visit(Symbol* _symbol, SymbolType _type)
+        {
+            visitor.Visit(_symbol, _type);
+            VisitChildren(_symbol, _type, visitor);
+        }
+    } hidden;
+    
+public:
+	ChildrenVisitor(Visitor& _visitor) : hidden(_visitor) {}
+	operator Visitor&()
+    {
+        return hidden;
+    }
 };
 
 void VisitChildren(Symbol*& _symbol, SymbolType _type, Visitor& _visitor)
@@ -235,6 +245,9 @@ void VisitChildren(Symbol*& _symbol, SymbolType _type, Visitor& _visitor)
             _symbol += 2;
             VisitSymbol(_symbol, SymbolType_Spacing, _visitor);
             break;
+        case SymbolType_LEFTARROW_1:
+            assert(false); //not visited
+            return;
 
         //SLASH <- '/' Spacing
         case SymbolType_SLASH:
@@ -332,5 +345,9 @@ void VisitChildren(Symbol*& _symbol, SymbolType _type, Visitor& _visitor)
         //EndOfFile <- !.
         case SymbolType_EndOfFile:
             break;
+            
+        case SymbolType_Count:
+            assert(false);
+            return;
     }
 }

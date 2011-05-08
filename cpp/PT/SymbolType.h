@@ -55,9 +55,8 @@ enum SymbolType
     SymbolType_Char_1_1_1,
     SymbolType_Char_1_1_2,
     SymbolType_Char_1_1_2_1,
-    SymbolType_Char_1_2,
-    SymbolType_Char_1_2_1,
     SymbolType_Char_2,
+    SymbolType_LEFTARROW_1,
     SymbolType_Spacing_1,
     SymbolType_Comment_1,
 
