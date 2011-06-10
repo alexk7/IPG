@@ -2,14 +2,24 @@ IPG - The Incremental Parser Generator
 
 --- Description ---
 
-IPG is, like Yacc or Bison, a parser generator. However, it is not based on LALR grammars but instead on Parsing Expression Grammars, or PEGs. This is a more intuitive way to write grammars and generates parsers that are human readable.
+IPG is, like Yacc or Bison, a parser generator. However, it is not based on LALR
+grammars but instead on Parsing Expression Grammars, or PEGs. This is a more
+intuitive way to write grammars and generates parsers that are human readable.
 
-It is also different because its aim is to provide good support for incremental parsing. This is useful for applications like an IDE that always provides features based on an up-to-date analysis of the program being written.
+It is also different because its aim is to provide good support for incremental
+parsing. This is useful for applications like an IDE that always provides
+features based on an up-to-date analysis of the program being written.
 
-IPG consumes two input: one is the PEG grammar describing the language to recognized. The other is a list of actions to execute when it is confirmed that a given non-terminal is part of a complete phrase from the language. The two input are separated, which leave a much cleaner grammar to read and edit.
+IPG consumes two input: one is the PEG grammar describing the language to
+recognized. The other is a list of actions to execute when it is confirmed that
+a given non-terminal is part of a complete phrase from the language. The two
+input are separated, which leave a much cleaner grammar to read and edit.
 
 --- Current Status ---
 
-For now, IPG only generates a recognizing parser for a PEG given in the ASCII syntax given at http://pdos.csail.mit.edu/~baford/packrat/popl04/peg-popl04.pdf.
+For now, IPG only generates a recognizing parser for a PEG given in the ASCII
+syntax given at http://pdos.csail.mit.edu/~baford/packrat/popl04/peg-popl04.pdf.
 
-Instead of a special syntax for semantic actions, IPG generates C++ iterators classes to traverse the parse tree directly from the memoized structures. This part is not yet functional.
+Instead of a special syntax for semantic actions, IPG generates C++ iterators
+classes to traverse the parse tree directly from the memoized structures. This
+part is not yet functional.
