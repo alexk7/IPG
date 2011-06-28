@@ -42,6 +42,7 @@
 		6236D107114437ED00128789 /* Common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Common.cpp; path = ../../cpp/Common.cpp; sourceTree = SOURCE_ROOT; };
 		6236D108114437ED00128789 /* Common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Common.h; path = ../../cpp/Common.h; sourceTree = SOURCE_ROOT; };
 		6236DB0C10C23D830042B7D3 /* doc */ = {isa = PBXFileReference; lastKnownFileType = folder; name = doc; path = ../../doc; sourceTree = SOURCE_ROOT; };
+		6265A26613BA5ADA00C8D2C8 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README; path = ../../README; sourceTree = "<group>"; };
 		62D2C05212B8637900A6DEF2 /* ReadFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ReadFile.cpp; path = /Users/alexk7/IPG0x/cpp/ReadFile.cpp; sourceTree = "<absolute>"; };
 		62D2C05312B8637900A6DEF2 /* ReadFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ReadFile.h; path = /Users/alexk7/IPG0x/cpp/ReadFile.h; sourceTree = "<absolute>"; };
 		62D2C05612B863F100A6DEF2 /* Grammar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Grammar.cpp; path = ../../cpp/AST/Grammar.cpp; sourceTree = SOURCE_ROOT; };
@@ -63,6 +64,7 @@
 		08FB7794FE84155DC02AAC07 /* ipg */ = {
 			isa = PBXGroup;
 			children = (
+				6265A26613BA5ADA00C8D2C8 /* README */,
 				6236D0F91144370F00128789 /* cpp */,
 				6236CC921139AFD400128789 /* cpp2 */,
 				6236DB0C10C23D830042B7D3 /* doc */,
