@@ -1,2 +1,0 @@
-- Changer Defs => Grammar dans les interfaces de FlattenGrammar
-- Memoiser les résultats de ReferenceAnyNode

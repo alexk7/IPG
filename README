@@ -23,3 +23,9 @@ syntax given at http://pdos.csail.mit.edu/~baford/packrat/popl04/peg-popl04.pdf.
 Instead of a special syntax for semantic actions, IPG generates C++ iterators
 classes to traverse the parse tree directly from the memoized structures. This
 part is not yet functional.
+
+--- Dependencies ---
+
+IPG requires Boost, version 1.46.1 or later. No special include or library
+directories are specified in the project. Boost should be made available
+globally, as it is installed for example by MacPorts.
