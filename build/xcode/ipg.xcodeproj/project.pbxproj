@@ -50,36 +50,6 @@
 		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		62BC673C13BD00930088A5B6 /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-		};
-		62D0D64F13BBA50000F9609A /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-		};
-		62D0D6BF13BBB48300F9609A /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
 		62A4E12013BCC9EA009F8403 /* bootstrap1 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = bootstrap1; sourceTree = BUILT_PRODUCTS_DIR; };
 		62A4E12213BCC9EA009F8403 /* bootstrap2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = bootstrap2; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -107,30 +77,6 @@
 		62D0D69A13BBAF6F00F9609A /* Grammar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Grammar.h; sourceTree = "<group>"; };
 		62D0D6CE13BBBA4700F9609A /* peg.peg */ = {isa = PBXFileReference; explicitFileType = sourcecode.yacc; fileEncoding = 4; path = peg.peg; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFrameworksBuildPhase section */
-		62BC673B13BD00930088A5B6 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		62D0D64E13BBA50000F9609A /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		62D0D6BE13BBB48300F9609A /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		62BC672513BCFC030088A5B6 /* Bootstrap2 */ = {
@@ -240,9 +186,6 @@
 			buildPhases = (
 				62BC673113BD00930088A5B6 /* ShellScript */,
 				62BC673213BD00930088A5B6 /* Sources */,
-				62BC673B13BD00930088A5B6 /* Frameworks */,
-				62BC673C13BD00930088A5B6 /* CopyFiles */,
-				6259F81D13BE4ABF003A9689 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -259,8 +202,6 @@
 			buildConfigurationList = 62D0D65B13BBA50000F9609A /* Build configuration list for PBXNativeTarget "bootstrap1" */;
 			buildPhases = (
 				62D0D64D13BBA50000F9609A /* Sources */,
-				62D0D64E13BBA50000F9609A /* Frameworks */,
-				62D0D64F13BBA50000F9609A /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -277,8 +218,6 @@
 			buildPhases = (
 				62A4E12D13BCF925009F8403 /* ShellScript */,
 				62D0D6B513BBB48300F9609A /* Sources */,
-				62D0D6BE13BBB48300F9609A /* Frameworks */,
-				62D0D6BF13BBB48300F9609A /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -315,20 +254,6 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		6259F81D13BE4ABF003A9689 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "cmp ${BUILT_PRODUCTS_DIR}/bootstrap2 ${BUILT_PRODUCTS_DIR}/ipg";
-			showEnvVarsInLog = 0;
-		};
 		62A4E12D13BCF925009F8403 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -432,6 +357,7 @@
 		62BC673E13BD00930088A5B6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEPLOYMENT_LOCATION = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -439,6 +365,7 @@
 		62BC673F13BD00930088A5B6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEPLOYMENT_LOCATION = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRIP_INSTALLED_PRODUCT = YES;
 			};
@@ -468,6 +395,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				STRIP_INSTALLED_PRODUCT = NO;
 			};
 			name = Debug;
 		};
@@ -495,6 +423,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
 				STRIP_INSTALLED_PRODUCT = NO;
 			};
 			name = Debug;
@@ -503,6 +432,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
 				STRIP_INSTALLED_PRODUCT = YES;
 			};
 			name = Release;
@@ -511,6 +441,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -518,6 +449,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
 				STRIP_INSTALLED_PRODUCT = YES;
 			};
 			name = Release;
