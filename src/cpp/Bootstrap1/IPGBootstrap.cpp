@@ -78,20 +78,11 @@ private:
 	PTNode* mPtr;
 };
 
-template <PTNodeType type>
 class PTItr
 {
 public:
-	PTItr(PTNode* _pNode = 0) : mPtr(Check(_pNode))
-	{
-	}
-	
-	PTItr& operator=(PTNode* _pNode)
-	{
-		mPtr = Check(_pNode);
-		return *this;
-	}
-	
+	PTItr(PTNodeType _type, PTNode* _pNode = 0) : mType(_type), mPtr(Check(_type, _pNode)) {}
+
 	operator bool() const
 	{
 		return mPtr != 0;
@@ -104,21 +95,34 @@ public:
 	
 	std::string ToString() const
 	{
-		return ::ToString(mPtr, type);
+		return ::ToString(mPtr, mType);
 	}
+	
+	PTNodeType GetType() const { return mType; }
 	
 private:
-	PTNode* Check(PTNode* _pNode)
+	static PTNode* Check(PTNodeType _type, PTNode* _pNode)
 	{
-		return (_pNode && _pNode->end[type]) ? _pNode : 0;
+		return (_pNode && _pNode->end[_type]) ? _pNode : 0;
 	}
 	
+	PTNodeType mType;
 	PTNode* mPtr;
 };
 
-class PTChildItrBase
+class PTChildItr
 {
 public:
+	friend PTChildItr GetChild(PTNodeType _childT, const PTItr& _iParent);
+	friend PTChildItr GetChild(PTNodeType _childT, const PTChildItr& _iParent);
+	friend PTChildItr GetNext(PTNodeType _childT, const PTChildItr& _iOther);
+
+	PTChildItr(const PTChildItr& _iOther)
+	: mType(_iOther.mType)
+	, mpChildren(_iOther.mpChildren)
+	, miCurrent(_iOther.miCurrent)
+	{}
+	
 	operator PTNode*() const
 	{
 		return *this ? miCurrent->pNode : 0;
@@ -129,73 +133,10 @@ public:
 		return miCurrent != mpChildren->end();
 	}
 	
-protected:
-	PTChildItrBase(PTNode* _pParentNode, PTNodeType _parentType,
-								 PTNodeType _childType)
-	:
-	mpChildren(new PTNodeChildren)
-	{
-		PTNodeChildrenGetter getter;
-		Traverse(_parentType, _pParentNode, getter);
-		mpChildren->swap(getter.children);
-		
-		miCurrent = mpChildren->begin();
-		SkipChildrenWithWrongType(_childType);
-	}
-	
-	PTChildItrBase(const PTChildItrBase& _iOther)
-	:
-	mpChildren(_iOther.mpChildren),
-	miCurrent(_iOther.miCurrent)
-	{
-	}
-	
-	PTChildItrBase(const PTChildItrBase& _iOther, PTNodeType _childType)
-	:
-	mpChildren(_iOther.mpChildren),
-	miCurrent(_iOther.miCurrent)
-	{
-		SkipChildrenWithWrongType(_childType);
-	}
-	
-	void GoToNext(PTNodeType _childType)
-	{
-		++miCurrent;
-		SkipChildrenWithWrongType(_childType);
-	}
-	
-private:
-	void SkipChildrenWithWrongType(PTNodeType _childType)
-	{
-		PTNodeChildren::iterator iEnd = mpChildren->end();
-		while (miCurrent != iEnd && miCurrent->type != _childType)
-			++miCurrent;
-	}
-	
-	boost::shared_ptr<PTNodeChildren> mpChildren;
-	PTNodeChildren::iterator miCurrent;
-};
-
-template <PTNodeType parentType, PTNodeType childType>
-class PTChildItr : public PTChildItrBase
-{
-public:
-	template <PTNodeType childT2, PTNodeType parentT2>
-	friend PTChildItr<parentT2, childT2> GetChild(const PTItr<parentT2>& _iParent);
-
-	template <PTNodeType childT2, PTNodeType parentT2, PTNodeType otherParentT>
-	friend PTChildItr<parentT2, childT2> GetChild(const PTChildItr<otherParentT, parentT2>& _iParent);
-
-	template <PTNodeType childT2, PTNodeType parentT2, PTNodeType otherChildT>
-	friend PTChildItr<parentT2, childT2> GetNext(const PTChildItr<parentT2, otherChildT>& _iOther);
-
-	PTChildItr(const PTChildItr& _iOther) :
-		PTChildItrBase(_iOther) {}
-	
-	operator PTItr<childType>() const
+	operator PTItr() const
 	{
 		PTNode* pNode = *this;
-		return pNode;
+		return PTItr(mType, pNode);
 	}
 	
 	operator SymbolItr() const
@@ -206,14 +147,14 @@ public:
 	
 	PTChildItr& operator++()
 	{
-		GoToNext(childType);
+		GoToNext(mType);
 		return *this;
 	}
 	
 	std::string ToString() const
 	{
 		PTNode* pNode = *this;
-		return ::ToString(pNode, childType);
+		return ::ToString(pNode, mType);
 	}
 	
 	SymbolItr Begin() const
@@ -225,38 +166,63 @@ public:
 	SymbolItr End() const
 	{
 		PTNode* pNode = *this;
-		return pNode ? pNode->end[childType] : 0;
-	}  
+		return pNode ? pNode->end[mType] : 0;
+	}
+	
+	PTNodeType GetType() const { return mType; }
 	  
 private:
-	PTChildItr(const PTItr<parentType>& _iParent) :
-		PTChildItrBase(_iParent, parentType, childType) {}
+	PTChildItr(PTNode* _pParentNode, PTNodeType _parentType, PTNodeType _childType)
+	: mType(_childType)
+	, mpChildren(new PTNodeChildren)
+	{
+		PTNodeChildrenGetter getter;
+		Traverse(_parentType, _pParentNode, getter);
+		mpChildren->swap(getter.children);
+		
+		miCurrent = mpChildren->begin();
+		SkipChildrenWithWrongType(_childType);
+	}
 	
-	template <PTNodeType otherParentType>
-	PTChildItr(const PTChildItr<otherParentType, parentType>& _iParent) :
-		PTChildItrBase(_iParent, parentType, childType) {}
+	PTChildItr(const PTChildItr& _iOther, PTNodeType _childType)
+	: mType(_childType)
+	,	mpChildren(_iOther.mpChildren)
+	,	miCurrent(_iOther.miCurrent)
+	{
+		SkipChildrenWithWrongType(_childType);
+	}
 	
-	template <PTNodeType otherChildType>
-	PTChildItr(const PTChildItr<parentType, otherChildType>& _iOther) :
-		PTChildItrBase(_iOther, childType) {}
+	void GoToNext(PTNodeType _childType)
+	{
+		++miCurrent;
+		SkipChildrenWithWrongType(_childType);
+	}
+	
+	void SkipChildrenWithWrongType(PTNodeType _childType)
+	{
+		PTNodeChildren::iterator iEnd = mpChildren->end();
+		while (miCurrent != iEnd && miCurrent->type != _childType)
+			++miCurrent;
+	}
+		
+	PTNodeType mType;
+	boost::shared_ptr<PTNodeChildren> mpChildren;
+	PTNodeChildren::iterator miCurrent;
 };
 
-template <PTNodeType childT, PTNodeType parentT>
-PTChildItr<parentT, childT> GetChild(const PTItr<parentT>& _iParent)
+inline PTChildItr GetChild(PTNodeType _childT, const PTItr& _iParent)
 {
-	return PTChildItr<parentT, childT>(_iParent);
+	return PTChildItr(_iParent, _iParent.GetType(), _childT);
 }
 
-template <PTNodeType childT, PTNodeType parentT, PTNodeType otherParentT>
-PTChildItr<parentT, childT> GetChild(const PTChildItr<otherParentT, parentT>& _iParent)
+inline PTChildItr GetChild(PTNodeType _childT, const PTChildItr& _iParent)
 {
-	return PTChildItr<parentT, childT>(_iParent);
+	return PTChildItr(_iParent, _iParent.GetType(), _childT);
 }
 
-template <PTNodeType childT, PTNodeType parentT, PTNodeType otherChildT>
-PTChildItr<parentT, childT> GetNext(const PTChildItr<parentT, otherChildT>& _iOther)
+inline PTChildItr GetNext(PTNodeType _childT, const PTChildItr& _iOther)
 {
-	return PTChildItr<parentT, childT>(_iOther);
+	return PTChildItr(_iOther, _childT);
 }
 
 static bool ReadFile(std::vector<PTNode>& _symbols, const char* _filename)
@@ -317,39 +283,39 @@ static char GetChar(SymbolItr _iChar)
 	return c;
 }
 
-static void ConvertExpression(Expression& _expr, PTItr<PTNodeType_Expression> _iExpr)
+static void ConvertExpression(Expression& _expr, PTItr _iExpr)
 {
 	Expression sequence, primary, charExpr;
 	
-	for (auto iSeq = GetChild<PTNodeType_Sequence>(_iExpr); iSeq; ++iSeq)
+	for (auto iSeq = GetChild(PTNodeType_Sequence, _iExpr); iSeq; ++iSeq)
 	{
-		for (auto iPrefix = GetChild<PTNodeType_Prefix>(iSeq); iPrefix; ++iPrefix)
+		for (auto iPrefix = GetChild(PTNodeType_Prefix, iSeq); iPrefix; ++iPrefix)
 		{
 			char cPrefix = *iPrefix.Begin();
-			auto iSuffix = GetChild<PTNodeType_Suffix>(iPrefix);
-			auto iPrimary = GetChild<PTNodeType_Primary>(iSuffix);
+			auto iSuffix = GetChild(PTNodeType_Suffix, iPrefix);
+			auto iPrimary = GetChild(PTNodeType_Primary, iSuffix);
 			
-			if (auto iId = GetChild<PTNodeType_Identifier>(iPrimary))
+			if (auto iId = GetChild(PTNodeType_Identifier, iPrimary))
 			{
 				primary.SetNonTerminal(iId.ToString());
 			}
-			else if (auto iExpr = GetChild<PTNodeType_Expression>(iPrimary))
+			else if (auto iExpr = GetChild(PTNodeType_Expression, iPrimary))
 			{
 				ConvertExpression(primary, iExpr);
 			}
-			else if (auto iLiteral = GetChild<PTNodeType_Literal>(iPrimary))
+			else if (auto iLiteral = GetChild(PTNodeType_Literal, iPrimary))
 			{
-				for (auto iChar = GetChild<PTNodeType_Char>(iLiteral); iChar; ++iChar)
+				for (auto iChar = GetChild(PTNodeType_Char, iLiteral); iChar; ++iChar)
 				{
 					charExpr.SetChar(GetChar(iChar));
 					primary.AddGroupItem(ExpressionType_Sequence, charExpr);
 				}
 			}
-			else if (auto iClass = GetChild<PTNodeType_Class>(iPrimary))
+			else if (auto iClass = GetChild(PTNodeType_Class, iPrimary))
 			{
-				for (auto iRange = GetChild<PTNodeType_Range>(iClass); iRange; ++iRange)
+				for (auto iRange = GetChild(PTNodeType_Range, iClass); iRange; ++iRange)
 				{
-					auto iChar = GetChild<PTNodeType_Char>(iRange);
+					auto iChar = GetChild(PTNodeType_Char, iRange);
 					char firstChar = GetChar(iChar);
 					if (++iChar)
 					{
@@ -400,13 +366,13 @@ static void ConvertExpression(Expression& _expr, PTItr<PTNodeType_Expression> _i
 	}
 }
 
-static void ConvertGrammar(Grammar& _grammar, PTItr<PTNodeType_Grammar> _iGrammar)
+static void ConvertGrammar(Grammar& _grammar, PTItr _iGrammar)
 {
-	for (auto iDef = GetChild<PTNodeType_Definition>(_iGrammar); iDef; ++iDef)
+	for (auto iDef = GetChild(PTNodeType_Definition, _iGrammar); iDef; ++iDef)
 	{
-		auto iId = GetChild<PTNodeType_Identifier>(iDef);
-		auto iArrow = GetNext<PTNodeType_LEFTARROW>(iId);
-		auto iExpr = GetNext<PTNodeType_Expression>(iArrow);
+		auto iId = GetChild(PTNodeType_Identifier, iDef);
+		auto iArrow = GetNext(PTNodeType_LEFTARROW, iId);
+		auto iExpr = GetNext(PTNodeType_Expression, iArrow);
 		
 		Expression expr;
 		ConvertExpression(expr, iExpr);
@@ -434,21 +400,31 @@ int main(int argc, char* argv[])
 		if (ReadFile(nodes, argv[1]))
 		{
 			bool bParsed = (Parse(PTNodeType_Grammar, &nodes[0]) == &nodes.back());
+			std::string folder = argv[2];
+			std::string name = argv[3];
 			
 			if (bParsed)
 			{
 				Grammar grammar;
-				ConvertGrammar(grammar, &nodes[0]);
+				ConvertGrammar(grammar, PTItr(PTNodeType_Grammar, &nodes[0]));
 				FlattenGrammar(grammar);
 				
-				GenerateParserSource(argv[2], argv[3], grammar);
-				GenerateParserHeader(argv[2], argv[3], grammar);
+				GenerateParserSource(argv[0], folder, name, grammar);
+				GenerateParserHeader(folder, name, grammar);
+			}
+			else
+			{
+				std::cout << argv[1] << ": Parsing Failed.\n";
+				remove((folder + name + ".cpp").c_str());
+			  remove((folder + name + ".h").c_str());
+				return 1;
 			}
 		}
 	}
 	catch (const std::exception& e)
 	{
 		std::cout << e.what() << "\n";
+		return 1;
 	}
 	
 	return 0;

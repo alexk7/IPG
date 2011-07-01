@@ -81,8 +81,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		62A4E12013BCC9EA009F8403 /* ipg.bootstrap1 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = ipg.bootstrap1; path = bootstrap1; sourceTree = BUILT_PRODUCTS_DIR; };
-		62A4E12213BCC9EA009F8403 /* ipg.bootstrap2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = ipg.bootstrap2; path = bootstrap2; sourceTree = BUILT_PRODUCTS_DIR; };
+		62A4E12013BCC9EA009F8403 /* bootstrap1 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = bootstrap1; sourceTree = BUILT_PRODUCTS_DIR; };
+		62A4E12213BCC9EA009F8403 /* bootstrap2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = bootstrap2; sourceTree = BUILT_PRODUCTS_DIR; };
 		62BC672613BCFCAF0088A5B6 /* PEGParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PEGParser.cpp; sourceTree = "<group>"; };
 		62BC672713BCFCAF0088A5B6 /* PEGParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PEGParser.h; sourceTree = "<group>"; };
 		62BC674013BD00930088A5B6 /* ipg */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ipg; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -165,8 +165,8 @@
 		62D0D65213BBA50000F9609A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				62A4E12013BCC9EA009F8403 /* ipg.bootstrap1 */,
-				62A4E12213BCC9EA009F8403 /* ipg.bootstrap2 */,
+				62A4E12013BCC9EA009F8403 /* bootstrap1 */,
+				62A4E12213BCC9EA009F8403 /* bootstrap2 */,
 				62BC674013BD00930088A5B6 /* ipg */,
 			);
 			name = Products;
@@ -242,6 +242,7 @@
 				62BC673213BD00930088A5B6 /* Sources */,
 				62BC673B13BD00930088A5B6 /* Frameworks */,
 				62BC673C13BD00930088A5B6 /* CopyFiles */,
+				6259F81D13BE4ABF003A9689 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -267,7 +268,7 @@
 			);
 			name = bootstrap1;
 			productName = ipg;
-			productReference = 62A4E12013BCC9EA009F8403 /* ipg.bootstrap1 */;
+			productReference = 62A4E12013BCC9EA009F8403 /* bootstrap1 */;
 			productType = "com.apple.product-type.tool";
 		};
 		62D0D6B413BBB48300F9609A /* bootstrap2 */ = {
@@ -286,7 +287,7 @@
 			);
 			name = bootstrap2;
 			productName = ipg;
-			productReference = 62A4E12213BCC9EA009F8403 /* ipg.bootstrap2 */;
+			productReference = 62A4E12213BCC9EA009F8403 /* bootstrap2 */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -314,6 +315,20 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		6259F81D13BE4ABF003A9689 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cmp ${BUILT_PRODUCTS_DIR}/bootstrap2 ${BUILT_PRODUCTS_DIR}/ipg";
+			showEnvVarsInLog = 0;
+		};
 		62A4E12D13BCF925009F8403 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -321,15 +336,16 @@
 			);
 			inputPaths = (
 				"${BUILT_PRODUCTS_DIR}/bootstrap1",
-				"$(SRCROOT)/../../src/peg/peg.peg",
+				"${SRCROOT}/../../src/peg/peg.peg",
 			);
 			outputPaths = (
-				"$(SRCROOT)/../../src/cpp/Bootstrap2/PEGParser.cpp",
-				"$(SRCROOT)/../../src/cpp/Bootstrap2/PEGParser.h",
+				"${SRCROOT}/../../src/cpp/Bootstrap2/PEGParser.cpp",
+				"${SRCROOT}/../../src/cpp/Bootstrap2/PEGParser.h",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "${BUILT_PRODUCTS_DIR}/bootstrap1 ${SRCROOT}/../../src/peg/peg.peg ${SRCROOT}/../../src/cpp/Bootstrap2/ PEGParser";
+			showEnvVarsInLog = 0;
 		};
 		62BC673113BD00930088A5B6 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -338,15 +354,16 @@
 			);
 			inputPaths = (
 				"${BUILT_PRODUCTS_DIR}/bootstrap2",
-				"$(SRCROOT)/../../src/peg/peg.peg",
+				"${SRCROOT}/../../src/peg/peg.peg",
 			);
 			outputPaths = (
-				"$(SRCROOT)/../../src/cpp/Bootstrap3/PEGParser.cpp",
-				"$(SRCROOT)/../../src/cpp/Bootstrap3/PEGParser.h",
+				"${SRCROOT}/../../src/cpp/Bootstrap3/PEGParser.cpp",
+				"${SRCROOT}/../../src/cpp/Bootstrap3/PEGParser.h",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "${BUILT_PRODUCTS_DIR}/bootstrap2 ${SRCROOT}/../../src/peg/peg.peg ${SRCROOT}/../../src/cpp/Bootstrap3/ PEGParser";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -423,6 +440,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRIP_INSTALLED_PRODUCT = YES;
 			};
 			name = Release;
 		};
@@ -477,6 +495,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRIP_INSTALLED_PRODUCT = NO;
 			};
 			name = Debug;
 		};
@@ -484,6 +503,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRIP_INSTALLED_PRODUCT = YES;
 			};
 			name = Release;
 		};
@@ -498,6 +518,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRIP_INSTALLED_PRODUCT = YES;
 			};
 			name = Release;
 		};
