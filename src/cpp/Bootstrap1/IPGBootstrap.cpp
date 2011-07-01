@@ -180,31 +180,17 @@ template <PTNodeType parentType, PTNodeType childType>
 class PTChildItr : public PTChildItrBase
 {
 public:
-	PTChildItr(const PTItr<parentType>& _iParent)
-	:
-	PTChildItrBase(_iParent, parentType, childType)
-	{
-	}
-	
-	template <PTNodeType otherParentType>
-	PTChildItr(const PTChildItr<otherParentType, parentType>& _iParent)
-	:
-	PTChildItrBase(_iParent, parentType, childType)
-	{
-	}
-	
-	PTChildItr(const PTChildItr& _iOther)
-	:
-	PTChildItrBase(_iOther)
-	{
-	}
-	
-	template <PTNodeType otherChildType>
-	PTChildItr(const PTChildItr<parentType, otherChildType>& _iOther)
-	:
-	PTChildItrBase(_iOther, childType)
-	{
-	}
+	template <PTNodeType childT2, PTNodeType parentT2>
+	friend PTChildItr<parentT2, childT2> GetChild(const PTItr<parentT2>& _iParent);
+
+	template <PTNodeType childT2, PTNodeType parentT2, PTNodeType otherParentT>
+	friend PTChildItr<parentT2, childT2> GetChild(const PTChildItr<otherParentT, parentT2>& _iParent);
+
+	template <PTNodeType childT2, PTNodeType parentT2, PTNodeType otherChildT>
+	friend PTChildItr<parentT2, childT2> GetNext(const PTChildItr<parentT2, otherChildT>& _iOther);
+
+	PTChildItr(const PTChildItr& _iOther) :
+		PTChildItrBase(_iOther) {}
 	
 	operator PTItr<childType>() const
 	{
@@ -240,8 +226,38 @@ public:
 	{
 		PTNode* pNode = *this;
 		return pNode ? pNode->end[childType] : 0;
-	}    
+	}  
+	  
+private:
+	PTChildItr(const PTItr<parentType>& _iParent) :
+		PTChildItrBase(_iParent, parentType, childType) {}
+	
+	template <PTNodeType otherParentType>
+	PTChildItr(const PTChildItr<otherParentType, parentType>& _iParent) :
+		PTChildItrBase(_iParent, parentType, childType) {}
+	
+	template <PTNodeType otherChildType>
+	PTChildItr(const PTChildItr<parentType, otherChildType>& _iOther) :
+		PTChildItrBase(_iOther, childType) {}
 };
+
+template <PTNodeType childT, PTNodeType parentT>
+PTChildItr<parentT, childT> GetChild(const PTItr<parentT>& _iParent)
+{
+	return PTChildItr<parentT, childT>(_iParent);
+}
+
+template <PTNodeType childT, PTNodeType parentT, PTNodeType otherParentT>
+PTChildItr<parentT, childT> GetChild(const PTChildItr<otherParentT, parentT>& _iParent)
+{
+	return PTChildItr<parentT, childT>(_iParent);
+}
+
+template <PTNodeType childT, PTNodeType parentT, PTNodeType otherChildT>
+PTChildItr<parentT, childT> GetNext(const PTChildItr<parentT, otherChildT>& _iOther)
+{
+	return PTChildItr<parentT, childT>(_iOther);
+}
 
 static bool ReadFile(std::vector<PTNode>& _symbols, const char* _filename)
 {
@@ -301,57 +317,39 @@ static char GetChar(SymbolItr _iChar)
 	return c;
 }
 
-typedef PTItr<PTNodeType_Expression> PTItr_Expression;
-typedef PTChildItr<PTNodeType_Expression, PTNodeType_Sequence>
-PTItr_Expression_Sequence;
-typedef PTChildItr<PTNodeType_Sequence, PTNodeType_Prefix>
-PTItr_Sequence_Prefix;
-typedef PTChildItr<PTNodeType_Prefix, PTNodeType_Suffix> PTItr_Prefix_Suffix;
-typedef PTChildItr<PTNodeType_Suffix, PTNodeType_Primary> PTItr_Suffix_Primary;
-typedef PTChildItr<PTNodeType_Primary, PTNodeType_Identifier>
-PTItr_Primary_Identifier;
-typedef PTChildItr<PTNodeType_Primary, PTNodeType_Expression>
-PTItr_Primary_Expression;
-typedef PTChildItr<PTNodeType_Primary, PTNodeType_Literal>
-PTItr_Primary_Literal;
-typedef PTChildItr<PTNodeType_Primary, PTNodeType_Class> PTItr_Primary_Class;
-typedef PTChildItr<PTNodeType_Literal, PTNodeType_Char> PTItr_Literal_Char;
-typedef PTChildItr<PTNodeType_Class, PTNodeType_Range> PTItr_Class_Range;
-typedef PTChildItr<PTNodeType_Range, PTNodeType_Char> PTItr_Range_Char;
-
-static void ConvertExpression(Expression& _expr, PTItr_Expression _iExpr)
+static void ConvertExpression(Expression& _expr, PTItr<PTNodeType_Expression> _iExpr)
 {
 	Expression sequence, primary, charExpr;
 	
-	for (PTItr_Expression_Sequence iSeq(_iExpr); iSeq; ++iSeq)
+	for (auto iSeq = GetChild<PTNodeType_Sequence>(_iExpr); iSeq; ++iSeq)
 	{
-		for (PTItr_Sequence_Prefix iPrefix(iSeq); iPrefix; ++iPrefix)
+		for (auto iPrefix = GetChild<PTNodeType_Prefix>(iSeq); iPrefix; ++iPrefix)
 		{
 			char cPrefix = *iPrefix.Begin();
-			PTItr_Prefix_Suffix iSuffix(iPrefix);
-			PTItr_Suffix_Primary iPrimary(iSuffix);
+			auto iSuffix = GetChild<PTNodeType_Suffix>(iPrefix);
+			auto iPrimary = GetChild<PTNodeType_Primary>(iSuffix);
 			
-			if (PTItr_Primary_Identifier iId = iPrimary)
+			if (auto iId = GetChild<PTNodeType_Identifier>(iPrimary))
 			{
 				primary.SetNonTerminal(iId.ToString());
 			}
-			else if (PTItr_Primary_Expression iExpr = iPrimary)
+			else if (auto iExpr = GetChild<PTNodeType_Expression>(iPrimary))
 			{
 				ConvertExpression(primary, iExpr);
 			}
-			else if (PTItr_Primary_Literal iLiteral = iPrimary)
+			else if (auto iLiteral = GetChild<PTNodeType_Literal>(iPrimary))
 			{
-				for (PTItr_Literal_Char iChar = iLiteral; iChar; ++iChar)
+				for (auto iChar = GetChild<PTNodeType_Char>(iLiteral); iChar; ++iChar)
 				{
 					charExpr.SetChar(GetChar(iChar));
 					primary.AddGroupItem(ExpressionType_Sequence, charExpr);
 				}
 			}
-			else if (PTItr_Primary_Class iClass = iPrimary)
+			else if (auto iClass = GetChild<PTNodeType_Class>(iPrimary))
 			{
-				for (PTItr_Class_Range iRange = iClass; iRange; ++iRange)
+				for (auto iRange = GetChild<PTNodeType_Range>(iClass); iRange; ++iRange)
 				{
-					PTItr_Range_Char iChar(iRange);
+					auto iChar = GetChild<PTNodeType_Char>(iRange);
 					char firstChar = GetChar(iChar);
 					if (++iChar)
 					{
@@ -402,23 +400,13 @@ static void ConvertExpression(Expression& _expr, PTItr_Expression _iExpr)
 	}
 }
 
-typedef PTItr<PTNodeType_Grammar> PTItr_Grammar;
-typedef PTChildItr<PTNodeType_Grammar, PTNodeType_Definition>
-PTItr_Grammar_Definition;
-typedef PTChildItr<PTNodeType_Definition, PTNodeType_Identifier>
-PTItr_Definition_Identifier;
-typedef PTChildItr<PTNodeType_Definition, PTNodeType_LEFTARROW>
-PTItr_Definition_LEFTARROW;
-typedef PTChildItr<PTNodeType_Definition, PTNodeType_Expression>
-PTItr_Definition_Expression;
-
-static void ConvertGrammar(Grammar& _grammar, PTItr_Grammar _iGrammar)
+static void ConvertGrammar(Grammar& _grammar, PTItr<PTNodeType_Grammar> _iGrammar)
 {
-	for (PTItr_Grammar_Definition iDef(_iGrammar); iDef; ++iDef)
+	for (auto iDef = GetChild<PTNodeType_Definition>(_iGrammar); iDef; ++iDef)
 	{
-		PTItr_Definition_Identifier iId(iDef);
-		PTItr_Definition_LEFTARROW iArrow(iId);
-		PTItr_Definition_Expression iExpr(iArrow);
+		auto iId = GetChild<PTNodeType_Identifier>(iDef);
+		auto iArrow = GetNext<PTNodeType_LEFTARROW>(iId);
+		auto iExpr = GetNext<PTNodeType_Expression>(iArrow);
 		
 		Expression expr;
 		ConvertExpression(expr, iExpr);
@@ -434,11 +422,6 @@ static void ConvertGrammar(Grammar& _grammar, PTItr_Grammar _iGrammar)
 
 int main(int argc, char* argv[])
 {
-//	std::cout << argc << std::endl;
-//	std::cout << "input file name: " << argv[1] << std::endl;
-//	std::cout << "output folder name: " << argv[2] << std::endl;
-//	std::cout << "output file name: " << argv[3] << std::endl;
-
 	if (argc < 4)
 	{
 		std::cerr << "Usage: ipg peg.txt folder name" << std::endl;
@@ -450,19 +433,13 @@ int main(int argc, char* argv[])
 		std::vector<PTNode> nodes;
 		if (ReadFile(nodes, argv[1]))
 		{
-			bool bParsed =
-			(Parse(PTNodeType_Grammar, &nodes[0]) == &nodes.back());
-			//std::cout << "Parsing " << (bParsed ? "succeeded" : "failed")
-			//          << ".\n";
+			bool bParsed = (Parse(PTNodeType_Grammar, &nodes[0]) == &nodes.back());
 			
 			if (bParsed)
 			{
 				Grammar grammar;
 				ConvertGrammar(grammar, &nodes[0]);
-				//std::cout << grammar;
 				FlattenGrammar(grammar);
-				//std::cout << "************************\n";
-				//std::cout << grammar;
 				
 				GenerateParserSource(argv[2], argv[3], grammar);
 				GenerateParserHeader(argv[2], argv[3], grammar);

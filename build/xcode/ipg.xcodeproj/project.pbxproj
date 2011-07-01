@@ -81,8 +81,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		62A4E12013BCC9EA009F8403 /* ipg.bootstrap1 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ipg.bootstrap1; sourceTree = BUILT_PRODUCTS_DIR; };
-		62A4E12213BCC9EA009F8403 /* ipg.bootstrap2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ipg.bootstrap2; sourceTree = BUILT_PRODUCTS_DIR; };
+		62A4E12013BCC9EA009F8403 /* ipg.bootstrap1 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = ipg.bootstrap1; path = bootstrap1; sourceTree = BUILT_PRODUCTS_DIR; };
+		62A4E12213BCC9EA009F8403 /* ipg.bootstrap2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = ipg.bootstrap2; path = bootstrap2; sourceTree = BUILT_PRODUCTS_DIR; };
 		62BC672613BCFCAF0088A5B6 /* PEGParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PEGParser.cpp; sourceTree = "<group>"; };
 		62BC672713BCFCAF0088A5B6 /* PEGParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PEGParser.h; sourceTree = "<group>"; };
 		62BC674013BD00930088A5B6 /* ipg */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ipg; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -155,7 +155,9 @@
 			isa = PBXGroup;
 			children = (
 				62D0D66513BBA5B100F9609A /* README */,
-				62D0D65E13BBA55A00F9609A /* src */,
+				62D0D65F13BBA55A00F9609A /* cpp */,
+				62D0D66213BBA55A00F9609A /* man */,
+				62D0D66413BBA55A00F9609A /* peg */,
 				62D0D65213BBA50000F9609A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -170,17 +172,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		62D0D65E13BBA55A00F9609A /* src */ = {
-			isa = PBXGroup;
-			children = (
-				62D0D65F13BBA55A00F9609A /* cpp */,
-				62D0D66213BBA55A00F9609A /* man */,
-				62D0D66413BBA55A00F9609A /* peg */,
-			);
-			name = src;
-			path = ../../src;
-			sourceTree = "<group>";
-		};
 		62D0D65F13BBA55A00F9609A /* cpp */ = {
 			isa = PBXGroup;
 			children = (
@@ -189,8 +180,9 @@
 				62BC672513BCFC030088A5B6 /* Bootstrap2 */,
 				62BC674513BD02740088A5B6 /* Bootstrap3 */,
 			);
-			path = cpp;
-			sourceTree = "<group>";
+			name = cpp;
+			path = ../../src/cpp;
+			sourceTree = SOURCE_ROOT;
 		};
 		62D0D66013BBA55A00F9609A /* Bootstrap1 */ = {
 			isa = PBXGroup;
@@ -207,16 +199,18 @@
 			children = (
 				62D0D66313BBA55A00F9609A /* ipg.1 */,
 			);
-			path = man;
-			sourceTree = "<group>";
+			name = man;
+			path = ../../src/man;
+			sourceTree = SOURCE_ROOT;
 		};
 		62D0D66413BBA55A00F9609A /* peg */ = {
 			isa = PBXGroup;
 			children = (
 				62D0D6CE13BBBA4700F9609A /* peg.peg */,
 			);
-			path = peg;
-			sourceTree = "<group>";
+			name = peg;
+			path = ../../src/peg;
+			sourceTree = SOURCE_ROOT;
 		};
 		62D0D68113BBADF900F9609A /* Common */ = {
 			isa = PBXGroup;
@@ -437,6 +431,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -463,6 +458,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu99;

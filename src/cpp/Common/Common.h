@@ -4,7 +4,6 @@
 #include <cstdio>
 #include <cassert>
 #include <limits>
-#include <cstdio>
 
 #include <ostream>
 #include <iostream>
