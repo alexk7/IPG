@@ -51,10 +51,10 @@ void Expression::SetContainer(ExpressionType _containerType, Expression& _child)
 	else
 	{
 		assert(IsContainer(_containerType));
-
+		
 		Expressions children(1);
 		children.back().Swap(_child);
-
+		
 		mType = _containerType;
 		mChildren.swap(children);
 	}
@@ -91,7 +91,7 @@ void Expression::Print(std::ostream& _os, ExpressionType parentType) const
 		case ExpressionType_ZeroOrMore:  PrintChildWithSuffix(_os, '*');      break;
 		case ExpressionType_NonTerminal: _os << mText;                        break;
 		case ExpressionType_Dot:         _os.put('.');                        break;
-
+			
 		case ExpressionType_Char:
 		{
 			_os.put('\'');            
@@ -107,7 +107,7 @@ void Expression::Print(std::ostream& _os, ExpressionType parentType) const
 			_os.put('\'');
 			break;
 		}
-
+			
 		case ExpressionType_Range:
 		{
 			_os.put('[');
@@ -117,8 +117,8 @@ void Expression::Print(std::ostream& _os, ExpressionType parentType) const
 			_os.put(']');
 			break;
 		}
-            
-        default: assert(false);
+			
+		default: assert(false);
 	}
 }
 
@@ -126,11 +126,11 @@ void Expression::PrintChildren(std::ostream& _os, const char* _separator, Expres
 {
 	assert(!mChildren.empty());
 	Expressions::const_iterator i = mChildren.begin(), iEnd = mChildren.end();
-
+	
 	bool needParens = parentType > mType && ++i != iEnd;
 	if (needParens)
 		_os.put('(');
-
+	
 	for (i = mChildren.begin();;)
 	{
 		i->Print(_os, mType);
@@ -138,7 +138,7 @@ void Expression::PrintChildren(std::ostream& _os, const char* _separator, Expres
 			break;
 		_os << _separator;
 	}
-
+	
 	if (needParens)
 		_os.put(')');
 }
@@ -146,7 +146,7 @@ void Expression::PrintChildren(std::ostream& _os, const char* _separator, Expres
 void Expression::PrintChildWithPrefix(std::ostream& _os, char _prefix) const
 {
 	_os.put(_prefix);
-
+	
 	assert(!mChildren.empty());
 	mChildren.front().Print(_os, mType);
 }
@@ -155,7 +155,7 @@ void Expression::PrintChildWithSuffix(std::ostream& _os, char _suffix) const
 {
 	assert(!mChildren.empty());
 	mChildren.front().Print(_os, mType);
-
+	
 	_os.put(_suffix);
 }
 
@@ -227,7 +227,7 @@ bool IsGroup(ExpressionType _type)
 	{
 		case ExpressionType_Choice:
 		case ExpressionType_Sequence: return true;
-        default: /* not a group */    return false;
+		default: /* not a group */    return false;
 	}
 }
 
@@ -239,7 +239,7 @@ bool IsContainer(ExpressionType _type)
 		case ExpressionType_Not:
 		case ExpressionType_Optional:
 		case ExpressionType_ZeroOrMore: return true;
-        default: /* not a container */  return false;
+		default: /* not a container */  return false;
 	}
 }
 
@@ -250,6 +250,6 @@ bool IsSingleChar(ExpressionType _type)
 		case ExpressionType_Range:
 		case ExpressionType_Char:
 		case ExpressionType_Dot:         return true;
-        default: /* not a single char */ return false;
+		default: /* not a single char */ return false;
 	}
 }

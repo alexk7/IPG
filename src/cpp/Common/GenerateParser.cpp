@@ -18,7 +18,7 @@ static std::ostream& operator<<(std::ostream& _os, Tabs _tabs)
 {
 	size_t tabLevel = _tabs.GetTabLevel();
 	for (size_t i = 0; i < tabLevel; ++i)
-		_os << "    ";
+		_os << "\t";
 	return _os;
 }
 
@@ -132,10 +132,7 @@ public:
 				
 			case ExpressionType_And:
 			{
-				//                if (mTraverse)
-				//                    return _firstIndex;
-				int tempIndex = Emit(_firstIndex, (_resultIndex == _firstIndex)
-														 ? -1 : _resultIndex, expr.GetChild());
+				int tempIndex = Emit(_firstIndex, (_resultIndex == _firstIndex) ? -1 : _resultIndex, expr.GetChild());
 				if (_resultIndex == -1)
 					_resultIndex = tempIndex;
 				mSource << mTabs << "p" << _resultIndex << " = p" << tempIndex
@@ -145,10 +142,7 @@ public:
 				
 			case ExpressionType_Not:
 			{
-				//                if (mTraverse)
-				//                    return _firstIndex;
-				int tempIndex = Emit(_firstIndex, (_resultIndex == _firstIndex)
-														 ? -1 : _resultIndex, expr.GetChild());
+				int tempIndex = Emit(_firstIndex, (_resultIndex == _firstIndex) ? -1 : _resultIndex, expr.GetChild());
 				if (_resultIndex == -1)
 					_resultIndex = tempIndex;
 				mSource << mTabs << "p" << _resultIndex << " = p" << tempIndex
@@ -158,8 +152,7 @@ public:
 				
 			case ExpressionType_Optional:
 			{
-				int tempIndex = Emit(_firstIndex, (_resultIndex == _firstIndex)
-														 ? -1 : _resultIndex, expr.GetChild());
+				int tempIndex = Emit(_firstIndex, (_resultIndex == _firstIndex) ? -1 : _resultIndex, expr.GetChild());
 				if (_resultIndex == -1)
 					_resultIndex = tempIndex;
 				mSource << mTabs << "p" << _resultIndex << " = p" << tempIndex
@@ -208,24 +201,20 @@ public:
 					const DefValue& defval = def.second;
 					if (defval.isNode)
 					{
-						mSource << "Visit(p" << _firstIndex << ", PTNodeType_"
-						<< nonTerminal << ", v);\n";
+						mSource << "Visit(p" << _firstIndex << ", PTNodeType_" << nonTerminal << ", v);\n";
 					}
 					else if (!defval.isNodeRef && defval.isMemoized)
 					{
-						mSource << "GetEnd(p" << _firstIndex << ", PTNodeType_"
-						<< nonTerminal << ");\n";
+						mSource << "GetEnd(p" << _firstIndex << ", PTNodeType_" << nonTerminal << ");\n";
 					}
 					else
 					{
-						mSource << "Traverse_" << nonTerminal
-						<< "(p" << _firstIndex << ", v);\n";
+						mSource << "Traverse_" << nonTerminal << "(p" << _firstIndex << ", v);\n";
 					}
 				}
 				else
 				{
-					mSource << "Parse_" << nonTerminal
-					<< "(p" << _firstIndex << ");\n";
+					mSource << "Parse_" << nonTerminal << "(p" << _firstIndex << ");\n";
 				}
 				return _resultIndex;
 			}
@@ -240,8 +229,7 @@ public:
 				}
 				EscapeChar c1(expr.GetFirst());
 				EscapeChar c2(expr.GetLast());
-				mSource << "p" << _resultIndex << " = ParseRange(\'" << c1
-				<< "\', \'" << c2 << "\', p" << _firstIndex << ");\n";
+				mSource << "p" << _resultIndex << " = ParseRange(\'" << c1 << "\', \'" << c2 << "\', p" << _firstIndex << ");\n";
 				return _resultIndex;
 			}
 				
@@ -253,9 +241,7 @@ public:
 					_resultIndex = mNextVarIndex++;
 					mSource << "PTNode* ";
 				}
-				mSource << "p" << _resultIndex << " = ParseChar(\'"
-				<< EscapeChar(expr.GetChar()) << "\', p" << _firstIndex
-				<< ");\n";
+				mSource << "p" << _resultIndex << " = ParseChar(\'" << EscapeChar(expr.GetChar()) << "\', p" << _firstIndex << ");\n";
 				return _resultIndex;
 			}
 				
@@ -267,8 +253,7 @@ public:
 					_resultIndex = mNextVarIndex++;
 					mSource << "PTNode* ";
 				}
-				mSource << "p" << _resultIndex << " = ParseAnyChar(p"
-				<< _firstIndex << ");\n";
+				mSource << "p" << _resultIndex << " = ParseAnyChar(p" << _firstIndex << ");\n";
 				return _resultIndex;
 			}
 				
@@ -297,35 +282,30 @@ static void GenerateSymbolParseFunction(std::ostream& _os, const Grammar& _g, De
 	"static PTNode* Parse_" << _iDef->first << "(PTNode* p0)\n"
 	"{\n";
 	
-	bool isMemoized = IsMemoized(_iDef);    
+	bool isMemoized = IsMemoized(_iDef);
 	if (isMemoized)
 	{
 		_os <<
-		"    PTNode* p1 = GetEnd(p0, PTNodeType_" << _iDef->first << ");\n"
-		"    if (p1)\n"
-		"        return p1;\n";
+		"\tPTNode* p1 = GetEnd(p0, PTNodeType_" << _iDef->first << ");\n"
+		"\tif (p1)\n"
+		"\t\treturn p1;\n";
 	}
 	
 	ParserGenerator parserGenerator(_os, _g, false, isMemoized ? 2 : 1);
 	int resultIndex = parserGenerator.Emit(0, isMemoized ? 1 : -1, _iDef->second);
 	
 	if (isMemoized)
-	{
-		_os <<
-		"    SetEnd(p0, PTNodeType_" << _iDef->first <<
-		", p" << resultIndex << ");\n";
-	}
+		_os << "\tSetEnd(p0, PTNodeType_" << _iDef->first << ", p" << resultIndex << ");\n";
 	
 	_os <<
-	"    return p" << resultIndex << ";\n"
+	"\treturn p" << resultIndex << ";\n"
 	"}\n"
 	"\n";
 }
 
 static void GenerateSymbolTraverseFunctionDecl(std::ofstream& _source, Defs::const_iterator _iDef)
 {
-	_source << "static PTNode* Traverse_" << _iDef->first
-	<< "(PTNode* _p, PTNodeVisitor& _v);\n";
+	_source << "static PTNode* Traverse_" << _iDef->first << "(PTNode* _p, PTNodeVisitor& _v);\n";
 }
 
 static void GenerateSymbolTraverseFunction(std::ostream& _os, const Grammar& _grammar, Defs::const_iterator _iDef)
@@ -339,15 +319,15 @@ static void GenerateSymbolTraverseFunction(std::ostream& _os, const Grammar& _gr
 	if (isMemoized)
 	{
 		_os <<
-		"    if (!GetEnd(p0, PTNodeType_" << _iDef->first << "))\n"
-		"        return 0;\n";
+		"\tif (!GetEnd(p0, PTNodeType_" << _iDef->first << "))\n"
+		"\t\treturn 0;\n";
 	}
 	
 	ParserGenerator parserGenerator(_os, _grammar, true, 1);
 	int resultIndex = parserGenerator.Emit(0, -1, _iDef->second);
 	
 	_os <<
-	"    return p" << resultIndex << ";\n"
+	"\treturn p" << resultIndex << ";\n"
 	"}\n"
 	"\n";
 }
@@ -365,38 +345,38 @@ void GenerateParserSource(std::string _ipgName, std::string _folder, std::string
 	"\n"
 	"static PTNode* ParseRange(char _rangeBegin, char _rangeEnd, PTNode* _symbol)\n"
 	"{\n"
-	"    if (_symbol->value < _rangeBegin)\n"
-	"        return 0;\n"
-	"    if (_symbol->value > _rangeEnd)\n"
-	"        return 0;\n"
-	"    return ++_symbol;\n"
+	"\tif (_symbol->value < _rangeBegin)\n"
+	"\t\treturn 0;\n"
+	"\tif (_symbol->value > _rangeEnd)\n"
+	"\t\treturn 0;\n"
+	"\treturn ++_symbol;\n"
 	"}\n"
 	"\n"
 	"static PTNode* ParseChar(char _char, PTNode* _symbol)\n"
 	"{\n"
-	"    if (_symbol->value != _char)\n"
-	"        return 0;\n"
-	"    return ++_symbol;\n"
+	"\tif (_symbol->value != _char)\n"
+	"\t\treturn 0;\n"
+	"\treturn ++_symbol;\n"
 	"}\n"
 	"\n"
 	"static PTNode* ParseAnyChar(PTNode* _symbol)\n"
 	"{\n"
-	"    if (_symbol->value == 0)\n"
-	"        return 0;\n"
-	"    return ++_symbol;\n"
+	"\tif (_symbol->value == 0)\n"
+	"\t\treturn 0;\n"
+	"\treturn ++_symbol;\n"
 	"}\n"
 	"\n"
 	"static PTNode* GetEnd(const PTNode* _symbol, PTNodeType _type)\n"
 	"{\n"
-	"    PTNodeTypeToPtr::const_iterator i = _symbol->end.find(_type);\n"
-	"    if (i == _symbol->end.end())\n"
-	"        return 0;\n"
-	"    return i->second;\n"
+	"\tPTNodeTypeToPtr::const_iterator i = _symbol->end.find(_type);\n"
+	"\tif (i == _symbol->end.end())\n"
+	"\t\treturn 0;\n"
+	"\treturn i->second;\n"
 	"}\n"
 	"\n"
 	"static void SetEnd(PTNode* _symbol, PTNodeType _type, PTNode* _end)\n"
 	"{\n"
-	"    _symbol->end[_type] = _end;\n"
+	"\t_symbol->end[_type] = _end;\n"
 	"}\n"
 	"\n";
 	
@@ -412,27 +392,27 @@ void GenerateParserSource(std::string _ipgName, std::string _folder, std::string
 	source <<
 	"PTNode* Parse(PTNodeType _type, PTNode* _symbol)\n"
 	"{\n"
-	"    switch (_type)\n"
-	"    {\n";
+	"\tswitch (_type)\n"
+	"\t{\n";
 	
 	for (i = _grammar.defs.begin(); i != iEnd; ++i)
 	{
 		source << 
-		"        case PTNodeType_" << i->first <<
+		"\t\tcase PTNodeType_" << i->first <<
 		": return Parse_" << i->first << "(_symbol);\n";
 	}
 	
 	source <<
-	"    }\n"
-	"    return 0;\n"
+	"\t}\n"
+	"\treturn 0;\n"
 	"}\n"
 	"\n"
 	"static PTNode* Visit(PTNode* _symbol, PTNodeType _type, PTNodeVisitor& _visitor)\n"
 	"{\n"
-	"    PTNode* end = GetEnd(_symbol, _type);\n"
-	"    if (end)\n"
-	"        _visitor(_symbol, _type);\n"
-	"    return end;\n"
+	"\tPTNode* end = GetEnd(_symbol, _type);\n"
+	"\tif (end)\n"
+	"\t\t_visitor(_symbol, _type);\n"
+	"\treturn end;\n"
 	"}\n"
 	"\n";
 	
@@ -447,30 +427,24 @@ void GenerateParserSource(std::string _ipgName, std::string _folder, std::string
 	source <<
 	"PTNode* Traverse(PTNodeType _type, PTNode* _symbol, PTNodeVisitor& _visitor)\n"
 	"{\n"
-	"    switch (_type)\n"
-	"    {\n";
+	"\tswitch (_type)\n"
+	"\t{\n";
 	
 	for (i = _grammar.defs.begin(); i != iEnd; ++i)
-	{
-		source << "        "
-		"case PTNodeType_" << i->first << ": return Traverse_" <<
-		i->first << "(_symbol, _visitor);\n";
-	}
+		source << "\t\tcase PTNodeType_" << i->first << ": return Traverse_" << i->first << "(_symbol, _visitor);\n";
 	
 	source <<
-	"    }\n"
-	"    return 0;\n"
+	"\t}\n"
+	"\treturn 0;\n"
 	"}\n";
 }
 
-void GenerateParserHeader(std::string _folder, std::string _name,
-                          const Grammar& _grammar)
+void GenerateParserHeader(std::string _folder, std::string _name, const Grammar& _grammar)
 {
 	std::ofstream header((_folder + _name + ".h").c_str());
 	
 	std::string includeGuard;
-	std::transform(_name.begin(), _name.end(),
-								 std::back_inserter(includeGuard), toupper);
+	std::transform(_name.begin(), _name.end(), std::back_inserter(includeGuard), toupper);
 	includeGuard += "_H";
 	
 	time_t now = time(NULL);
@@ -489,7 +463,7 @@ void GenerateParserHeader(std::string _folder, std::string _name,
 	Defs::const_iterator i, iEnd = _grammar.defs.end();
 	int value = 0;
 	for (i = _grammar.defs.begin(); i != iEnd; ++i)
-		header << "    PTNodeType_" << i->first << " = " << ++value << ",\n";
+		header << "\tPTNodeType_" << i->first << " = " << ++value << ",\n";
 	
 	header <<
 	"};\n"
@@ -499,13 +473,13 @@ void GenerateParserHeader(std::string _folder, std::string _name,
 	"\n"
 	"struct PTNode\n"
 	"{\n"
-	"    char value;\n"
-	"    PTNodeTypeToPtr end;\n"
+	"\tchar value;\n"
+	"\tPTNodeTypeToPtr end;\n"
 	"};\n"
 	"\n"
 	"struct PTNodeVisitor\n"
 	"{\n"
-	"    virtual void operator()(PTNode* _symbol, PTNodeType _type) = 0;\n"
+	"\tvirtual void operator()(PTNode* _symbol, PTNodeType _type) = 0;\n"
 	"};\n"
 	"\n"
 	"PTNode* Parse(PTNodeType _type, PTNode* _symbol);\n"

@@ -82,7 +82,7 @@ class PTItr
 {
 public:
 	PTItr(PTNodeType _type, PTNode* _pNode = 0) : mType(_type), mPtr(Check(_type, _pNode)) {}
-
+	
 	operator bool() const
 	{
 		return mPtr != 0;
@@ -116,7 +116,7 @@ public:
 	friend PTChildItr GetChild(PTNodeType _childT, const PTItr& _iParent);
 	friend PTChildItr GetChild(PTNodeType _childT, const PTChildItr& _iParent);
 	friend PTChildItr GetNext(PTNodeType _childT, const PTChildItr& _iOther);
-
+	
 	PTChildItr(const PTChildItr& _iOther)
 	: mType(_iOther.mType)
 	, mpChildren(_iOther.mpChildren)
@@ -170,7 +170,7 @@ public:
 	}
 	
 	PTNodeType GetType() const { return mType; }
-	  
+	
 private:
 	PTChildItr(PTNode* _pParentNode, PTNodeType _parentType, PTNodeType _childType)
 	: mType(_childType)
@@ -204,7 +204,7 @@ private:
 		while (miCurrent != iEnd && miCurrent->type != _childType)
 			++miCurrent;
 	}
-		
+	
 	PTNodeType mType;
 	boost::shared_ptr<PTNodeChildren> mpChildren;
 	PTNodeChildren::iterator miCurrent;
@@ -287,35 +287,35 @@ static void ConvertExpression(Expression& _expr, PTItr _iExpr)
 {
 	Expression sequence, primary, charExpr;
 	
-	for (auto iSeq = GetChild(PTNodeType_Sequence, _iExpr); iSeq; ++iSeq)
+	for (PTChildItr iSeq = GetChild(PTNodeType_Sequence, _iExpr); iSeq; ++iSeq)
 	{
-		for (auto iPrefix = GetChild(PTNodeType_Prefix, iSeq); iPrefix; ++iPrefix)
+		for (PTChildItr iPrefix = GetChild(PTNodeType_Prefix, iSeq); iPrefix; ++iPrefix)
 		{
 			char cPrefix = *iPrefix.Begin();
-			auto iSuffix = GetChild(PTNodeType_Suffix, iPrefix);
-			auto iPrimary = GetChild(PTNodeType_Primary, iSuffix);
+			PTChildItr iSuffix = GetChild(PTNodeType_Suffix, iPrefix);
+			PTChildItr iPrimary = GetChild(PTNodeType_Primary, iSuffix);
 			
-			if (auto iId = GetChild(PTNodeType_Identifier, iPrimary))
+			if (PTChildItr iId = GetChild(PTNodeType_Identifier, iPrimary))
 			{
 				primary.SetNonTerminal(iId.ToString());
 			}
-			else if (auto iExpr = GetChild(PTNodeType_Expression, iPrimary))
+			else if (PTChildItr iExpr = GetChild(PTNodeType_Expression, iPrimary))
 			{
 				ConvertExpression(primary, iExpr);
 			}
-			else if (auto iLiteral = GetChild(PTNodeType_Literal, iPrimary))
+			else if (PTChildItr iLiteral = GetChild(PTNodeType_Literal, iPrimary))
 			{
-				for (auto iChar = GetChild(PTNodeType_Char, iLiteral); iChar; ++iChar)
+				for (PTChildItr iChar = GetChild(PTNodeType_Char, iLiteral); iChar; ++iChar)
 				{
 					charExpr.SetChar(GetChar(iChar));
 					primary.AddGroupItem(ExpressionType_Sequence, charExpr);
 				}
 			}
-			else if (auto iClass = GetChild(PTNodeType_Class, iPrimary))
+			else if (PTChildItr iClass = GetChild(PTNodeType_Class, iPrimary))
 			{
-				for (auto iRange = GetChild(PTNodeType_Range, iClass); iRange; ++iRange)
+				for (PTChildItr iRange = GetChild(PTNodeType_Range, iClass); iRange; ++iRange)
 				{
-					auto iChar = GetChild(PTNodeType_Char, iRange);
+					PTChildItr iChar = GetChild(PTNodeType_Char, iRange);
 					char firstChar = GetChar(iChar);
 					if (++iChar)
 					{
@@ -368,11 +368,11 @@ static void ConvertExpression(Expression& _expr, PTItr _iExpr)
 
 static void ConvertGrammar(Grammar& _grammar, PTItr _iGrammar)
 {
-	for (auto iDef = GetChild(PTNodeType_Definition, _iGrammar); iDef; ++iDef)
+	for (PTChildItr iDef = GetChild(PTNodeType_Definition, _iGrammar); iDef; ++iDef)
 	{
-		auto iId = GetChild(PTNodeType_Identifier, iDef);
-		auto iArrow = GetNext(PTNodeType_LEFTARROW, iId);
-		auto iExpr = GetNext(PTNodeType_Expression, iArrow);
+		PTChildItr iId = GetChild(PTNodeType_Identifier, iDef);
+		PTChildItr iArrow = GetNext(PTNodeType_LEFTARROW, iId);
+		PTChildItr iExpr = GetNext(PTNodeType_Expression, iArrow);
 		
 		Expression expr;
 		ConvertExpression(expr, iExpr);
