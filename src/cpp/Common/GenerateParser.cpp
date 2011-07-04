@@ -60,7 +60,7 @@ public:
 									bool _traverse, int nextVarIndex)
 	: mSource(_source)
 	, mGrammar(_grammar)
-	, mTabs(2)
+	, mTabs(3)
 	, mNextVarIndex(nextVarIndex)
 	, mTraverse(_traverse)
 	{
@@ -270,49 +270,6 @@ public:
 	}
 };
 
-static bool IsMemoized(Defs::const_iterator _iDef)
-{
-	return _iDef->second.isMemoized;
-}
-
-static void GenerateSymbolParseFunction(std::ostream& _os, const Grammar& _g, Defs::const_iterator _iDef)
-{
-	bool isMemoized = IsMemoized(_iDef);
-	if (isMemoized)
-	{
-		_os <<
-		"\t\tPTNode* p1 = GetEnd(p0, PTNodeType_" << _iDef->first << ");\n"
-		"\t\tif (p1)\n"
-		"\t\t\treturn p1;\n";
-	}
-	
-	ParserGenerator parserGenerator(_os, _g, false, isMemoized ? 2 : 1);
-	int resultIndex = parserGenerator.Emit(0, isMemoized ? 1 : -1, _iDef->second);
-	
-	if (isMemoized)
-		_os << "\t\tSetEnd(p0, PTNodeType_" << _iDef->first << ", p" << resultIndex << ");\n";
-	
-	_os <<
-	"\t\treturn p" << resultIndex << ";";
-}
-
-static void GenerateSymbolTraverseFunction(std::ostream& _os, const Grammar& _grammar, Defs::const_iterator _iDef)
-{
-	bool isMemoized = IsMemoized(_iDef);
-	if (isMemoized)
-	{
-		_os <<
-		"\t\tif (!GetEnd(p0, PTNodeType_" << _iDef->first << "))\n"
-		"\t\t\treturn 0;\n";
-	}
-	
-	ParserGenerator parserGenerator(_os, _grammar, true, 1);
-	int resultIndex = parserGenerator.Emit(0, -1, _iDef->second);
-	
-	_os <<
-	"\t\treturn p" << resultIndex << ";";
-}
-
 void GenerateParserSource(std::string _ipgName, std::string _folder, std::string _name, const Grammar& _grammar)
 {
   ctemplate::StringToTemplateCache("PEGParser.cpp.tpl", PEGParser_cpp_tpl, ctemplate::DO_NOT_STRIP);
@@ -326,13 +283,19 @@ void GenerateParserSource(std::string _ipgName, std::string _folder, std::string
 		ctemplate::TemplateDictionary* pDef = dict.AddSectionDictionary("def");
 		pDef->SetValue("name", i->first);
 		
+		bool isMemoized = i->second.isMemoized;
+		if (isMemoized)
+			pDef->ShowSection("isMemoized");
+		
 		std::ostringstream parseCode;
-		GenerateSymbolParseFunction(parseCode, _grammar, i);
+		ParserGenerator parserGenerator(parseCode, _grammar, false, isMemoized ? 2 : 1);
+		parserGenerator.Emit(0, isMemoized ? 1 : -1, i->second);
 		pDef->SetValue("parseCode", parseCode.str());
 		
 		std::ostringstream traverseCode;
-		GenerateSymbolTraverseFunction(traverseCode, _grammar, i);
-		pDef->SetValue("traverseCode", traverseCode.str());		
+		ParserGenerator traverserGenerator(traverseCode, _grammar, true, 1);
+		traverserGenerator.Emit(0, -1, i->second);
+		pDef->SetValue("traverseCode", traverseCode.str());
 	}
 
 	std::string sourceText;

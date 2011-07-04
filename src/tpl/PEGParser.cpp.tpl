@@ -51,15 +51,21 @@ namespace {{name}}
 		PTNode* Parse_{{name}}(PTNode*);{{/def}}
 		{{#def}}
 		PTNode* Parse_{{name}}(PTNode* p0)
-		{
-			{{parseCode}}
+		{{{#isMemoized}}
+			PTNode* p1 = GetEnd(p0, PTNodeType_{{name}});
+			if (p1)
+				return p1;{{/isMemoized}}
+{{parseCode}}{{#isMemoized}}			SetEnd(p0, PTNodeType_{{name}}, p1);
+{{/isMemoized}}			return p1;
 		}
 {{/def}}{{#def}}
 		PTNode* Traverse_{{name}}(PTNode*, PTNodeVisitor&);{{/def}}
 		{{#def}}
 		PTNode* Traverse_{{name}}(PTNode* p0, PTNodeVisitor& v)
-		{
-			{{traverseCode}}
+		{{{#isMemoized}}
+			if (!GetEnd(p0, PTNodeType_{{name}}))
+				return 0;{{/isMemoized}}
+{{traverseCode}}			return p1;
 		}
 {{/def}}	}
 	
