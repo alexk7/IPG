@@ -3,8 +3,19 @@
 #include "GenerateParser.h"
 #include "FlattenGrammar.h"
 #include "ReadFile.h"
-#include "PEGParser.h"
 #include <boost/shared_ptr.hpp>
+
+#if BOOTSTRAP_STAGE == 1
+#include "Bootstrap1/PEGParser.h"
+#elif BOOTSTRAP_STAGE == 2
+#include "Bootstrap2/PEGParser.h"
+#elif BOOTSTRAP_STAGE == 3
+#include "Bootstrap3/PEGParser.h"
+#else
+#error Invalid Bootstrap Stage!
+#endif
+
+using namespace PEGParser;
 
 struct PTNodeChild
 {
@@ -248,8 +259,6 @@ static bool ReadFile(std::vector<PTNode>& _symbols, const char* _filename)
 	return false;
 }
 
-//SymbolItr is like Symbol* except that * returns pSymbol->value
-
 static char GetChar(SymbolItr _iChar)
 {
 	char c = *_iChar;
@@ -399,7 +408,7 @@ int main(int argc, char* argv[])
 		std::vector<PTNode> nodes;
 		if (ReadFile(nodes, argv[1]))
 		{
-			bool bParsed = (Parse(PTNodeType_Grammar, &nodes[0]) == &nodes.back());
+			bool bParsed = (PEGParser::Parse(PTNodeType_Grammar, &nodes[0]) == &nodes.back());
 			std::string folder = argv[2];
 			std::string name = argv[3];
 			
@@ -415,8 +424,6 @@ int main(int argc, char* argv[])
 			else
 			{
 				std::cout << argv[1] << ": Parsing Failed.\n";
-				remove((folder + name + ".cpp").c_str());
-			  remove((folder + name + ".h").c_str());
 				return 1;
 			}
 		}

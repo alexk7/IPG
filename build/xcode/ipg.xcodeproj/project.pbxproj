@@ -14,10 +14,11 @@
 		62BC673613BD00930088A5B6 /* ReadFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D68D13BBADF900F9609A /* ReadFile.cpp */; };
 		62BC673713BD00930088A5B6 /* Expression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D69713BBAF6F00F9609A /* Expression.cpp */; };
 		62BC673813BD00930088A5B6 /* Grammar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D69913BBAF6F00F9609A /* Grammar.cpp */; };
-		62BC673913BD00930088A5B6 /* IPGBootstrap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D66913BBA80E00F9609A /* IPGBootstrap.cpp */; };
 		62BC674813BD02740088A5B6 /* PEGParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62BC674613BD02740088A5B6 /* PEGParser.cpp */; };
+		62C0023013C0F76F00CD7EB0 /* IPG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62C0022F13C0F76F00CD7EB0 /* IPG.cpp */; settings = {COMPILER_FLAGS = "-DBOOTSTRAP_STAGE=3"; }; };
+		62C0023113C0F76F00CD7EB0 /* IPG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62C0022F13C0F76F00CD7EB0 /* IPG.cpp */; settings = {COMPILER_FLAGS = "-DBOOTSTRAP_STAGE=2"; }; };
+		62C0023613C117B000CD7EB0 /* IPGBootstrap1.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62C0023513C117B000CD7EB0 /* IPGBootstrap1.cpp */; settings = {COMPILER_FLAGS = "-DBOOTSTRAP_STAGE=1"; }; };
 		62D0D66813BBA6AC00F9609A /* PEGParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D66613BBA6AC00F9609A /* PEGParser.cpp */; };
-		62D0D66A13BBA80E00F9609A /* IPGBootstrap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D66913BBA80E00F9609A /* IPGBootstrap.cpp */; };
 		62D0D69113BBADF900F9609A /* Common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D68713BBADF900F9609A /* Common.cpp */; };
 		62D0D69213BBADF900F9609A /* FlattenGrammar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D68913BBADF900F9609A /* FlattenGrammar.cpp */; };
 		62D0D69313BBADF900F9609A /* GenerateParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D68B13BBADF900F9609A /* GenerateParser.cpp */; };
@@ -30,7 +31,6 @@
 		62D0D6BB13BBB48300F9609A /* ReadFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D68D13BBADF900F9609A /* ReadFile.cpp */; };
 		62D0D6BC13BBB48300F9609A /* Expression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D69713BBAF6F00F9609A /* Expression.cpp */; };
 		62D0D6BD13BBB48300F9609A /* Grammar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D69913BBAF6F00F9609A /* Grammar.cpp */; };
-		62D0D6C513BBB56400F9609A /* IPGBootstrap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D66913BBA80E00F9609A /* IPGBootstrap.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +48,20 @@
 			remoteGlobalIDString = 62D0D6B413BBB48300F9609A;
 			remoteInfo = ipg.bootstrap2;
 		};
+		62C0023B13C11C5900CD7EB0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 62D0D64813BBA50000F9609A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 62C0023713C11A8600CD7EB0;
+			remoteInfo = bootstrap2_clean;
+		};
+		62C0025113C131D900CD7EB0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 62D0D64813BBA50000F9609A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 62C0024D13C131B100CD7EB0;
+			remoteInfo = bootstrap3_clean;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -58,11 +72,14 @@
 		62BC674013BD00930088A5B6 /* ipg */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ipg; sourceTree = BUILT_PRODUCTS_DIR; };
 		62BC674613BD02740088A5B6 /* PEGParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PEGParser.cpp; sourceTree = "<group>"; };
 		62BC674713BD02740088A5B6 /* PEGParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PEGParser.h; sourceTree = "<group>"; };
+		62C0022F13C0F76F00CD7EB0 /* IPG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IPG.cpp; sourceTree = "<group>"; };
+		62C0023513C117B000CD7EB0 /* IPGBootstrap1.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IPGBootstrap1.cpp; sourceTree = "<group>"; };
+		62C0024B13C12D3900CD7EB0 /* bootstrap2_clean.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = bootstrap2_clean.sh; sourceTree = "<group>"; };
+		62C0024C13C1319900CD7EB0 /* bootstrap3_clean.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = bootstrap3_clean.sh; sourceTree = "<group>"; };
 		62D0D66313BBA55A00F9609A /* ipg.1 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.man; path = ipg.1; sourceTree = "<group>"; };
 		62D0D66513BBA5B100F9609A /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README; path = ../../README; sourceTree = "<group>"; };
 		62D0D66613BBA6AC00F9609A /* PEGParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PEGParser.cpp; sourceTree = "<group>"; };
 		62D0D66713BBA6AC00F9609A /* PEGParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PEGParser.h; sourceTree = "<group>"; };
-		62D0D66913BBA80E00F9609A /* IPGBootstrap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IPGBootstrap.cpp; sourceTree = "<group>"; };
 		62D0D68713BBADF900F9609A /* Common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Common.cpp; sourceTree = "<group>"; };
 		62D0D68813BBADF900F9609A /* Common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Common.h; sourceTree = "<group>"; };
 		62D0D68913BBADF900F9609A /* FlattenGrammar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FlattenGrammar.cpp; sourceTree = "<group>"; };
@@ -97,11 +114,22 @@
 			path = Bootstrap3;
 			sourceTree = "<group>";
 		};
+		62C0024A13C12CCE00CD7EB0 /* sh */ = {
+			isa = PBXGroup;
+			children = (
+				62C0024B13C12D3900CD7EB0 /* bootstrap2_clean.sh */,
+				62C0024C13C1319900CD7EB0 /* bootstrap3_clean.sh */,
+			);
+			name = sh;
+			path = ../../src/sh;
+			sourceTree = SOURCE_ROOT;
+		};
 		62D0D64613BBA50000F9609A = {
 			isa = PBXGroup;
 			children = (
 				62D0D66513BBA5B100F9609A /* README */,
 				62D0D65F13BBA55A00F9609A /* cpp */,
+				62C0024A13C12CCE00CD7EB0 /* sh */,
 				62D0D66213BBA55A00F9609A /* man */,
 				62D0D66413BBA55A00F9609A /* peg */,
 				62D0D65213BBA50000F9609A /* Products */,
@@ -125,6 +153,8 @@
 				62D0D66013BBA55A00F9609A /* Bootstrap1 */,
 				62BC672513BCFC030088A5B6 /* Bootstrap2 */,
 				62BC674513BD02740088A5B6 /* Bootstrap3 */,
+				62C0022F13C0F76F00CD7EB0 /* IPG.cpp */,
+				62C0023513C117B000CD7EB0 /* IPGBootstrap1.cpp */,
 			);
 			name = cpp;
 			path = ../../src/cpp;
@@ -133,7 +163,6 @@
 		62D0D66013BBA55A00F9609A /* Bootstrap1 */ = {
 			isa = PBXGroup;
 			children = (
-				62D0D66913BBA80E00F9609A /* IPGBootstrap.cpp */,
 				62D0D66613BBA6AC00F9609A /* PEGParser.cpp */,
 				62D0D66713BBA6AC00F9609A /* PEGParser.h */,
 			);
@@ -179,18 +208,52 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXLegacyTarget section */
+		62C0023713C11A8600CD7EB0 /* bootstrap2_clean */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "${SRCROOT}/../../src/sh/bootstrap2_clean.sh";
+			buildConfigurationList = 62C0023813C11A8600CD7EB0 /* Build configuration list for PBXLegacyTarget "bootstrap2_clean" */;
+			buildPhases = (
+			);
+			buildToolPath = /bin/sh;
+			buildWorkingDirectory = "";
+			dependencies = (
+			);
+			name = bootstrap2_clean;
+			passBuildSettingsInEnvironment = 1;
+			productName = bootstrap1_clean;
+		};
+		62C0024D13C131B100CD7EB0 /* bootstrap3_clean */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "${SRCROOT}/../../src/sh/bootstrap3_clean.sh";
+			buildConfigurationList = 62C0024E13C131B100CD7EB0 /* Build configuration list for PBXLegacyTarget "bootstrap3_clean" */;
+			buildPhases = (
+			);
+			buildToolPath = /bin/sh;
+			buildWorkingDirectory = "";
+			dependencies = (
+			);
+			name = bootstrap3_clean;
+			passBuildSettingsInEnvironment = 1;
+			productName = bootstrap3_clean;
+		};
+/* End PBXLegacyTarget section */
+
 /* Begin PBXNativeTarget section */
 		62BC672E13BD00930088A5B6 /* ipg */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 62BC673D13BD00930088A5B6 /* Build configuration list for PBXNativeTarget "ipg" */;
 			buildPhases = (
-				62BC673113BD00930088A5B6 /* ShellScript */,
+				62BC673113BD00930088A5B6 /* Generate PEG Parser */,
+				62C0023313C0F8D300CD7EB0 /* Compare generated PEGParser.cpp files */,
+				62C0023413C0F94700CD7EB0 /* Compare generated PEGParser.h files */,
 				62BC673213BD00930088A5B6 /* Sources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				62BC674413BD00AF0088A5B6 /* PBXTargetDependency */,
+				62C0025213C131D900CD7EB0 /* PBXTargetDependency */,
 			);
 			name = ipg;
 			productName = ipg;
@@ -216,13 +279,14 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 62D0D6C013BBB48300F9609A /* Build configuration list for PBXNativeTarget "bootstrap2" */;
 			buildPhases = (
-				62A4E12D13BCF925009F8403 /* ShellScript */,
+				62A4E12D13BCF925009F8403 /* Generate PEG Parser */,
 				62D0D6B513BBB48300F9609A /* Sources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				62BC672413BCFB640088A5B6 /* PBXTargetDependency */,
+				62C0023C13C11C5900CD7EB0 /* PBXTargetDependency */,
 			);
 			name = bootstrap2;
 			productName = ipg;
@@ -249,12 +313,14 @@
 				62BC672E13BD00930088A5B6 /* ipg */,
 				62D0D65013BBA50000F9609A /* bootstrap1 */,
 				62D0D6B413BBB48300F9609A /* bootstrap2 */,
+				62C0023713C11A8600CD7EB0 /* bootstrap2_clean */,
+				62C0024D13C131B100CD7EB0 /* bootstrap3_clean */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		62A4E12D13BCF925009F8403 /* ShellScript */ = {
+		62A4E12D13BCF925009F8403 /* Generate PEG Parser */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -263,6 +329,7 @@
 				"${BUILT_PRODUCTS_DIR}/bootstrap1",
 				"${SRCROOT}/../../src/peg/peg.peg",
 			);
+			name = "Generate PEG Parser";
 			outputPaths = (
 				"${SRCROOT}/../../src/cpp/Bootstrap2/PEGParser.cpp",
 				"${SRCROOT}/../../src/cpp/Bootstrap2/PEGParser.h",
@@ -272,7 +339,7 @@
 			shellScript = "${BUILT_PRODUCTS_DIR}/bootstrap1 ${SRCROOT}/../../src/peg/peg.peg ${SRCROOT}/../../src/cpp/Bootstrap2/ PEGParser";
 			showEnvVarsInLog = 0;
 		};
-		62BC673113BD00930088A5B6 /* ShellScript */ = {
+		62BC673113BD00930088A5B6 /* Generate PEG Parser */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -281,6 +348,7 @@
 				"${BUILT_PRODUCTS_DIR}/bootstrap2",
 				"${SRCROOT}/../../src/peg/peg.peg",
 			);
+			name = "Generate PEG Parser";
 			outputPaths = (
 				"${SRCROOT}/../../src/cpp/Bootstrap3/PEGParser.cpp",
 				"${SRCROOT}/../../src/cpp/Bootstrap3/PEGParser.h",
@@ -288,6 +356,40 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "${BUILT_PRODUCTS_DIR}/bootstrap2 ${SRCROOT}/../../src/peg/peg.peg ${SRCROOT}/../../src/cpp/Bootstrap3/ PEGParser";
+			showEnvVarsInLog = 0;
+		};
+		62C0023313C0F8D300CD7EB0 /* Compare generated PEGParser.cpp files */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/../../src/cpp/Bootstrap2/PEGParser.cpp",
+				"${SRCROOT}/../../src/cpp/Bootstrap3/PEGParser.cpp",
+			);
+			name = "Compare generated PEGParser.cpp files";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cmp ${SRCROOT}/../../src/cpp/Bootstrap2/PEGParser.cpp ${SRCROOT}/../../src/cpp/Bootstrap3/PEGParser.cpp";
+			showEnvVarsInLog = 0;
+		};
+		62C0023413C0F94700CD7EB0 /* Compare generated PEGParser.h files */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/../../src/cpp/Bootstrap2/PEGParser.h",
+				"${SRCROOT}/../../src/cpp/Bootstrap3/PEGParser.h",
+			);
+			name = "Compare generated PEGParser.h files";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cmp ${SRCROOT}/../../src/cpp/Bootstrap2/PEGParser.cpp ${SRCROOT}/../../src/cpp/Bootstrap3/PEGParser.cpp";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -303,8 +405,8 @@
 				62BC673613BD00930088A5B6 /* ReadFile.cpp in Sources */,
 				62BC673713BD00930088A5B6 /* Expression.cpp in Sources */,
 				62BC673813BD00930088A5B6 /* Grammar.cpp in Sources */,
-				62BC673913BD00930088A5B6 /* IPGBootstrap.cpp in Sources */,
 				62BC674813BD02740088A5B6 /* PEGParser.cpp in Sources */,
+				62C0023013C0F76F00CD7EB0 /* IPG.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -313,13 +415,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				62D0D66813BBA6AC00F9609A /* PEGParser.cpp in Sources */,
-				62D0D66A13BBA80E00F9609A /* IPGBootstrap.cpp in Sources */,
 				62D0D69113BBADF900F9609A /* Common.cpp in Sources */,
 				62D0D69213BBADF900F9609A /* FlattenGrammar.cpp in Sources */,
 				62D0D69313BBADF900F9609A /* GenerateParser.cpp in Sources */,
 				62D0D69413BBADF900F9609A /* ReadFile.cpp in Sources */,
 				62D0D69B13BBAF6F00F9609A /* Expression.cpp in Sources */,
 				62D0D69C13BBAF6F00F9609A /* Grammar.cpp in Sources */,
+				62C0023613C117B000CD7EB0 /* IPGBootstrap1.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -333,8 +435,8 @@
 				62D0D6BB13BBB48300F9609A /* ReadFile.cpp in Sources */,
 				62D0D6BC13BBB48300F9609A /* Expression.cpp in Sources */,
 				62D0D6BD13BBB48300F9609A /* Grammar.cpp in Sources */,
-				62D0D6C513BBB56400F9609A /* IPGBootstrap.cpp in Sources */,
 				62BC672813BCFCAF0088A5B6 /* PEGParser.cpp in Sources */,
+				62C0023113C0F76F00CD7EB0 /* IPG.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -350,6 +452,16 @@
 			isa = PBXTargetDependency;
 			target = 62D0D6B413BBB48300F9609A /* bootstrap2 */;
 			targetProxy = 62BC674313BD00AF0088A5B6 /* PBXContainerItemProxy */;
+		};
+		62C0023C13C11C5900CD7EB0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 62C0023713C11A8600CD7EB0 /* bootstrap2_clean */;
+			targetProxy = 62C0023B13C11C5900CD7EB0 /* PBXContainerItemProxy */;
+		};
+		62C0025213C131D900CD7EB0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 62C0024D13C131B100CD7EB0 /* bootstrap3_clean */;
+			targetProxy = 62C0025113C131D900CD7EB0 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -371,16 +483,65 @@
 			};
 			name = Release;
 		};
+		62C0023913C11A8600CD7EB0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUGGING_SYMBOLS = YES;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		62C0023A13C11A8600CD7EB0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		62C0024F13C131B100CD7EB0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUGGING_SYMBOLS = YES;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		62C0025013C131B100CD7EB0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		62D0D65913BBA50000F9609A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
+				CLANG_CXX_LIBRARY = "compiler-default";
 				COPY_PHASE_STRIP = NO;
+				DSTROOT = "${SRCROOT}/../../install";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -405,16 +566,22 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
+				CLANG_CXX_LIBRARY = "compiler-default";
 				COPY_PHASE_STRIP = YES;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DSTROOT = "${SRCROOT}/../../install";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_LINK_WITH_DYNAMIC_LIBRARIES = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -422,6 +589,7 @@
 		62D0D65C13BBA50000F9609A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRIP_INSTALLED_PRODUCT = NO;
@@ -431,6 +599,7 @@
 		62D0D65D13BBA50000F9609A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRIP_INSTALLED_PRODUCT = YES;
@@ -440,6 +609,7 @@
 		62D0D6C113BBB48300F9609A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -448,6 +618,7 @@
 		62D0D6C213BBB48300F9609A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRIP_INSTALLED_PRODUCT = YES;
@@ -465,6 +636,23 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		62C0023813C11A8600CD7EB0 /* Build configuration list for PBXLegacyTarget "bootstrap2_clean" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				62C0023913C11A8600CD7EB0 /* Debug */,
+				62C0023A13C11A8600CD7EB0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		62C0024E13C131B100CD7EB0 /* Build configuration list for PBXLegacyTarget "bootstrap3_clean" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				62C0024F13C131B100CD7EB0 /* Debug */,
+				62C0025013C131B100CD7EB0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 		62D0D64B13BBA50000F9609A /* Build configuration list for PBXProject "ipg" */ = {
 			isa = XCConfigurationList;
