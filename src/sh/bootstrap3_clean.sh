@@ -1,5 +1,6 @@
 #!/bin/sh
 if [ "${ACTION}" = clean ]
 then
-	rm -rf  ${SRCROOT}/../../src/cpp/Bootstrap3
+	rm -f  ${BUILT_PRODUCTS_DIR}/bootstrap3/PEGParser.cpp
+	rm -f  ${BUILT_PRODUCTS_DIR}/bootstrap3/PEGParser.h
 fi

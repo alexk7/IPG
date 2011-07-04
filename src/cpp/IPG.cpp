@@ -6,11 +6,11 @@
 #include <boost/shared_ptr.hpp>
 
 #if BOOTSTRAP_STAGE == 1
-#include "Bootstrap1/PEGParser.h"
+#include "bootstrap1/PEGParser.h"
 #elif BOOTSTRAP_STAGE == 2
-#include "Bootstrap2/PEGParser.h"
+#include "bootstrap2/PEGParser.h"
 #elif BOOTSTRAP_STAGE == 3
-#include "Bootstrap3/PEGParser.h"
+#include "bootstrap3/PEGParser.h"
 #else
 #error Invalid Bootstrap Stage!
 #endif
@@ -408,10 +408,12 @@ int main(int argc, char* argv[])
 		std::vector<PTNode> nodes;
 		if (ReadFile(nodes, argv[1]))
 		{
-			bool bParsed = (PEGParser::Parse(PTNodeType_Grammar, &nodes[0]) == &nodes.back());
 			std::string folder = argv[2];
 			std::string name = argv[3];
+			remove((folder + name + ".cpp").c_str());
+			remove((folder + name + ".h").c_str());
 			
+			bool bParsed = (PEGParser::Parse(PTNodeType_Grammar, &nodes[0]) == &nodes.back());
 			if (bParsed)
 			{
 				Grammar grammar;

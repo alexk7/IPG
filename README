@@ -26,6 +26,16 @@ part is not yet functional.
 
 --- Dependencies ---
 
-IPG requires Boost, version 1.46.1 or later. No special include or library
-directories are specified in the project. Boost should be made available
-globally, as it is installed for example by MacPorts.
+IPG requires:
+	-	Boost, version 1.46.1 or later
+
+--- Directories ---
+
+build: IDE projects to build IPG
+	xcode
+src
+	cpp: C++ source files
+	sh: Shell scripts
+	man: Man page definitions
+	peg: Parsing Expression Grammer (PEG) files
+	tpl: Google CTemplate files

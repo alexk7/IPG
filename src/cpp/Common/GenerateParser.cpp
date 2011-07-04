@@ -2,6 +2,10 @@
 #include "GenerateParser.h"
 #include "Grammar.h"
 
+#include "PEGParser.h.tpl.h"
+#include "PEGParser.cpp.tpl.h"
+#include <ctemplate/template.h>
+
 class Tabs
 {
 public:
@@ -266,11 +270,6 @@ public:
 	}
 };
 
-static void GenerateSymbolParseFunctionDecl(std::ofstream& _source, Defs::const_iterator _iDef)
-{
-	_source << "\tPTNode* Parse_" << _iDef->first << "(PTNode* _p);\n";
-}
-
 static bool IsMemoized(Defs::const_iterator _iDef)
 {
 	return _iDef->second.isMemoized;
@@ -278,10 +277,6 @@ static bool IsMemoized(Defs::const_iterator _iDef)
 
 static void GenerateSymbolParseFunction(std::ostream& _os, const Grammar& _g, Defs::const_iterator _iDef)
 {
-	_os <<
-	"\tPTNode* Parse_" << _iDef->first << "(PTNode* p0)\n"
-	"\t{\n";
-	
 	bool isMemoized = IsMemoized(_iDef);
 	if (isMemoized)
 	{
@@ -298,21 +293,11 @@ static void GenerateSymbolParseFunction(std::ostream& _os, const Grammar& _g, De
 		_os << "\t\tSetEnd(p0, PTNodeType_" << _iDef->first << ", p" << resultIndex << ");\n";
 	
 	_os <<
-	"\t\treturn p" << resultIndex << ";\n"
-	"\t}\n";
-}
-
-static void GenerateSymbolTraverseFunctionDecl(std::ofstream& _source, Defs::const_iterator _iDef)
-{
-	_source << "\tPTNode* Traverse_" << _iDef->first << "(PTNode* _p, PTNodeVisitor& _v);\n";
+	"\t\treturn p" << resultIndex << ";";
 }
 
 static void GenerateSymbolTraverseFunction(std::ostream& _os, const Grammar& _grammar, Defs::const_iterator _iDef)
 {
-	_os <<
-	"\tPTNode* Traverse_" << _iDef->first << "(PTNode* p0, PTNodeVisitor& v)\n"
-	"\t{\n";
-	
 	bool isMemoized = IsMemoized(_iDef);
 	if (isMemoized)
 	{
@@ -325,162 +310,63 @@ static void GenerateSymbolTraverseFunction(std::ostream& _os, const Grammar& _gr
 	int resultIndex = parserGenerator.Emit(0, -1, _iDef->second);
 	
 	_os <<
-	"\t\treturn p" << resultIndex << ";\n"
-	"\t}\n";
+	"\t\treturn p" << resultIndex << ";";
 }
 
 void GenerateParserSource(std::string _ipgName, std::string _folder, std::string _name, const Grammar& _grammar)
 {
-	std::ofstream source((_folder + _name + ".cpp").c_str());
-	
-	source <<
-	"#include \"" << _name << ".h\"\n"
-	"\n"
-	"namespace " << _name << "\n"
-	"{\n"
-	"namespace\n"
-	"{\n"
-	"\tPTNode* ParseRange(char _rangeBegin, char _rangeEnd, PTNode* _symbol)\n"
-	"\t{\n"
-	"\t\tif (_symbol->value < _rangeBegin)\n"
-	"\t\t\treturn 0;\n"
-	"\t\tif (_symbol->value > _rangeEnd)\n"
-	"\t\t\treturn 0;\n"
-	"\t\treturn ++_symbol;\n"
-	"\t}\n"
-	"\t\n"
-	"\tPTNode* ParseChar(char _char, PTNode* _symbol)\n"
-	"\t{\n"
-	"\t\tif (_symbol->value != _char)\n"
-	"\t\t\treturn 0;\n"
-	"\t\treturn ++_symbol;\n"
-	"\t}\n"
-	"\n"
-	"\tPTNode* ParseAnyChar(PTNode* _symbol)\n"
-	"\t{\n"
-	"\t\tif (_symbol->value == 0)\n"
-	"\t\t\treturn 0;\n"
-	"\t\treturn ++_symbol;\n"
-	"\t}\n"
-	"\n"
-	"\tPTNode* GetEnd(const PTNode* _symbol, PTNodeType _type)\n"
-	"\t{\n"
-	"\t\tPTNodeTypeToPtr::const_iterator i = _symbol->end.find(_type);\n"
-	"\t\tif (i == _symbol->end.end())\n"
-	"\t\t\treturn 0;\n"
-	"\t\treturn i->second;\n"
-	"\t}\n"
-	"\n"
-	"\tvoid SetEnd(PTNode* _symbol, PTNodeType _type, PTNode* _end)\n"
-	"\t{\n"
-	"\t\t_symbol->end[_type] = _end;\n"
-	"\t}\n"
-	"\n"
-	"\tPTNode* Visit(PTNode* _symbol, PTNodeType _type, PTNodeVisitor& _visitor)\n"
-	"\t{\n"
-	"\t\tPTNode* end = GetEnd(_symbol, _type);\n"
-	"\t\tif (end)\n"
-	"\t\t\t_visitor(_symbol, _type);\n"
-	"\t\treturn end;\n"
-	"\t}\n"
-	"\n";
+  ctemplate::StringToTemplateCache("PEGParser.cpp.tpl", PEGParser_cpp_tpl, ctemplate::DO_NOT_STRIP);
+		
+	ctemplate::TemplateDictionary dict(_name);
+	dict.SetValue("name", _name);
 	
 	Defs::const_iterator i, iEnd = _grammar.defs.end();
 	for (i = _grammar.defs.begin(); i != iEnd; ++i)
-		GenerateSymbolParseFunctionDecl(source, i);
-	
-	for (i = _grammar.defs.begin(); i != iEnd; ++i)
 	{
-		source <<	"\n";
-		GenerateSymbolParseFunction(source, _grammar, i);
-	}
-	
-	source <<	"\n";
-	
-	for (i = _grammar.defs.begin(); i != iEnd; ++i)
-		GenerateSymbolTraverseFunctionDecl(source, i);
-	
-	for (i = _grammar.defs.begin(); i != iEnd; ++i)
-	{
-		source << "\n";
-		GenerateSymbolTraverseFunction(source, _grammar, i);
-	}
+		ctemplate::TemplateDictionary* pDef = dict.AddSectionDictionary("def");
+		pDef->SetValue("name", i->first);
 		
-	source <<
-	"}\n"
-	"\n"
-	"\tPTNode* Parse(PTNodeType _type, PTNode* _symbol)\n"
-	"\t{\n"
-	"\t\tswitch (_type)\n"
-	"\t\t{\n";
+		std::ostringstream parseCode;
+		GenerateSymbolParseFunction(parseCode, _grammar, i);
+		pDef->SetValue("parseCode", parseCode.str());
+		
+		std::ostringstream traverseCode;
+		GenerateSymbolTraverseFunction(traverseCode, _grammar, i);
+		pDef->SetValue("traverseCode", traverseCode.str());		
+	}
+
+	std::string sourceText;
+	if (!ctemplate::ExpandTemplate("PEGParser.cpp.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourceText))
+		throw std::runtime_error("CTemplate PEGParser.cpp.tpl expansion failed!");
 	
-	for (i = _grammar.defs.begin(); i != iEnd; ++i)
-		source << "\t\t\tcase PTNodeType_" << i->first << ": return Parse_" << i->first << "(_symbol);\n";
-	
-	source <<
-	"\t\t}\n"
-	"\t\treturn 0;\n"
-	"\t}\n"
-	"\n"
-	"\tPTNode* Traverse(PTNodeType _type, PTNode* _symbol, PTNodeVisitor& _visitor)\n"
-	"\t{\n"
-	"\t\tswitch (_type)\n"
-	"\t\t{\n";
-	
-	for (i = _grammar.defs.begin(); i != iEnd; ++i)
-		source << "\t\t\tcase PTNodeType_" << i->first << ": return Traverse_" << i->first << "(_symbol, _visitor);\n";
-	
-	source <<
-	"\t\t}\n"
-	"\t\treturn 0;\n"
-	"\t}\n"
-	"}\n";
+	std::ofstream sourceFile;
+	sourceFile.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+	sourceFile.open((_folder + _name + ".cpp").c_str());
+	sourceFile << sourceText;
 }
 
 void GenerateParserHeader(std::string _folder, std::string _name, const Grammar& _grammar)
 {
-	std::ofstream header((_folder + _name + ".h").c_str());
-	
-	std::string includeGuard;
-	std::transform(_name.begin(), _name.end(), std::back_inserter(includeGuard), toupper);
-	includeGuard += "_H";
-	
-	header <<
-	"#ifndef " << includeGuard << "\n"
-	"#define " << includeGuard << "\n"
-	"\n"
-	"#include <map>\n"
-	"\n"
-	"namespace " << _name << "\n"
-	"{\n"
-	"\tenum PTNodeType\n"
-	"\t{\n";
+  ctemplate::StringToTemplateCache("PEGParser.h.tpl", PEGParser_h_tpl, ctemplate::DO_NOT_STRIP);
+		
+	ctemplate::TemplateDictionary dict(_name);
+	dict.SetValue("name", _name);
 	
 	Defs::const_iterator i, iEnd = _grammar.defs.end();
-	int value = 0;
+	long value = 0;
 	for (i = _grammar.defs.begin(); i != iEnd; ++i)
-		header << "\t\t\tPTNodeType_" << i->first << " = " << ++value << ",\n";
+	{
+		ctemplate::TemplateDictionary* pDef = dict.AddSectionDictionary("def");
+		pDef->SetValue("name", i->first);
+		pDef->SetIntValue("value", ++value);
+	}
+
+	std::string headerText;
+	if (!ctemplate::ExpandTemplate("PEGParser.h.tpl", ctemplate::DO_NOT_STRIP, &dict, &headerText))
+		throw std::runtime_error("CTemplate PEGParser.h.tpl expansion failed!");
 	
-	header <<
-	"\t};\n"
-	"\n"
-	"\tstruct PTNode;\n"
-	"\ttypedef std::map<PTNodeType, PTNode*> PTNodeTypeToPtr;\n"
-	"\n"
-	"\tstruct PTNode\n"
-	"\t{\n"
-	"\t\tchar value;\n"
-	"\t\tPTNodeTypeToPtr end;\n"
-	"\t};\n"
-	"\n"
-	"\tstruct PTNodeVisitor\n"
-	"\t{\n"
-	"\t\tvirtual void operator()(PTNode* _symbol, PTNodeType _type) = 0;\n"
-	"\t};\n"
-	"\n"
-	"\tPTNode* Parse(PTNodeType _type, PTNode* _symbol);\n"
-	"\tPTNode* Traverse(PTNodeType _type, PTNode* _symbol, PTNodeVisitor& _visitor);\n"
-	"}\n"
-	"\n"
-	"#endif\n";
+	std::ofstream headerFile;
+	headerFile.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+	headerFile.open((_folder + _name + ".h").c_str());
+	headerFile << headerText;
 }
