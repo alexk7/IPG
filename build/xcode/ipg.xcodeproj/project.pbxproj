@@ -23,7 +23,6 @@
 		626A496613C20FCB00D24233 /* libctemplate.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62C0025A13C188A500CD7EB0 /* libctemplate.dylib */; };
 		626A496713C20FCC00D24233 /* libctemplate.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62C0025A13C188A500CD7EB0 /* libctemplate.dylib */; };
 		626A496813C20FCC00D24233 /* libctemplate.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62C0025A13C188A500CD7EB0 /* libctemplate.dylib */; };
-		626A498413C23F0300D24233 /* ParseCode.tpl in Sources */ = {isa = PBXBuildFile; fileRef = 626A498313C23EF600D24233 /* ParseCode.tpl */; };
 		62C0023013C0F76F00CD7EB0 /* IPG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62C0022F13C0F76F00CD7EB0 /* IPG.cpp */; settings = {COMPILER_FLAGS = "-DBOOTSTRAP_STAGE=3"; }; };
 		62C0023113C0F76F00CD7EB0 /* IPG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62C0022F13C0F76F00CD7EB0 /* IPG.cpp */; settings = {COMPILER_FLAGS = "-DBOOTSTRAP_STAGE=2"; }; };
 		62C0023613C117B000CD7EB0 /* IPGBootstrap1.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62C0023513C117B000CD7EB0 /* IPGBootstrap1.cpp */; settings = {COMPILER_FLAGS = "-DBOOTSTRAP_STAGE=1"; }; };
@@ -92,7 +91,6 @@
 		626A496A13C210A700D24233 /* PEGParser.h.tpl.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; path = PEGParser.h.tpl.h; sourceTree = BUILT_PRODUCTS_DIR; };
 		626A496B13C212C100D24233 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; name = LICENSE; path = ../../LICENSE; sourceTree = "<group>"; };
 		626A497313C2209B00D24233 /* common_clean.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = common_clean.sh; sourceTree = "<group>"; };
-		626A498313C23EF600D24233 /* ParseCode.tpl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ParseCode.tpl; sourceTree = "<group>"; };
 		62A4E12013BCC9EA009F8403 /* bootstrap1/ipg */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = bootstrap1/ipg; sourceTree = BUILT_PRODUCTS_DIR; };
 		62A4E12213BCC9EA009F8403 /* bootstrap2/ipg */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = bootstrap2/ipg; sourceTree = BUILT_PRODUCTS_DIR; };
 		62BC674013BD00930088A5B6 /* ipg */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ipg; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -215,7 +213,6 @@
 		62C0025613C16A2C00CD7EB0 /* tpl */ = {
 			isa = PBXGroup;
 			children = (
-				626A498313C23EF600D24233 /* ParseCode.tpl */,
 				62C0025713C16A2C00CD7EB0 /* PEGParser.cpp.tpl */,
 				62C0025813C16A2C00CD7EB0 /* PEGParser.h.tpl */,
 			);
@@ -557,7 +554,6 @@
 				626A495E13C20B5B00D24233 /* ReadFile.cpp in Sources */,
 				626A496213C20F3A00D24233 /* PEGParser.cpp.tpl in Sources */,
 				626A496313C20F3D00D24233 /* PEGParser.h.tpl in Sources */,
-				626A498413C23F0300D24233 /* ParseCode.tpl in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
