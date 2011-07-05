@@ -90,8 +90,7 @@ public:
 					++mTabs;
 					tempIndex = Emit(_firstIndex, _resultIndex, children[i]);
 					if (_resultIndex != tempIndex)
-						mSource << mTabs << "p" << _resultIndex << " = p"
-						<< tempIndex << ";\n";   
+						mSource << mTabs << "p" << _resultIndex << " = p" << tempIndex << ";\n";   
 					mSource << mTabs << "if (!p" << _resultIndex << ")\n";
 				}
 				mSource << mTabs << "{\n";
@@ -273,7 +272,8 @@ public:
 void GenerateParserSource(std::string _ipgName, std::string _folder, std::string _name, const Grammar& _grammar)
 {
   ctemplate::StringToTemplateCache("PEGParser.cpp.tpl", PEGParser_cpp_tpl, ctemplate::DO_NOT_STRIP);
-		
+  ctemplate::StringToTemplateCache("Var.cpp.tpl", "PTNode* ", ctemplate::DO_NOT_STRIP);
+			
 	ctemplate::TemplateDictionary dict(_name);
 	dict.SetValue("name", _name);
 	
@@ -286,16 +286,21 @@ void GenerateParserSource(std::string _ipgName, std::string _folder, std::string
 		bool isMemoized = i->second.isMemoized;
 		if (isMemoized)
 			pDef->ShowSection("isMemoized");
+			
+		//ctemplate::TemplateDictionary* pVar = pDef->AddIncludeDictionary("var");
+		//pVar->SetFilename("Var.cpp.tpl");
 		
 		std::ostringstream parseCode;
 		ParserGenerator parserGenerator(parseCode, _grammar, false, isMemoized ? 2 : 1);
-		parserGenerator.Emit(0, isMemoized ? 1 : -1, i->second);
+		int parseResultIndex = parserGenerator.Emit(0, isMemoized ? 1 : -1, i->second);
 		pDef->SetValue("parseCode", parseCode.str());
+		pDef->SetIntValue("parseResultIndex", parseResultIndex);
 		
 		std::ostringstream traverseCode;
 		ParserGenerator traverserGenerator(traverseCode, _grammar, true, 1);
-		traverserGenerator.Emit(0, -1, i->second);
+		int traverseResultIndex = traverserGenerator.Emit(0, -1, i->second);
 		pDef->SetValue("traverseCode", traverseCode.str());
+		pDef->SetIntValue("traverseResultIndex", traverseResultIndex);
 	}
 
 	std::string sourceText;
