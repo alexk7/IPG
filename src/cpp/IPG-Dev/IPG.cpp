@@ -4,16 +4,10 @@
 #include "FlattenGrammar.h"
 #include "ReadFile.h"
 #include <boost/shared_ptr.hpp>
-
-#if BOOTSTRAP_STAGE == 1
-#include "bootstrap1/PEGParser.h"
-#elif BOOTSTRAP_STAGE == 2
-#include "bootstrap2/PEGParser.h"
-#elif BOOTSTRAP_STAGE == 3
-#include "bootstrap3/PEGParser.h"
-#else
-#error Invalid Bootstrap Stage!
-#endif
+#include "./PEGParser.h"
+#include "./Parser.h.tpl.h"
+#include "./Parser.cpp.tpl.h"
+#include <ctemplate/template.h>
 
 using namespace PEGParser;
 
@@ -408,6 +402,12 @@ int main(int argc, char* argv[])
 		std::vector<PTNode> nodes;
 		if (ReadFile(nodes, argv[1]))
 		{
+			ctemplate::StringToTemplateCache("Parser.h.tpl", Parser_h_tpl, ctemplate::DO_NOT_STRIP);
+			ctemplate::StringToTemplateCache("Parser.cpp.tpl", Parser_cpp_tpl, ctemplate::DO_NOT_STRIP);
+			//ctemplate::StringToTemplateCache("Var.cpp.tpl", "PTNode* ", ctemplate::DO_NOT_STRIP);
+			//ctemplate::TemplateDictionary* pVar = pDef->AddIncludeDictionary("var");
+			//pVar->SetFilename("Var.cpp.tpl");
+
 			std::string folder = argv[2];
 			std::string name = argv[3];
 			remove((folder + name + ".cpp").c_str());

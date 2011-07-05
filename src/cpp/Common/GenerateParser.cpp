@@ -2,8 +2,6 @@
 #include "GenerateParser.h"
 #include "Grammar.h"
 
-#include "PEGParser.h.tpl.h"
-#include "PEGParser.cpp.tpl.h"
 #include <ctemplate/template.h>
 
 class Tabs
@@ -271,9 +269,6 @@ public:
 
 void GenerateParserSource(std::string _ipgName, std::string _folder, std::string _name, const Grammar& _grammar)
 {
-  ctemplate::StringToTemplateCache("PEGParser.cpp.tpl", PEGParser_cpp_tpl, ctemplate::DO_NOT_STRIP);
-  ctemplate::StringToTemplateCache("Var.cpp.tpl", "PTNode* ", ctemplate::DO_NOT_STRIP);
-			
 	ctemplate::TemplateDictionary dict(_name);
 	dict.SetValue("name", _name);
 	
@@ -286,9 +281,6 @@ void GenerateParserSource(std::string _ipgName, std::string _folder, std::string
 		bool isMemoized = i->second.isMemoized;
 		if (isMemoized)
 			pDef->ShowSection("isMemoized");
-			
-		//ctemplate::TemplateDictionary* pVar = pDef->AddIncludeDictionary("var");
-		//pVar->SetFilename("Var.cpp.tpl");
 		
 		std::ostringstream parseCode;
 		ParserGenerator parserGenerator(parseCode, _grammar, false, isMemoized ? 2 : 1);
@@ -304,19 +296,18 @@ void GenerateParserSource(std::string _ipgName, std::string _folder, std::string
 	}
 
 	std::string sourceText;
-	if (!ctemplate::ExpandTemplate("PEGParser.cpp.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourceText))
-		throw std::runtime_error("CTemplate PEGParser.cpp.tpl expansion failed!");
+	if (!ctemplate::ExpandTemplate("Parser.cpp.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourceText))
+		throw std::runtime_error("CTemplate Parser.cpp.tpl expansion failed!");
 	
 	std::ofstream sourceFile;
 	sourceFile.exceptions(std::ofstream::failbit | std::ofstream::badbit);
-	sourceFile.open((_folder + _name + ".cpp").c_str());
+	std::string sourcePath = _folder + _name + ".cpp";
+	sourceFile.open(sourcePath.c_str());
 	sourceFile << sourceText;
 }
 
 void GenerateParserHeader(std::string _folder, std::string _name, const Grammar& _grammar)
-{
-  ctemplate::StringToTemplateCache("PEGParser.h.tpl", PEGParser_h_tpl, ctemplate::DO_NOT_STRIP);
-		
+{		
 	ctemplate::TemplateDictionary dict(_name);
 	dict.SetValue("name", _name);
 	
@@ -330,8 +321,8 @@ void GenerateParserHeader(std::string _folder, std::string _name, const Grammar&
 	}
 
 	std::string headerText;
-	if (!ctemplate::ExpandTemplate("PEGParser.h.tpl", ctemplate::DO_NOT_STRIP, &dict, &headerText))
-		throw std::runtime_error("CTemplate PEGParser.h.tpl expansion failed!");
+	if (!ctemplate::ExpandTemplate("Parser.h.tpl", ctemplate::DO_NOT_STRIP, &dict, &headerText))
+		throw std::runtime_error("CTemplate Parser.h.tpl expansion failed!");
 	
 	std::ofstream headerFile;
 	headerFile.exceptions(std::ofstream::failbit | std::ofstream::badbit);

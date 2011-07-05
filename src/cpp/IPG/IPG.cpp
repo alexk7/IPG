@@ -4,16 +4,10 @@
 #include "FlattenGrammar.h"
 #include "ReadFile.h"
 #include <boost/shared_ptr.hpp>
-
-#if BOOTSTRAP_STAGE == 1
-#include "Bootstrap1/PEGParser.h"
-#elif BOOTSTRAP_STAGE == 2
-#include "Bootstrap2/PEGParser.h"
-#elif BOOTSTRAP_STAGE == 3
-#include "Bootstrap3/PEGParser.h"
-#else
-#error Invalid Bootstrap Stage!
-#endif
+#include "./PEGParser.h"
+#include "./PEGParser.h.tpl.h"
+#include "./PEGParser.cpp.tpl.h"
+#include <ctemplate/template.h>
 
 struct PTNodeChild
 {
@@ -403,6 +397,12 @@ int main(int argc, char* argv[])
 	
 	try
 	{
+		ctemplate::StringToTemplateCache("Parser.h.tpl", PEGParser_h_tpl, ctemplate::DO_NOT_STRIP);
+		ctemplate::StringToTemplateCache("Parser.cpp.tpl", PEGParser_cpp_tpl, ctemplate::DO_NOT_STRIP);
+		//ctemplate::StringToTemplateCache("Var.cpp.tpl", "PTNode* ", ctemplate::DO_NOT_STRIP);
+		//ctemplate::TemplateDictionary* pVar = pDef->AddIncludeDictionary("var");
+		//pVar->SetFilename("Var.cpp.tpl");
+		
 		std::vector<PTNode> nodes;
 		if (ReadFile(nodes, argv[1]))
 		{
