@@ -1,12 +1,14 @@
-#include "Common.h"
-#include "Grammar.h"
-#include "GenerateParser.h"
-#include "FlattenGrammar.h"
-#include "ReadFile.h"
-#include <boost/shared_ptr.hpp>
+#include "../Common/Common.h"
+#include "../Common/Grammar.h"
+#include "../Common/GenerateParser.h"
+#include "../Common/FlattenGrammar.h"
+#include "../Common/ReadFile.h"
+#include "../Common/Parser.h.tpl.h"
+#include "../Common/Parser.cpp.tpl.h"
+
 #include "./PEGParser.h"
-#include "./Parser.h.tpl.h"
-#include "./Parser.cpp.tpl.h"
+
+#include <boost/shared_ptr.hpp>
 #include <ctemplate/template.h>
 
 using namespace PEGParser;

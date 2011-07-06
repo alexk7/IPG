@@ -7,54 +7,52 @@
 	objects = {
 
 /* Begin PBXAggregateTarget section */
-		62942A3113C3A9D700C2DAA9 /* ipg-bootstrap */ = {
+		62942A3113C3A9D700C2DAA9 /* bootstrap */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = 62942A3213C3A9D700C2DAA9 /* Build configuration list for PBXAggregateTarget "ipg-bootstrap" */;
+			buildConfigurationList = 62942A3213C3A9D700C2DAA9 /* Build configuration list for PBXAggregateTarget "bootstrap" */;
 			buildPhases = (
 				62942A3513C3AA1000C2DAA9 /* test: Generate PEG Parser */,
 				62942A3613C3AA8500C2DAA9 /* test: Compare generated PEGParser.cpp files */,
 				62942A3713C3AAC000C2DAA9 /* test: Compare generated PEGParser.h files */,
+				62942A5613C4010A00C2DAA9 /* Copy generated files from IPG-Dev to IPG */,
 			);
 			dependencies = (
+				62942A6C13C4A45400C2DAA9 /* PBXTargetDependency */,
 				62942A3913C3AC8E00C2DAA9 /* PBXTargetDependency */,
 			);
-			name = "ipg-bootstrap";
+			name = bootstrap;
 			productName = test;
+		};
+		62942A5913C40DBC00C2DAA9 /* peg-parser */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 62942A5A13C40DBC00C2DAA9 /* Build configuration list for PBXAggregateTarget "peg-parser" */;
+			buildPhases = (
+				62942A5D13C40DCB00C2DAA9 /* Generate PEG Parser */,
+			);
+			dependencies = (
+				62942A6413C410FD00C2DAA9 /* PBXTargetDependency */,
+			);
+			name = "peg-parser";
+			productName = gensrc;
 		};
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
 		6223E33513C39426003142F3 /* IPG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6223E33413C39426003142F3 /* IPG.cpp */; };
-		6237CDBB13C3904900D8B067 /* IPG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6237CDBA13C3904900D8B067 /* IPG.cpp */; settings = {COMPILER_FLAGS = "-DBOOTSTRAP_STAGE=1"; }; };
+		6237CDBB13C3904900D8B067 /* IPG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6237CDBA13C3904900D8B067 /* IPG.cpp */; };
 		626A495913C20B5B00D24233 /* Expression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D69713BBAF6F00F9609A /* Expression.cpp */; };
 		626A495A13C20B5B00D24233 /* Grammar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D69913BBAF6F00F9609A /* Grammar.cpp */; };
 		626A495B13C20B5B00D24233 /* Common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D68713BBADF900F9609A /* Common.cpp */; };
 		626A495C13C20B5B00D24233 /* FlattenGrammar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D68913BBADF900F9609A /* FlattenGrammar.cpp */; };
 		626A495D13C20B5B00D24233 /* GenerateParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D68B13BBADF900F9609A /* GenerateParser.cpp */; };
 		626A495E13C20B5B00D24233 /* ReadFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D68D13BBADF900F9609A /* ReadFile.cpp */; };
-		626A496013C20B6200D24233 /* libipg-common.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 626A495513C20B3B00D24233 /* libipg-common.a */; };
+		626A496013C20B6200D24233 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 626A495513C20B3B00D24233 /* libcommon.a */; };
 		626A496613C20FCB00D24233 /* libctemplate.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62C0025A13C188A500CD7EB0 /* libctemplate.dylib */; };
 		626A496713C20FCC00D24233 /* libctemplate.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62C0025A13C188A500CD7EB0 /* libctemplate.dylib */; };
 		62942A2D13C3A52B00C2DAA9 /* PEGParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62942A2B13C3A52B00C2DAA9 /* PEGParser.cpp */; };
-		62942A4113C3B1E300C2DAA9 /* Parser.cpp.tpl in Sources */ = {isa = PBXBuildFile; fileRef = 62C0025713C16A2C00CD7EB0 /* Parser.cpp.tpl */; };
-		62942A4213C3B1E300C2DAA9 /* Parser.h.tpl in Sources */ = {isa = PBXBuildFile; fileRef = 62C0025813C16A2C00CD7EB0 /* Parser.h.tpl */; };
-		62942A4513C3B49F00C2DAA9 /* libipg-common.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 626A495513C20B3B00D24233 /* libipg-common.a */; };
+		62942A4513C3B49F00C2DAA9 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 626A495513C20B3B00D24233 /* libcommon.a */; };
 		62D0D66813BBA6AC00F9609A /* PEGParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D66613BBA6AC00F9609A /* PEGParser.cpp */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXBuildRule section */
-		62942A3F13C3B19200C2DAA9 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.proxy.script;
-			filePatterns = "*.tpl";
-			fileType = pattern.proxy;
-			isEditable = 1;
-			outputFiles = (
-				"${SRCROOT}/../../src/cpp/IPG-Dev/${INPUT_FILE_BASE}.tpl.h",
-			);
-			script = "/usr/local/bin/template-converter ${INPUT_FILE_BASE}.tpl.h ${INPUT_FILE_PATH} ${SRCROOT}/../../src/cpp/IPG-Dev/${INPUT_FILE_BASE}.tpl.h";
-		};
-/* End PBXBuildRule section */
 
 /* Begin PBXContainerItemProxy section */
 		62942A3813C3AC8E00C2DAA9 /* PBXContainerItemProxy */ = {
@@ -71,41 +69,56 @@
 			remoteGlobalIDString = 626A495413C20B3B00D24233;
 			remoteInfo = "ipg-common";
 		};
-		62942A4813C3B68A00C2DAA9 /* PBXContainerItemProxy */ = {
+		62942A6113C4107500C2DAA9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 62D0D64813BBA50000F9609A /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 626A495413C20B3B00D24233;
-			remoteInfo = "ipg-common";
+			remoteGlobalIDString = 62942A5913C40DBC00C2DAA9;
+			remoteInfo = gensrc;
 		};
-		62BC672313BCFB640088A5B6 /* PBXContainerItemProxy */ = {
+		62942A6313C410FD00C2DAA9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 62D0D64813BBA50000F9609A /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 62D0D65013BBA50000F9609A;
-			remoteInfo = ipg.bootstrap1;
+			remoteInfo = ipg;
 		};
-		62C0023B13C11C5900CD7EB0 /* PBXContainerItemProxy */ = {
+		62942A6713C4A3FE00C2DAA9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 62D0D64813BBA50000F9609A /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 62C0023713C11A8600CD7EB0;
-			remoteInfo = bootstrap2_clean;
+			remoteInfo = clean;
+		};
+		62942A6913C4A41F00C2DAA9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 62D0D64813BBA50000F9609A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 626A495413C20B3B00D24233;
+			remoteInfo = common;
+		};
+		62942A6B13C4A45400C2DAA9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 62D0D64813BBA50000F9609A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 62942A5913C40DBC00C2DAA9;
+			remoteInfo = gensrc;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		6223E33413C39426003142F3 /* IPG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IPG.cpp; sourceTree = "<group>"; };
 		6237CDBA13C3904900D8B067 /* IPG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IPG.cpp; sourceTree = "<group>"; };
-		626A495513C20B3B00D24233 /* libipg-common.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libipg-common.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		626A495513C20B3B00D24233 /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		626A496B13C212C100D24233 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; name = LICENSE; path = ../../LICENSE; sourceTree = "<group>"; };
 		62942A2B13C3A52B00C2DAA9 /* PEGParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PEGParser.cpp; sourceTree = "<group>"; };
 		62942A2C13C3A52B00C2DAA9 /* PEGParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PEGParser.h; sourceTree = "<group>"; };
-		62942A4B13C3C25E00C2DAA9 /* Parser.cpp.tpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Parser.cpp.tpl.h; sourceTree = "<group>"; };
-		62942A4C13C3C25E00C2DAA9 /* Parser.h.tpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Parser.h.tpl.h; sourceTree = "<group>"; };
+		62942A5413C400AC00C2DAA9 /* PEGParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PEGParser.h; sourceTree = "<group>"; };
+		62942A7813C4A74100C2DAA9 /* Parser.cpp.tpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Parser.cpp.tpl.h; sourceTree = "<group>"; };
+		62942A7913C4A74100C2DAA9 /* Parser.h.tpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Parser.h.tpl.h; sourceTree = "<group>"; };
 		62A4E12013BCC9EA009F8403 /* ipg */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ipg; sourceTree = BUILT_PRODUCTS_DIR; };
 		62A4E12213BCC9EA009F8403 /* ipg-dev */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "ipg-dev"; sourceTree = BUILT_PRODUCTS_DIR; };
-		62C0024B13C12D3900CD7EB0 /* bootstrap2_clean.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = bootstrap2_clean.sh; sourceTree = "<group>"; };
+		62C0024B13C12D3900CD7EB0 /* clean.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = clean.sh; sourceTree = "<group>"; };
 		62C0025713C16A2C00CD7EB0 /* Parser.cpp.tpl */ = {isa = PBXFileReference; explicitFileType = sourcecode.yacc; path = Parser.cpp.tpl; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		62C0025813C16A2C00CD7EB0 /* Parser.h.tpl */ = {isa = PBXFileReference; explicitFileType = sourcecode.yacc; path = Parser.h.tpl; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		62C0025A13C188A500CD7EB0 /* libctemplate.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libctemplate.dylib; path = usr/local/lib/libctemplate.dylib; sourceTree = SDKROOT; };
@@ -128,18 +141,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		626A495213C20B3B00D24233 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		62C0025C13C188B300CD7EB0 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				62942A4513C3B49F00C2DAA9 /* libipg-common.a in Frameworks */,
+				62942A4513C3B49F00C2DAA9 /* libcommon.a in Frameworks */,
 				626A496613C20FCB00D24233 /* libctemplate.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -148,7 +154,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				626A496013C20B6200D24233 /* libipg-common.a in Frameworks */,
+				626A496013C20B6200D24233 /* libcommon.a in Frameworks */,
 				626A496713C20FCC00D24233 /* libctemplate.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -189,6 +195,8 @@
 		62942A2913C3A4D800C2DAA9 /* cpp */ = {
 			isa = PBXGroup;
 			children = (
+				62942A6D13C4A74100C2DAA9 /* Common */,
+				62D0D66013BBA55A00F9609A /* IPG */,
 				62942A2A13C3A50400C2DAA9 /* IPG-Dev */,
 			);
 			path = cpp;
@@ -199,16 +207,23 @@
 			children = (
 				62942A2B13C3A52B00C2DAA9 /* PEGParser.cpp */,
 				62942A2C13C3A52B00C2DAA9 /* PEGParser.h */,
-				62942A4B13C3C25E00C2DAA9 /* Parser.cpp.tpl.h */,
-				62942A4C13C3C25E00C2DAA9 /* Parser.h.tpl.h */,
 			);
 			path = "IPG-Dev";
+			sourceTree = "<group>";
+		};
+		62942A6D13C4A74100C2DAA9 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				62942A7813C4A74100C2DAA9 /* Parser.cpp.tpl.h */,
+				62942A7913C4A74100C2DAA9 /* Parser.h.tpl.h */,
+			);
+			path = Common;
 			sourceTree = "<group>";
 		};
 		62C0024A13C12CCE00CD7EB0 /* sh */ = {
 			isa = PBXGroup;
 			children = (
-				62C0024B13C12D3900CD7EB0 /* bootstrap2_clean.sh */,
+				62C0024B13C12D3900CD7EB0 /* clean.sh */,
 			);
 			path = sh;
 			sourceTree = "<group>";
@@ -247,7 +262,7 @@
 			children = (
 				62A4E12013BCC9EA009F8403 /* ipg */,
 				62A4E12213BCC9EA009F8403 /* ipg-dev */,
-				626A495513C20B3B00D24233 /* libipg-common.a */,
+				626A495513C20B3B00D24233 /* libcommon.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -256,7 +271,6 @@
 			isa = PBXGroup;
 			children = (
 				62D0D68113BBADF900F9609A /* Common */,
-				62D0D66013BBA55A00F9609A /* IPG */,
 				6223E33313C39426003142F3 /* IPG-Dev */,
 			);
 			path = cpp;
@@ -267,6 +281,7 @@
 			children = (
 				6237CDBA13C3904900D8B067 /* IPG.cpp */,
 				62D0D66613BBA6AC00F9609A /* PEGParser.cpp */,
+				62942A5413C400AC00C2DAA9 /* PEGParser.h */,
 			);
 			path = IPG;
 			sourceTree = "<group>";
@@ -308,49 +323,40 @@
 		};
 /* End PBXGroup section */
 
-/* Begin PBXHeadersBuildPhase section */
-		626A495313C20B3B00D24233 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXHeadersBuildPhase section */
-
 /* Begin PBXLegacyTarget section */
-		62C0023713C11A8600CD7EB0 /* ipg-dev-clean */ = {
+		62C0023713C11A8600CD7EB0 /* clean */ = {
 			isa = PBXLegacyTarget;
-			buildArgumentsString = "${SRCROOT}/../../src/sh/bootstrap2_clean.sh";
-			buildConfigurationList = 62C0023813C11A8600CD7EB0 /* Build configuration list for PBXLegacyTarget "ipg-dev-clean" */;
+			buildArgumentsString = "${SRCROOT}/../../src/sh/clean.sh";
+			buildConfigurationList = 62C0023813C11A8600CD7EB0 /* Build configuration list for PBXLegacyTarget "clean" */;
 			buildPhases = (
 			);
 			buildToolPath = /bin/sh;
 			buildWorkingDirectory = "";
 			dependencies = (
 			);
-			name = "ipg-dev-clean";
+			name = clean;
 			passBuildSettingsInEnvironment = 1;
 			productName = bootstrap1_clean;
 		};
 /* End PBXLegacyTarget section */
 
 /* Begin PBXNativeTarget section */
-		626A495413C20B3B00D24233 /* ipg-common */ = {
+		626A495413C20B3B00D24233 /* common */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 626A495613C20B3B00D24233 /* Build configuration list for PBXNativeTarget "ipg-common" */;
+			buildConfigurationList = 626A495613C20B3B00D24233 /* Build configuration list for PBXNativeTarget "common" */;
 			buildPhases = (
 				626A495113C20B3B00D24233 /* Sources */,
-				626A495213C20B3B00D24233 /* Frameworks */,
-				626A495313C20B3B00D24233 /* Headers */,
+				62942A6513C4A21A00C2DAA9 /* Generate Parser Source Template String */,
+				62942A6613C4A26300C2DAA9 /* Generate Parser Header Template String */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				62942A6813C4A3FE00C2DAA9 /* PBXTargetDependency */,
 			);
-			name = "ipg-common";
+			name = common;
 			productName = common;
-			productReference = 626A495513C20B3B00D24233 /* libipg-common.a */;
+			productReference = 626A495513C20B3B00D24233 /* libcommon.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 		62D0D65013BBA50000F9609A /* ipg */ = {
@@ -374,17 +380,14 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 62D0D6C013BBB48300F9609A /* Build configuration list for PBXNativeTarget "ipg-dev" */;
 			buildPhases = (
-				62A4E12D13BCF925009F8403 /* Generate PEG Parser */,
 				62D0D6B513BBB48300F9609A /* Sources */,
 				62C0025E13C188D900CD7EB0 /* Frameworks */,
 			);
 			buildRules = (
-				62942A3F13C3B19200C2DAA9 /* PBXBuildRule */,
 			);
 			dependencies = (
-				62942A4913C3B68A00C2DAA9 /* PBXTargetDependency */,
-				62BC672413BCFB640088A5B6 /* PBXTargetDependency */,
-				62C0023C13C11C5900CD7EB0 /* PBXTargetDependency */,
+				62942A6A13C4A41F00C2DAA9 /* PBXTargetDependency */,
+				62942A6213C4107500C2DAA9 /* PBXTargetDependency */,
 			);
 			name = "ipg-dev";
 			productName = ipg;
@@ -410,9 +413,10 @@
 			targets = (
 				62D0D65013BBA50000F9609A /* ipg */,
 				62D0D6B413BBB48300F9609A /* ipg-dev */,
-				62C0023713C11A8600CD7EB0 /* ipg-dev-clean */,
-				626A495413C20B3B00D24233 /* ipg-common */,
-				62942A3113C3A9D700C2DAA9 /* ipg-bootstrap */,
+				626A495413C20B3B00D24233 /* common */,
+				62C0023713C11A8600CD7EB0 /* clean */,
+				62942A5913C40DBC00C2DAA9 /* peg-parser */,
+				62942A3113C3A9D700C2DAA9 /* bootstrap */,
 			);
 		};
 /* End PBXProject section */
@@ -471,7 +475,22 @@
 			shellScript = "cmp ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.h ${TEMP_DIR}/test/PEGParser.h";
 			showEnvVarsInLog = 0;
 		};
-		62A4E12D13BCF925009F8403 /* Generate PEG Parser */ = {
+		62942A5613C4010A00C2DAA9 /* Copy generated files from IPG-Dev to IPG */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy generated files from IPG-Dev to IPG";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "rsync -r --delete ${SRCROOT}/../../src/cpp/IPG-Dev/ ${SRCROOT}/../../src/cpp/IPG";
+			showEnvVarsInLog = 0;
+		};
+		62942A5D13C40DCB00C2DAA9 /* Generate PEG Parser */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -482,12 +501,46 @@
 			);
 			name = "Generate PEG Parser";
 			outputPaths = (
-				"${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.cpp",
-				"${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.h",
+				"${SRCROOT}../../src/cpp/IPG-Dev/PEGParser.cpp",
+				"${SRCROOT}../../src/cpp/IPG-Dev/PEGParser.h",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "${BUILT_PRODUCTS_DIR}/ipg ${SRCROOT}/../../src/peg/peg.peg ${SRCROOT}/../../src/cpp/IPG-Dev/ PEGParser";
+			showEnvVarsInLog = 0;
+		};
+		62942A6513C4A21A00C2DAA9 /* Generate Parser Source Template String */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/../../src/tpl/Parser.cpp.tpl",
+			);
+			name = "Generate Parser Source Template String";
+			outputPaths = (
+				"${SRCROOT}/../../src/cpp/Common/Parser.cpp.tpl.h",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/local/bin/template-converter Parser.cpp.tpl ${SRCROOT}/../../src/tpl/Parser.cpp.tpl ${SRCROOT}/../../src/cpp/Common/Parser.cpp.tpl.h";
+			showEnvVarsInLog = 0;
+		};
+		62942A6613C4A26300C2DAA9 /* Generate Parser Header Template String */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/../../src/tpl/Parser.h.tpl",
+			);
+			name = "Generate Parser Header Template String";
+			outputPaths = (
+				"${SRCROOT}/../../src/cpp/Common/Parser.h.tpl.h",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/local/bin/template-converter Parser.h.tpl ${SRCROOT}/../../src/tpl/Parser.h.tpl ${SRCROOT}/../../src/cpp/Common/Parser.h.tpl.h";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -521,8 +574,6 @@
 			files = (
 				6223E33513C39426003142F3 /* IPG.cpp in Sources */,
 				62942A2D13C3A52B00C2DAA9 /* PEGParser.cpp in Sources */,
-				62942A4113C3B1E300C2DAA9 /* Parser.cpp.tpl in Sources */,
-				62942A4213C3B1E300C2DAA9 /* Parser.h.tpl in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -536,23 +587,33 @@
 		};
 		62942A4713C3B68000C2DAA9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 626A495413C20B3B00D24233 /* ipg-common */;
+			target = 626A495413C20B3B00D24233 /* common */;
 			targetProxy = 62942A4613C3B68000C2DAA9 /* PBXContainerItemProxy */;
 		};
-		62942A4913C3B68A00C2DAA9 /* PBXTargetDependency */ = {
+		62942A6213C4107500C2DAA9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 626A495413C20B3B00D24233 /* ipg-common */;
-			targetProxy = 62942A4813C3B68A00C2DAA9 /* PBXContainerItemProxy */;
+			target = 62942A5913C40DBC00C2DAA9 /* peg-parser */;
+			targetProxy = 62942A6113C4107500C2DAA9 /* PBXContainerItemProxy */;
 		};
-		62BC672413BCFB640088A5B6 /* PBXTargetDependency */ = {
+		62942A6413C410FD00C2DAA9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 62D0D65013BBA50000F9609A /* ipg */;
-			targetProxy = 62BC672313BCFB640088A5B6 /* PBXContainerItemProxy */;
+			targetProxy = 62942A6313C410FD00C2DAA9 /* PBXContainerItemProxy */;
 		};
-		62C0023C13C11C5900CD7EB0 /* PBXTargetDependency */ = {
+		62942A6813C4A3FE00C2DAA9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 62C0023713C11A8600CD7EB0 /* ipg-dev-clean */;
-			targetProxy = 62C0023B13C11C5900CD7EB0 /* PBXContainerItemProxy */;
+			target = 62C0023713C11A8600CD7EB0 /* clean */;
+			targetProxy = 62942A6713C4A3FE00C2DAA9 /* PBXContainerItemProxy */;
+		};
+		62942A6A13C4A41F00C2DAA9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 626A495413C20B3B00D24233 /* common */;
+			targetProxy = 62942A6913C4A41F00C2DAA9 /* PBXContainerItemProxy */;
+		};
+		62942A6C13C4A45400C2DAA9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 62942A5913C40DBC00C2DAA9 /* peg-parser */;
+			targetProxy = 62942A6B13C4A45400C2DAA9 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -583,6 +644,20 @@
 			name = Debug;
 		};
 		62942A3413C3A9D700C2DAA9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		62942A5B13C40DBC00C2DAA9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		62942A5C13C40DBC00C2DAA9 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -687,7 +762,7 @@
 				EXECUTABLE_PREFIX = "";
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "${PROJECT_NAME}";
-				SKIP_INSTALL = YES;
+				SKIP_INSTALL = NO;
 				STRIP_INSTALLED_PRODUCT = NO;
 			};
 			name = Debug;
@@ -698,7 +773,7 @@
 				EXECUTABLE_PREFIX = "";
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "${PROJECT_NAME}";
-				SKIP_INSTALL = YES;
+				SKIP_INSTALL = NO;
 				STRIP_INSTALLED_PRODUCT = YES;
 			};
 			name = Release;
@@ -729,7 +804,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		626A495613C20B3B00D24233 /* Build configuration list for PBXNativeTarget "ipg-common" */ = {
+		626A495613C20B3B00D24233 /* Build configuration list for PBXNativeTarget "common" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				626A495713C20B3B00D24233 /* Debug */,
@@ -738,15 +813,24 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		62942A3213C3A9D700C2DAA9 /* Build configuration list for PBXAggregateTarget "ipg-bootstrap" */ = {
+		62942A3213C3A9D700C2DAA9 /* Build configuration list for PBXAggregateTarget "bootstrap" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				62942A3313C3A9D700C2DAA9 /* Debug */,
 				62942A3413C3A9D700C2DAA9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
-		62C0023813C11A8600CD7EB0 /* Build configuration list for PBXLegacyTarget "ipg-dev-clean" */ = {
+		62942A5A13C40DBC00C2DAA9 /* Build configuration list for PBXAggregateTarget "peg-parser" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				62942A5B13C40DBC00C2DAA9 /* Debug */,
+				62942A5C13C40DBC00C2DAA9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		62C0023813C11A8600CD7EB0 /* Build configuration list for PBXLegacyTarget "clean" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				62C0023913C11A8600CD7EB0 /* Debug */,

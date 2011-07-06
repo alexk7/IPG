@@ -1,13 +1,17 @@
-#include "Common.h"
-#include "Grammar.h"
-#include "GenerateParser.h"
-#include "FlattenGrammar.h"
-#include "ReadFile.h"
-#include <boost/shared_ptr.hpp>
+#include "../Common/Common.h"
+#include "../Common/Grammar.h"
+#include "../Common/GenerateParser.h"
+#include "../Common/FlattenGrammar.h"
+#include "../Common/ReadFile.h"
+#include "../Common/Parser.h.tpl.h"
+#include "../Common/Parser.cpp.tpl.h"
+
 #include "./PEGParser.h"
-#include "./PEGParser.h.tpl.h"
-#include "./PEGParser.cpp.tpl.h"
+
+#include <boost/shared_ptr.hpp>
 #include <ctemplate/template.h>
+
+using namespace PEGParser;
 
 struct PTNodeChild
 {
@@ -397,21 +401,21 @@ int main(int argc, char* argv[])
 	
 	try
 	{
-		ctemplate::StringToTemplateCache("Parser.h.tpl", PEGParser_h_tpl, ctemplate::DO_NOT_STRIP);
-		ctemplate::StringToTemplateCache("Parser.cpp.tpl", PEGParser_cpp_tpl, ctemplate::DO_NOT_STRIP);
-		//ctemplate::StringToTemplateCache("Var.cpp.tpl", "PTNode* ", ctemplate::DO_NOT_STRIP);
-		//ctemplate::TemplateDictionary* pVar = pDef->AddIncludeDictionary("var");
-		//pVar->SetFilename("Var.cpp.tpl");
-		
 		std::vector<PTNode> nodes;
 		if (ReadFile(nodes, argv[1]))
 		{
+			ctemplate::StringToTemplateCache("Parser.h.tpl", Parser_h_tpl, ctemplate::DO_NOT_STRIP);
+			ctemplate::StringToTemplateCache("Parser.cpp.tpl", Parser_cpp_tpl, ctemplate::DO_NOT_STRIP);
+			//ctemplate::StringToTemplateCache("Var.cpp.tpl", "PTNode* ", ctemplate::DO_NOT_STRIP);
+			//ctemplate::TemplateDictionary* pVar = pDef->AddIncludeDictionary("var");
+			//pVar->SetFilename("Var.cpp.tpl");
+
 			std::string folder = argv[2];
 			std::string name = argv[3];
 			remove((folder + name + ".cpp").c_str());
 			remove((folder + name + ".h").c_str());
 			
-			bool bParsed = (Parse(PTNodeType_Grammar, &nodes[0]) == &nodes.back());
+			bool bParsed = (PEGParser::Parse(PTNodeType_Grammar, &nodes[0]) == &nodes.back());
 			if (bParsed)
 			{
 				Grammar grammar;
