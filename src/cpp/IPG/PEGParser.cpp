@@ -14,21 +14,21 @@ namespace PEGParser
 				return 0;
 			return ++_symbol;
 		}
-		
+
 		PTNode* ParseChar(char _char, PTNode* _symbol)
 		{
 			if (_symbol->value != _char)
 				return 0;
 			return ++_symbol;
 		}
-		
+
 		PTNode* ParseAnyChar(PTNode* _symbol)
 		{
 			if (_symbol->value == 0)
 				return 0;
 			return ++_symbol;
 		}
-		
+
 		PTNode* GetEnd(const PTNode* _symbol, PTNodeType _type)
 		{
 			PTNodeTypeToPtr::const_iterator i = _symbol->end.find(_type);
@@ -36,12 +36,12 @@ namespace PEGParser
 				return 0;
 			return i->second;
 		}
-		
+
 		void SetEnd(PTNode* _symbol, PTNodeType _type, PTNode* _end)
 		{
 			_symbol->end[_type] = _end;
 		}
-		
+
 		PTNode* Visit(PTNode* _symbol, PTNodeType _type, PTNodeVisitor& _visitor)
 		{
 			PTNode* end = GetEnd(_symbol, _type);
@@ -49,7 +49,7 @@ namespace PEGParser
 				_visitor(_symbol, _type);
 			return end;
 		}
-		
+
 		PTNode* Parse_AND(PTNode*);
 		PTNode* Parse_CLOSE(PTNode*);
 		PTNode* Parse_Char(PTNode*);
@@ -86,7 +86,7 @@ namespace PEGParser
 		PTNode* Parse_Space(PTNode*);
 		PTNode* Parse_Spacing(PTNode*);
 		PTNode* Parse_Suffix(PTNode*);
-		
+
 		PTNode* Parse_AND(PTNode* p0)
 		{
 			PTNode* p1 = GetEnd(p0, PTNodeType_AND);
@@ -832,7 +832,7 @@ namespace PEGParser
 		PTNode* Traverse_Space(PTNode*, PTNodeVisitor&);
 		PTNode* Traverse_Spacing(PTNode*, PTNodeVisitor&);
 		PTNode* Traverse_Suffix(PTNode*, PTNodeVisitor&);
-		
+
 		PTNode* Traverse_AND(PTNode* p0, PTNodeVisitor& v)
 		{
 			if (!GetEnd(p0, PTNodeType_AND))
@@ -1484,7 +1484,7 @@ namespace PEGParser
 			return p1;
 		}
 	}
-	
+
 	PTNode* Parse(PTNodeType _type, PTNode* _symbol)
 	{
 		switch (_type)
@@ -1528,7 +1528,7 @@ namespace PEGParser
 		}
 		return 0;
 	}
-	
+
 	PTNode* Traverse(PTNodeType _type, PTNode* _symbol, PTNodeVisitor& _visitor)
 	{
 		switch (_type)

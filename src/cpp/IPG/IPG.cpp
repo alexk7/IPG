@@ -393,7 +393,7 @@ static void ConvertGrammar(Grammar& _grammar, PTItr _iGrammar)
 
 static void RegisterTemplate(const ctemplate::TemplateString&  _key, const ctemplate::TemplateString&  _content)
 {
-	ctemplate::StringToTemplateCache(_key, _content, ctemplate::DO_NOT_STRIP);
+	ctemplate::StringToTemplateCache(_key, _content, ctemplate::STRIP_BLANK_LINES);
 }
 
 static void RegisterCPlusPlusTemplates()

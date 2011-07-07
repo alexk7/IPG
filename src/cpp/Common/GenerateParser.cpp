@@ -283,21 +283,31 @@ void GenerateParser(std::string _folder, std::string _name, const Grammar& _gram
 		if (isMemoized)
 			pDef->ShowSection("isMemoized");
 		
-		std::ostringstream parseCode;
-		ParserGenerator parserGenerator(parseCode, _grammar, false, isMemoized ? 2 : 1);
+		std::ostringstream parseCodeStream;
+		ParserGenerator parserGenerator(parseCodeStream, _grammar, false, isMemoized ? 2 : 1);
 		int parseResultIndex = parserGenerator.Emit(0, isMemoized ? 1 : -1, i->second);
-		pDef->SetValue("parseCode", parseCode.str());
+		
+		std::string parseCodeFilename = "parseCode_" + i->first;
+		std::string parseCode = parseCodeStream.str();
+		ctemplate::StringToTemplateCache(parseCodeFilename, parseCode, ctemplate::STRIP_BLANK_LINES);
+		
+		pDef->AddIncludeDictionary("parseCode")->SetFilename(parseCodeFilename);
 		pDef->SetIntValue("parseResultIndex", parseResultIndex);
 		
-		std::ostringstream traverseCode;
-		ParserGenerator traverserGenerator(traverseCode, _grammar, true, 1);
+		std::ostringstream traverseCodeStream;
+		ParserGenerator traverserGenerator(traverseCodeStream, _grammar, true, 1);
 		int traverseResultIndex = traverserGenerator.Emit(0, -1, i->second);
-		pDef->SetValue("traverseCode", traverseCode.str());
+		
+		std::string traverseCodeFilename = "traverseCode_" + i->first;
+		std::string traverseCode = traverseCodeStream.str();
+		ctemplate::StringToTemplateCache(traverseCodeFilename, traverseCode, ctemplate::STRIP_BLANK_LINES);
+
+		pDef->AddIncludeDictionary("traverseCode")->SetFilename(traverseCodeFilename);
 		pDef->SetIntValue("traverseResultIndex", traverseResultIndex);
 	}
 
 	std::string sourceText;
-	if (!ctemplate::ExpandTemplate("Parser.cpp.tpl", ctemplate::DO_NOT_STRIP, &dict, &sourceText))
+	if (!ctemplate::ExpandTemplate("Parser.cpp.tpl", ctemplate::STRIP_BLANK_LINES, &dict, &sourceText))
 		throw std::runtime_error("CTemplate Parser.cpp.tpl expansion failed!");
 	
 	std::ofstream sourceFile;
@@ -307,7 +317,7 @@ void GenerateParser(std::string _folder, std::string _name, const Grammar& _gram
 	sourceFile << sourceText;
 	
 	std::string headerText;
-	if (!ctemplate::ExpandTemplate("Parser.h.tpl", ctemplate::DO_NOT_STRIP, &dict, &headerText))
+	if (!ctemplate::ExpandTemplate("Parser.h.tpl", ctemplate::STRIP_BLANK_LINES, &dict, &headerText))
 		throw std::runtime_error("CTemplate Parser.h.tpl expansion failed!");
 	
 	std::ofstream headerFile;
