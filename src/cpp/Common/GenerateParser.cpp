@@ -3,6 +3,7 @@
 #include "Grammar.h"
 
 #include <ctemplate/template.h>
+#include <json_spirit.h>
 
 class Tabs
 {
@@ -65,7 +66,7 @@ public:
 	}
 	
 	int Emit(int _firstIndex, int _resultIndex, const Expression& expr)
-	{
+	{		
 		switch (expr.GetType())
 		{
 			case ExpressionType_Empty:
@@ -122,8 +123,7 @@ public:
 				++mTabs;
 				tempIndex = Emit(tempIndex, _resultIndex, children[last]);
 				if (_resultIndex != tempIndex)
-					mSource << mTabs << "p" << _resultIndex << " = p"
-					<< tempIndex << ";\n";   
+					mSource << mTabs << "p" << _resultIndex << " = p"	<< tempIndex << ";\n";   
 				for (size_t i = last; i > 0; --i)
 				{
 					mSource << --mTabs << "}\n";
@@ -156,8 +156,7 @@ public:
 				int tempIndex = Emit(_firstIndex, (_resultIndex == _firstIndex) ? -1 : _resultIndex, expr.GetChild());
 				if (_resultIndex == -1)
 					_resultIndex = tempIndex;
-				mSource << mTabs << "p" << _resultIndex << " = p" << tempIndex
-				<< " ? p" << tempIndex << " : p" << _firstIndex << ";\n";
+				mSource << mTabs << "p" << _resultIndex << " = p" << tempIndex << " ? p" << tempIndex << " : p" << _firstIndex << ";\n";
 				return _resultIndex;
 			}
 				
@@ -267,16 +266,18 @@ public:
 	}
 };
 
-void GenerateParserSource(std::string _ipgName, std::string _folder, std::string _name, const Grammar& _grammar)
+void GenerateParser(std::string _folder, std::string _name, const Grammar& _grammar)
 {
 	ctemplate::TemplateDictionary dict(_name);
 	dict.SetValue("name", _name);
-	
+
 	Defs::const_iterator i, iEnd = _grammar.defs.end();
+	long value = 0;
 	for (i = _grammar.defs.begin(); i != iEnd; ++i)
 	{
 		ctemplate::TemplateDictionary* pDef = dict.AddSectionDictionary("def");
 		pDef->SetValue("name", i->first);
+		pDef->SetIntValue("value", ++value);
 		
 		bool isMemoized = i->second.isMemoized;
 		if (isMemoized)
@@ -304,22 +305,7 @@ void GenerateParserSource(std::string _ipgName, std::string _folder, std::string
 	std::string sourcePath = _folder + _name + ".cpp";
 	sourceFile.open(sourcePath.c_str());
 	sourceFile << sourceText;
-}
-
-void GenerateParserHeader(std::string _folder, std::string _name, const Grammar& _grammar)
-{		
-	ctemplate::TemplateDictionary dict(_name);
-	dict.SetValue("name", _name);
 	
-	Defs::const_iterator i, iEnd = _grammar.defs.end();
-	long value = 0;
-	for (i = _grammar.defs.begin(); i != iEnd; ++i)
-	{
-		ctemplate::TemplateDictionary* pDef = dict.AddSectionDictionary("def");
-		pDef->SetValue("name", i->first);
-		pDef->SetIntValue("value", ++value);
-	}
-
 	std::string headerText;
 	if (!ctemplate::ExpandTemplate("Parser.h.tpl", ctemplate::DO_NOT_STRIP, &dict, &headerText))
 		throw std::runtime_error("CTemplate Parser.h.tpl expansion failed!");

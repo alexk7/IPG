@@ -391,6 +391,17 @@ static void ConvertGrammar(Grammar& _grammar, PTItr _iGrammar)
 	}
 }
 
+static void RegisterTemplate(const ctemplate::TemplateString&  _key, const ctemplate::TemplateString&  _content)
+{
+	ctemplate::StringToTemplateCache(_key, _content, ctemplate::DO_NOT_STRIP);
+}
+
+static void RegisterCPlusPlusTemplates()
+{
+	RegisterTemplate("Parser.h.tpl", Parser_h_tpl);
+	RegisterTemplate("Parser.cpp.tpl", Parser_cpp_tpl);
+}
+
 int main(int argc, char* argv[])
 {
 	if (argc < 4)
@@ -404,11 +415,7 @@ int main(int argc, char* argv[])
 		std::vector<PTNode> nodes;
 		if (ReadFile(nodes, argv[1]))
 		{
-			ctemplate::StringToTemplateCache("Parser.h.tpl", Parser_h_tpl, ctemplate::DO_NOT_STRIP);
-			ctemplate::StringToTemplateCache("Parser.cpp.tpl", Parser_cpp_tpl, ctemplate::DO_NOT_STRIP);
-			//ctemplate::StringToTemplateCache("Var.cpp.tpl", "PTNode* ", ctemplate::DO_NOT_STRIP);
-			//ctemplate::TemplateDictionary* pVar = pDef->AddIncludeDictionary("var");
-			//pVar->SetFilename("Var.cpp.tpl");
+			RegisterCPlusPlusTemplates();
 
 			std::string folder = argv[2];
 			std::string name = argv[3];
@@ -422,8 +429,7 @@ int main(int argc, char* argv[])
 				ConvertGrammar(grammar, PTItr(PTNodeType_Grammar, &nodes[0]));
 				FlattenGrammar(grammar);
 				
-				GenerateParserSource(argv[0], folder, name, grammar);
-				GenerateParserHeader(folder, name, grammar);
+				GenerateParser(folder, name, grammar);
 			}
 			else
 			{

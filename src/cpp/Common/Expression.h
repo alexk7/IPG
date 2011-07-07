@@ -59,8 +59,7 @@ public:
 	const Expression& GetChild() const;
 	
 private:    
-	void PrintChildren(std::ostream& _os, const char* _separator,
-										 ExpressionType _parentType) const;
+	void PrintChildren(std::ostream& _os, const char* _separator, ExpressionType _parentType) const;
 	void PrintChildWithPrefix(std::ostream& _os, char _prefix) const;
 	void PrintChildWithSuffix(std::ostream& _os, char _prefix) const;
 	static void PrintRangeChar(std::ostream& _os, char _char);

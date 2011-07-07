@@ -47,10 +47,10 @@
 		626A495D13C20B5B00D24233 /* GenerateParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D68B13BBADF900F9609A /* GenerateParser.cpp */; };
 		626A495E13C20B5B00D24233 /* ReadFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D68D13BBADF900F9609A /* ReadFile.cpp */; };
 		626A496013C20B6200D24233 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 626A495513C20B3B00D24233 /* libcommon.a */; };
-		626A496613C20FCB00D24233 /* libctemplate.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62C0025A13C188A500CD7EB0 /* libctemplate.dylib */; };
-		626A496713C20FCC00D24233 /* libctemplate.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62C0025A13C188A500CD7EB0 /* libctemplate.dylib */; };
 		62942A2D13C3A52B00C2DAA9 /* PEGParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62942A2B13C3A52B00C2DAA9 /* PEGParser.cpp */; };
 		62942A4513C3B49F00C2DAA9 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 626A495513C20B3B00D24233 /* libcommon.a */; };
+		62942A7E13C4EF5A00C2DAA9 /* libctemplate.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62C0025A13C188A500CD7EB0 /* libctemplate.dylib */; };
+		62942A7F13C4EF6500C2DAA9 /* libctemplate.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62C0025A13C188A500CD7EB0 /* libctemplate.dylib */; };
 		62D0D66813BBA6AC00F9609A /* PEGParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D66613BBA6AC00F9609A /* PEGParser.cpp */; };
 /* End PBXBuildFile section */
 
@@ -111,6 +111,7 @@
 		6237CDBA13C3904900D8B067 /* IPG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IPG.cpp; sourceTree = "<group>"; };
 		626A495513C20B3B00D24233 /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		626A496B13C212C100D24233 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; name = LICENSE; path = ../../LICENSE; sourceTree = "<group>"; };
+		628F4B6813C4F09E001AE85B /* libjson_spirit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjson_spirit.a; path = /usr/local/lib/libjson_spirit.a; sourceTree = "<absolute>"; };
 		62942A2B13C3A52B00C2DAA9 /* PEGParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PEGParser.cpp; sourceTree = "<group>"; };
 		62942A2C13C3A52B00C2DAA9 /* PEGParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PEGParser.h; sourceTree = "<group>"; };
 		62942A5413C400AC00C2DAA9 /* PEGParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PEGParser.h; sourceTree = "<group>"; };
@@ -141,12 +142,19 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		62942A7C13C4EF2B00C2DAA9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		62C0025C13C188B300CD7EB0 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				62942A4513C3B49F00C2DAA9 /* libcommon.a in Frameworks */,
-				626A496613C20FCB00D24233 /* libctemplate.dylib in Frameworks */,
+				62942A7F13C4EF6500C2DAA9 /* libctemplate.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -155,7 +163,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				626A496013C20B6200D24233 /* libcommon.a in Frameworks */,
-				626A496713C20FCC00D24233 /* libctemplate.dylib in Frameworks */,
+				62942A7E13C4EF5A00C2DAA9 /* libctemplate.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -240,6 +248,7 @@
 		62C0026013C1893600CD7EB0 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				628F4B6813C4F09E001AE85B /* libjson_spirit.a */,
 				62C0025A13C188A500CD7EB0 /* libctemplate.dylib */,
 			);
 			name = Libraries;
@@ -348,6 +357,7 @@
 				626A495113C20B3B00D24233 /* Sources */,
 				62942A6513C4A21A00C2DAA9 /* Generate Parser Source Template String */,
 				62942A6613C4A26300C2DAA9 /* Generate Parser Header Template String */,
+				62942A7C13C4EF2B00C2DAA9 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -760,6 +770,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = "";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SDKROOT)/usr/lib/samba/idmap\"",
+				);
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "${PROJECT_NAME}";
 				SKIP_INSTALL = NO;
@@ -771,6 +785,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				EXECUTABLE_PREFIX = "";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SDKROOT)/usr/lib/samba/idmap\"",
+				);
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "${PROJECT_NAME}";
 				SKIP_INSTALL = NO;
@@ -829,6 +847,7 @@
 				62942A5C13C40DBC00C2DAA9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		62C0023813C11A8600CD7EB0 /* Build configuration list for PBXLegacyTarget "clean" */ = {
 			isa = XCConfigurationList;
