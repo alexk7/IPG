@@ -443,12 +443,12 @@
 			);
 			name = "test: Generate PEG Parser";
 			outputPaths = (
-				"${TEMP_DIR}/test/PEGParser.cpp",
-				"${TEMP_DIR}/test/PEGParser.h",
+				"${TEMP_DIR}/PEGParser.cpp",
+				"${TEMP_DIR}/PEGParser.h",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rm -rf ${TEMP_DIR}/test\nmkdir ${TEMP_DIR}/test\n${BUILT_PRODUCTS_DIR}/ipg-dev ${SRCROOT}/../../src/peg/peg.peg ${TEMP_DIR}/test/ PEGParser";
+			shellScript = "rm -f ${TEMP_DIR}/PEGParser.cpp\nrm -f ${TEMP_DIR}/PEGParser.h\n${BUILT_PRODUCTS_DIR}/ipg-dev ${SRCROOT}/../../src/peg/peg.peg ${TEMP_DIR}/ PEGParser";
 			showEnvVarsInLog = 0;
 		};
 		62942A3613C3AA8500C2DAA9 /* test: Compare generated PEGParser.cpp files */ = {
@@ -458,14 +458,14 @@
 			);
 			inputPaths = (
 				"${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.cpp",
-				"${TEMP_DIR}/test/PEGParser.cpp",
+				"${TEMP_DIR}/PEGParser.cpp",
 			);
 			name = "test: Compare generated PEGParser.cpp files";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cmp ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.cpp ${TEMP_DIR}/test/PEGParser.cpp";
+			shellScript = "cmp ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.cpp ${TEMP_DIR}/PEGParser.cpp";
 			showEnvVarsInLog = 0;
 		};
 		62942A3713C3AAC000C2DAA9 /* test: Compare generated PEGParser.h files */ = {
@@ -475,14 +475,14 @@
 			);
 			inputPaths = (
 				"${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.h",
-				"${TEMP_DIR}/test/PEGParser.h",
+				"${TEMP_DIR}/PEGParser.h",
 			);
 			name = "test: Compare generated PEGParser.h files";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cmp ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.h ${TEMP_DIR}/test/PEGParser.h";
+			shellScript = "cmp ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.h ${TEMP_DIR}/PEGParser.h";
 			showEnvVarsInLog = 0;
 		};
 		62942A5613C4010A00C2DAA9 /* Copy generated files from IPG-Dev to IPG */ = {

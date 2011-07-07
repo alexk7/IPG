@@ -2,93 +2,93 @@
 // DO NOT EDIT!
 #include "{{name}}.h"{{BI_NEWLINE}}
 
-namespace {{name}}
+using namespace {{name}};{{BI_NEWLINE}}
+
+namespace
 {
-	namespace
+	PTNode* ParseRange(char _rangeBegin, char _rangeEnd, PTNode* _symbol)
 	{
-		PTNode* ParseRange(char _rangeBegin, char _rangeEnd, PTNode* _symbol)
+		if (_symbol->value < _rangeBegin)
+			return 0;
+		if (_symbol->value > _rangeEnd)
+			return 0;
+		return ++_symbol;
+	}{{BI_NEWLINE}}
+	
+	PTNode* ParseChar(char _char, PTNode* _symbol)
+	{
+		if (_symbol->value != _char)
+			return 0;
+		return ++_symbol;
+	}{{BI_NEWLINE}}
+	
+	PTNode* ParseAnyChar(PTNode* _symbol)
+	{
+		if (_symbol->value == 0)
+			return 0;
+		return ++_symbol;
+	}{{BI_NEWLINE}}
+	
+	struct Memo
+	{
+		Memo(PTNode* _symbol, PTNodeType _type)
 		{
-			if (_symbol->value < _rangeBegin)
-				return 0;
-			if (_symbol->value > _rangeEnd)
-				return 0;
-			return ++_symbol;
+			std::pair<PTNodeTypeToPtr::iterator, bool> insertResult	=
+				_symbol->end.insert(PTNodeTypeToPtr::value_type(_type, 0));{{BI_NEWLINE}}
+				
+			ppNode = &insertResult.first->second;
+			isValid = !insertResult.second;
 		}{{BI_NEWLINE}}
 		
-		PTNode* ParseChar(char _char, PTNode* _symbol)
-		{
-			if (_symbol->value != _char)
-				return 0;
-			return ++_symbol;
-		}{{BI_NEWLINE}}
-		
-		PTNode* ParseAnyChar(PTNode* _symbol)
-		{
-			if (_symbol->value == 0)
-				return 0;
-			return ++_symbol;
-		}{{BI_NEWLINE}}
-		
-		PTNode* GetEnd(const PTNode* _symbol, PTNodeType _type)
-		{
-			PTNodeTypeToPtr::const_iterator i = _symbol->end.find(_type);
-			if (i == _symbol->end.end())
-				return 0;
-			return i->second;
-		}{{BI_NEWLINE}}
-		
-		void SetEnd(PTNode* _symbol, PTNodeType _type, PTNode* _end)
-		{
-			_symbol->end[_type] = _end;
-		}{{BI_NEWLINE}}
-		
-		PTNode* Visit(PTNode* _symbol, PTNodeType _type, PTNodeVisitor& _visitor)
-		{
-			PTNode* end = GetEnd(_symbol, _type);
-			if (end)
-				_visitor(_symbol, _type);
-			return end;
-		}{{BI_NEWLINE}}
-		
-		{{#def}}
-		PTNode* Parse_{{name}}(PTNode*);
-		{{/def}}
-		
-{{#def}}{{BI_NEWLINE}}		PTNode* Parse_{{name}}(PTNode* p0)
+		PTNode** ppNode;
+		bool isValid;
+	};{{BI_NEWLINE}}
+	
+	PTNode* Visit(PTNode* _symbol, PTNodeType _type, PTNodeVisitor& _visitor)
+	{
+		PTNode* end = _symbol->end[_type];
+		if (end)
+			_visitor(_symbol, _type);
+		return end;
+	}{{BI_NEWLINE}}
+	
+	struct Parse
+	{{{#def}}{{BI_NEWLINE}}		static PTNode* {{name}}(PTNode* p0)
 		{
 			{{#isMemoized}}
-			PTNode* p1 = GetEnd(p0, PTNodeType_{{name}});
-			if (p1)
-				return p1;
+			Memo memo(p0, PTNodeType_{{name}});
+			if (memo.isValid)
+				return *memo.ppNode;
 			{{/isMemoized}}
 			{{>parseCode}}
 			{{#isMemoized}}
-			SetEnd(p0, PTNodeType_{{name}}, p{{parseResultIndex}});
+			*memo.ppNode = p{{parseResultIndex}};
 			{{/isMemoized}}
 			return p{{parseResultIndex}};
 		}
 		{{/def}}
-		
-{{#def}}{{BI_NEWLINE}}		PTNode* Traverse_{{name}}(PTNode*, PTNodeVisitor&);{{/def}}
-		
-{{#def}}{{BI_NEWLINE}}		PTNode* Traverse_{{name}}(PTNode* p0, PTNodeVisitor& v)
+	};{{BI_NEWLINE}}
+	
+	struct Traverse
+	{{{#def}}{{BI_NEWLINE}}		static PTNode* {{name}}(PTNode* p0, PTNodeVisitor& v)
 		{
-			{{#isMemoized}}
-			if (!GetEnd(p0, PTNodeType_{{name}}))
+			if (!Parse::{{name}}(p0))
 				return 0;
-			{{/isMemoized}}
 			{{>traverseCode}}
 			return p{{traverseResultIndex}};
 		}
 		{{/def}}
-	}{{BI_NEWLINE}}
-	
+	};
+}{{BI_NEWLINE}}
+
+namespace {{name}}
+{
 	PTNode* Parse(PTNodeType _type, PTNode* _symbol)
 	{
 		switch (_type)
 		{
 			{{#def}}
-			case PTNodeType_{{name}}: return Parse_{{name}}(_symbol);
+			case PTNodeType_{{name}}: return Parse::{{name}}(_symbol);
 			{{/def}}
 		}
 		return 0;
@@ -99,7 +99,7 @@ namespace {{name}}
 		switch (_type)
 		{
 			{{#def}}
-			case PTNodeType_{{name}}: return Traverse_{{name}}(_symbol, _visitor);
+			case PTNodeType_{{name}}: return Traverse::{{name}}(_symbol, _visitor);
 			{{/def}}
 		}
 		return 0;

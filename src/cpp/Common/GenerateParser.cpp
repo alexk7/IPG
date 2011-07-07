@@ -201,20 +201,20 @@ public:
 					const DefValue& defval = def.second;
 					if (defval.isNode)
 					{
-						mSource << "Visit(p" << _firstIndex << ", PTNodeType_" << nonTerminal << ", v);\n";
+						mSource << "::Visit(p" << _firstIndex << ", PTNodeType_" << nonTerminal << ", v);\n";
 					}
 					else if (!defval.isNodeRef && defval.isMemoized)
 					{
-						mSource << "GetEnd(p" << _firstIndex << ", PTNodeType_" << nonTerminal << ");\n";
+						mSource << "p" << _firstIndex << "->end[PTNodeType_" << nonTerminal << "];\n";
 					}
 					else
 					{
-						mSource << "Traverse_" << nonTerminal << "(p" << _firstIndex << ", v);\n";
+						mSource << nonTerminal << "(p" << _firstIndex << ", v);\n";
 					}
 				}
 				else
 				{
-					mSource << "Parse_" << nonTerminal << "(p" << _firstIndex << ");\n";
+					mSource << nonTerminal << "(p" << _firstIndex << ");\n";
 				}
 				return _resultIndex;
 			}
@@ -229,7 +229,7 @@ public:
 				}
 				EscapeChar c1(expr.GetFirst());
 				EscapeChar c2(expr.GetLast());
-				mSource << "p" << _resultIndex << " = ParseRange(\'" << c1 << "\', \'" << c2 << "\', p" << _firstIndex << ");\n";
+				mSource << "p" << _resultIndex << " = ::ParseRange(\'" << c1 << "\', \'" << c2 << "\', p" << _firstIndex << ");\n";
 				return _resultIndex;
 			}
 				
@@ -241,7 +241,7 @@ public:
 					_resultIndex = mNextVarIndex++;
 					mSource << "PTNode* ";
 				}
-				mSource << "p" << _resultIndex << " = ParseChar(\'" << EscapeChar(expr.GetChar()) << "\', p" << _firstIndex << ");\n";
+				mSource << "p" << _resultIndex << " = ::ParseChar(\'" << EscapeChar(expr.GetChar()) << "\', p" << _firstIndex << ");\n";
 				return _resultIndex;
 			}
 				
@@ -253,7 +253,7 @@ public:
 					_resultIndex = mNextVarIndex++;
 					mSource << "PTNode* ";
 				}
-				mSource << "p" << _resultIndex << " = ParseAnyChar(p" << _firstIndex << ");\n";
+				mSource << "p" << _resultIndex << " = ::ParseAnyChar(p" << _firstIndex << ");\n";
 				return _resultIndex;
 			}
 				
@@ -284,8 +284,8 @@ void GenerateParser(std::string _folder, std::string _name, const Grammar& _gram
 			pDef->ShowSection("isMemoized");
 		
 		std::ostringstream parseCodeStream;
-		ParserGenerator parserGenerator(parseCodeStream, _grammar, false, isMemoized ? 2 : 1);
-		int parseResultIndex = parserGenerator.Emit(0, isMemoized ? 1 : -1, i->second);
+		ParserGenerator parserGenerator(parseCodeStream, _grammar, false, 1);
+		int parseResultIndex = parserGenerator.Emit(0, -1, i->second);
 		
 		std::string parseCodeFilename = "parseCode_" + i->first;
 		std::string parseCode = parseCodeStream.str();
