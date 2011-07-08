@@ -4,6 +4,7 @@
 
 #include <ctemplate/template.h>
 #include <json_spirit.h>
+#include <boost/format.hpp>
 
 class Tabs
 {
@@ -11,6 +12,7 @@ public:
 	Tabs(size_t _tabLevel = 0) : mTabLevel(_tabLevel) {}
 	Tabs& operator++() { ++mTabLevel; return *this; }
 	Tabs& operator--() { --mTabLevel; return *this; }
+	Tabs Next() const  { return Tabs(mTabLevel + 1); }
 	size_t GetTabLevel() const { return mTabLevel; }
 	
 private:
@@ -22,27 +24,6 @@ static std::ostream& operator<<(std::ostream& _os, Tabs _tabs)
 	size_t tabLevel = _tabs.GetTabLevel();
 	for (size_t i = 0; i < tabLevel; ++i)
 		_os << "\t";
-	return _os;
-}
-
-struct EscapeChar
-{
-	EscapeChar(char _c) : c(_c) {}
-	char c;
-};
-
-static std::ostream& operator<<(std::ostream& _os, EscapeChar _escapeChar)
-{
-	switch (_escapeChar.c)
-	{
-		case '\\': _os << "\\\\"; break;
-		case '\n': _os << "\\n";  break;
-		case '\r': _os << "\\r";  break;
-		case '\t': _os << "\\t";  break;
-		case '\'': _os << "\\\'"; break;
-		case '\"': _os << "\\\""; break;
-		default: _os.put(_escapeChar.c);
-	}
 	return _os;
 }
 
@@ -80,28 +61,21 @@ public:
 					_resultIndex = -1;
 				const Expressions& children = expr.GetChildren();
 				int tempIndex = Emit(_firstIndex, _resultIndex, children[0]);
-				mSource << mTabs << "if (!p" << tempIndex << ")\n";
+				If(Not(RValue(tempIndex)));
 				_resultIndex = tempIndex;
 				size_t last = children.size()-1;
 				for (size_t i = 1; i < last; ++i)
 				{
-					mSource << mTabs << "{\n";
-					++mTabs;
+					OpenBlock();
 					tempIndex = Emit(_firstIndex, _resultIndex, children[i]);
-					if (_resultIndex != tempIndex)
-						mSource << mTabs << "p" << _resultIndex << " = p" << tempIndex << ";\n";   
-					mSource << mTabs << "if (!p" << _resultIndex << ")\n";
+					Assign(_resultIndex, tempIndex);
+					If(Not(RValue(_resultIndex)));
 				}
-				mSource << mTabs << "{\n";
-				++mTabs;
+				OpenBlock();
 				tempIndex = Emit(_firstIndex, _resultIndex, children[last]);
-				if (_resultIndex != tempIndex)
-					mSource << mTabs << "p" << _resultIndex << " = p"
-					<< tempIndex << ";\n";   
+				Assign(_resultIndex, tempIndex);
 				for (size_t i = last; i > 0; --i)
-				{
-					mSource << --mTabs << "}\n";
-				}
+					CloseBlock();
 				return _resultIndex;
 			}
 				
@@ -109,151 +83,94 @@ public:
 			{
 				const Expressions& children = expr.GetChildren();
 				int tempIndex = Emit(_firstIndex, _resultIndex, children[0]);
-				mSource << mTabs << "if (p" << tempIndex << ")\n";
+				If(RValue(tempIndex));
 				_resultIndex = tempIndex;
 				size_t last = children.size()-1;
 				for (size_t i = 1; i < last; ++i)
 				{
-					mSource << mTabs << "{\n";
-					++mTabs;
+					OpenBlock();
 					tempIndex = Emit(tempIndex, _resultIndex, children[i]);
-					mSource << mTabs << "if (p" << tempIndex << ")\n";
+					If(RValue(tempIndex));
 				}
-				mSource << mTabs << "{\n";
-				++mTabs;
+				OpenBlock();
 				tempIndex = Emit(tempIndex, _resultIndex, children[last]);
-				if (_resultIndex != tempIndex)
-					mSource << mTabs << "p" << _resultIndex << " = p"	<< tempIndex << ";\n";   
+				Assign(_resultIndex, tempIndex);
 				for (size_t i = last; i > 0; --i)
-				{
-					mSource << --mTabs << "}\n";
-				}
+					CloseBlock();
 				return _resultIndex;
 			}
-				
-			case ExpressionType_And:
-			{
-				int tempIndex = Emit(_firstIndex, (_resultIndex == _firstIndex) ? -1 : _resultIndex, expr.GetChild());
-				if (_resultIndex == -1)
-					_resultIndex = tempIndex;
-				mSource << mTabs << "p" << _resultIndex << " = p" << tempIndex
-				<< " ? p" << _firstIndex << " : 0;\n";
-				return _resultIndex;
-			}
-				
+
 			case ExpressionType_Not:
 			{
 				int tempIndex = Emit(_firstIndex, (_resultIndex == _firstIndex) ? -1 : _resultIndex, expr.GetChild());
 				if (_resultIndex == -1)
 					_resultIndex = tempIndex;
-				mSource << mTabs << "p" << _resultIndex << " = p" << tempIndex
-				<< " ? 0 : p" << _firstIndex << ";\n";
-				return _resultIndex;
-			}
-				
-			case ExpressionType_Optional:
-			{
-				int tempIndex = Emit(_firstIndex, (_resultIndex == _firstIndex) ? -1 : _resultIndex, expr.GetChild());
-				if (_resultIndex == -1)
-					_resultIndex = tempIndex;
-				mSource << mTabs << "p" << _resultIndex << " = p" << tempIndex << " ? p" << tempIndex << " : p" << _firstIndex << ";\n";
+				mSource << mTabs << boost::format("%1% = %2% ? 0 : %3%;\n") % LValue(_resultIndex) % RValue(tempIndex) % RValue(_firstIndex);
 				return _resultIndex;
 			}
 				
 			case ExpressionType_ZeroOrMore:
 			{
-				if (_resultIndex != _firstIndex)
-				{
-					mSource << mTabs;
-					if (_resultIndex == -1)
-					{
-						_resultIndex = mNextVarIndex++;
-						mSource << "PTNode* ";
-					}
-					mSource << "p" << _resultIndex << " = p" << _firstIndex
-					<< ";\n";
-				}
+				Assign(_resultIndex, _firstIndex);
 				mSource << mTabs << "for (;;)\n";
-				mSource << mTabs << "{\n";
-				++mTabs;
+				OpenBlock();
 				int tempIndex = Emit(_resultIndex, -1, expr.GetChild());
-				mSource << mTabs << "if (!p" << tempIndex << ")\n";
-				mSource << ++mTabs << "break;\n";
-				mSource << --mTabs << "p" << _resultIndex << " = p" << tempIndex
-				<< ";\n";
-				mSource << --mTabs << "}\n";
+				If(Not(RValue(tempIndex)));
+				mSource << mTabs.Next() << "break;\n";
+				Assign(_resultIndex, tempIndex);
+				CloseBlock();
 				return _resultIndex;
 			}
 				
 			case ExpressionType_NonTerminal:
 			{
-				mSource << mTabs;
-				if (_resultIndex == -1)
-				{
-					_resultIndex = mNextVarIndex++;
-					mSource << "PTNode* ";
-				}
-				mSource << "p" << _resultIndex << " = ";
 				const std::string& nonTerminal = expr.GetNonTerminal();
+				const char* fmt = "%1% = %2%(%3%);\n";
 				if (mTraverse)
 				{
 					const Def& def = *mGrammar.defs.find(nonTerminal);
 					const DefValue& defval = def.second;
 					if (defval.isNode)
 					{
-						mSource << "::Visit(p" << _firstIndex << ", PTNodeType_" << nonTerminal << ", v);\n";
+						fmt = "%1% = ::Visit(%3%, PTNodeType_%2%, v);\n";
 					}
 					else if (!defval.isNodeRef && defval.isMemoized)
 					{
-						mSource << "p" << _firstIndex << "->end[PTNodeType_" << nonTerminal << "];\n";
+						fmt = "%1% = %3%->end[PTNodeType_%2%];\n";
 					}
 					else
 					{
-						mSource << nonTerminal << "(p" << _firstIndex << ", v);\n";
+						fmt = "%1% = %2%(%3%, v);\n";
 					}
 				}
-				else
-				{
-					mSource << nonTerminal << "(p" << _firstIndex << ");\n";
-				}
+				mSource << mTabs << boost::format(fmt) % LValue(_resultIndex) % nonTerminal % RValue(_firstIndex);
 				return _resultIndex;
 			}
 				
 			case ExpressionType_Range:
 			{
-				mSource << mTabs;
-				if (_resultIndex == -1)
-				{
-					_resultIndex = mNextVarIndex++;
-					mSource << "PTNode* ";
-				}
-				EscapeChar c1(expr.GetFirst());
-				EscapeChar c2(expr.GetLast());
-				mSource << "p" << _resultIndex << " = ::ParseRange(\'" << c1 << "\', \'" << c2 << "\', p" << _firstIndex << ");\n";
+				mSource << mTabs << boost::format("%1% = ::ParseRange(\'%2%\', \'%3%\', %4%);\n")
+					% LValue(_resultIndex)
+					% EscapeChar(expr.GetFirst())
+					% EscapeChar(expr.GetLast())
+					% RValue(_firstIndex);
 				return _resultIndex;
 			}
 				
 			case ExpressionType_Char:
 			{
-				mSource << mTabs;
-				if (_resultIndex == -1)
-				{
-					_resultIndex = mNextVarIndex++;
-					mSource << "PTNode* ";
-				}
-				mSource << "p" << _resultIndex << " = ::ParseChar(\'" << EscapeChar(expr.GetChar()) << "\', p" << _firstIndex << ");\n";
+				mSource << mTabs << boost::format("%1% = ::ParseChar(\'%2%\', %3%);\n")
+					% LValue(_resultIndex)
+					% EscapeChar(expr.GetChar())
+					% RValue(_firstIndex);
 				return _resultIndex;
 			}
 				
 			case ExpressionType_Dot:
 			{
-				mSource << mTabs;
-				if (_resultIndex == -1)
-				{
-					_resultIndex = mNextVarIndex++;
-					mSource << "PTNode* ";
-				}
-				mSource << "p" << _resultIndex << " = ::ParseAnyChar(p" << _firstIndex << ");\n";
+				mSource << mTabs << boost::format("%1% = ::ParseAnyChar(%2%);\n")
+					% LValue(_resultIndex)
+					% RValue(_firstIndex);
 				return _resultIndex;
 			}
 				
@@ -262,6 +179,67 @@ public:
 				assert(false);
 				return -1;
 			}
+		}
+	}
+	
+	void If(std::string _cond)
+	{
+		mSource << mTabs << boost::format("if (%1%)\n") % _cond;
+	}
+	
+	void OpenBlock()
+	{
+		mSource << mTabs << "{\n";
+		++mTabs;
+	}
+	
+	void CloseBlock()
+	{
+		--mTabs;
+		mSource << mTabs << "}\n";
+	}
+	
+	void Assign(int& _toIndex, int _fromIndex)
+	{
+		if (_toIndex != _fromIndex)
+			mSource << mTabs << boost::format("%1% = %2%;\n") % LValue(_toIndex) % RValue(_fromIndex); 
+	}
+	
+	std::string Not(std::string _expr)
+	{
+		return "!" + _expr;
+	}
+	
+	std::string LValue(int& _index)
+	{
+		if (_index == -1)
+		{
+			_index = mNextVarIndex++;
+			return str(boost::format("PTNode* %1%") % RValue(_index));
+		}
+		else
+		{
+			return RValue(_index);
+		}
+	}
+	
+	static std::string RValue(int _index)
+	{
+		assert(_index != -1);
+		return str(boost::format("p%1%") % _index);
+	}
+	
+	static std::string EscapeChar(char _c)
+	{
+		switch (_c)
+		{
+			case '\\': return "\\\\";
+			case '\n': return "\\n";
+			case '\r': return "\\r";
+			case '\t': return "\\t";
+			case '\'': return "\\\'";
+			case '\"': return "\\\"";
+			default: return std::string(1, _c);
 		}
 	}
 };

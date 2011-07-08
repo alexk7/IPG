@@ -359,7 +359,8 @@ static void ConvertExpression(Expression& _expr, PTItr _iExpr)
 			char cSuffix = *iPrimary.End();
 			if (cSuffix == '?')
 			{
-				primary.SetContainer(ExpressionType_Optional, primary);
+				Expression empty;
+				primary.AddGroupItem(ExpressionType_Choice, empty);
 			}
 			else if (cSuffix == '*')
 			{
@@ -374,7 +375,8 @@ static void ConvertExpression(Expression& _expr, PTItr _iExpr)
 			
 			if (cPrefix == '&')
 			{
-				primary.SetContainer(ExpressionType_And, primary);
+				primary.SetContainer(ExpressionType_Not, primary);
+				primary.SetContainer(ExpressionType_Not, primary);
 			}
 			else if (cPrefix == '!')
 			{

@@ -85,9 +85,7 @@ void Expression::Print(std::ostream& _os, ExpressionType parentType) const
 	{
 		case ExpressionType_Choice:      PrintChildren(_os, " / ", parentType); break;
 		case ExpressionType_Sequence:    PrintChildren(_os, " ", parentType); break;
-		case ExpressionType_And:         PrintChildWithPrefix(_os, '&');      break;
 		case ExpressionType_Not:         PrintChildWithPrefix(_os, '!');      break;
-		case ExpressionType_Optional:    PrintChildWithSuffix(_os, '?');      break;
 		case ExpressionType_ZeroOrMore:  PrintChildWithSuffix(_os, '*');      break;
 		case ExpressionType_NonTerminal: _os << mText;                        break;
 		case ExpressionType_Dot:         _os.put('.');                        break;
@@ -235,9 +233,7 @@ bool IsContainer(ExpressionType _type)
 {
 	switch (_type)
 	{
-		case ExpressionType_And:
 		case ExpressionType_Not:
-		case ExpressionType_Optional:
 		case ExpressionType_ZeroOrMore: return true;
 		default: /* not a container */  return false;
 	}

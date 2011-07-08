@@ -544,25 +544,18 @@ namespace
 			Memo memo(p0, PTNodeType_Prefix);
 			if (memo.isValid)
 				return *memo.ppNode;
-			PTNode* p1 = Prefix_1(p0);
-			p1 = p1 ? p1 : p0;
-			if (p1)
-			{
-				p1 = Suffix(p1);
-			}
-			*memo.ppNode = p1;
-			return p1;
-		}
-
-		static PTNode* Prefix_1(PTNode* p0)
-		{
-			Memo memo(p0, PTNodeType_Prefix_1);
-			if (memo.isValid)
-				return *memo.ppNode;
 			PTNode* p1 = AND(p0);
 			if (!p1)
 			{
 				p1 = NOT(p0);
+				if (!p1)
+				{
+					p1 = p0;
+				}
+			}
+			if (p1)
+			{
+				p1 = Suffix(p1);
 			}
 			*memo.ppNode = p1;
 			return p1;
@@ -654,7 +647,11 @@ namespace
 			if (p1)
 			{
 				PTNode* p2 = Range_1(p1);
-				p1 = p2 ? p2 : p1;
+				if (!p2)
+				{
+					p2 = p1;
+				}
+				p1 = p2;
 			}
 			*memo.ppNode = p1;
 			return p1;
@@ -758,26 +755,20 @@ namespace
 			PTNode* p1 = Primary(p0);
 			if (p1)
 			{
-				PTNode* p2 = Suffix_1(p1);
-				p1 = p2 ? p2 : p1;
-			}
-			*memo.ppNode = p1;
-			return p1;
-		}
-
-		static PTNode* Suffix_1(PTNode* p0)
-		{
-			Memo memo(p0, PTNodeType_Suffix_1);
-			if (memo.isValid)
-				return *memo.ppNode;
-			PTNode* p1 = QUESTION(p0);
-			if (!p1)
-			{
-				p1 = STAR(p0);
-				if (!p1)
+				PTNode* p2 = QUESTION(p1);
+				if (!p2)
 				{
-					p1 = PLUS(p0);
+					p2 = STAR(p1);
+					if (!p2)
+					{
+						p2 = PLUS(p1);
+						if (!p2)
+						{
+							p2 = p1;
+						}
+					}
 				}
+				p1 = p2;
 			}
 			*memo.ppNode = p1;
 			return p1;
@@ -793,7 +784,7 @@ namespace
 			PTNode* p1 = ::ParseChar('&', p0);
 			if (p1)
 			{
-				p1 = ::Visit(p1, PTNodeType_Spacing, v);
+				p1 = p1->end[PTNodeType_Spacing];
 			}
 			return p1;
 		}
@@ -805,7 +796,7 @@ namespace
 			PTNode* p1 = ::ParseChar(')', p0);
 			if (p1)
 			{
-				p1 = ::Visit(p1, PTNodeType_Spacing, v);
+				p1 = p1->end[PTNodeType_Spacing];
 			}
 			return p1;
 		}
@@ -893,7 +884,7 @@ namespace
 					p1 = ::ParseChar(']', p1);
 					if (p1)
 					{
-						p1 = ::Visit(p1, PTNodeType_Spacing, v);
+						p1 = p1->end[PTNodeType_Spacing];
 					}
 				}
 			}
@@ -947,7 +938,7 @@ namespace
 			PTNode* p1 = ::ParseChar('.', p0);
 			if (p1)
 			{
-				p1 = ::Visit(p1, PTNodeType_Spacing, v);
+				p1 = p1->end[PTNodeType_Spacing];
 			}
 			return p1;
 		}
@@ -959,7 +950,7 @@ namespace
 			PTNode* p1 = ::Visit(p0, PTNodeType_Identifier, v);
 			if (p1)
 			{
-				p1 = ::Visit(p1, PTNodeType_Spacing, v);
+				p1 = p1->end[PTNodeType_Spacing];
 				if (p1)
 				{
 					p1 = ::Visit(p1, PTNodeType_LEFTARROW, v);
@@ -1035,7 +1026,7 @@ namespace
 		{
 			if (!Parse::Grammar(p0))
 				return 0;
-			PTNode* p1 = ::Visit(p0, PTNodeType_Spacing, v);
+			PTNode* p1 = p0->end[PTNodeType_Spacing];
 			if (p1)
 			{
 				p1 = ::Visit(p1, PTNodeType_Definition, v);
@@ -1113,7 +1104,7 @@ namespace
 				}
 				if (p2)
 				{
-					p1 = ::Visit(p2, PTNodeType_Spacing, v);
+					p1 = p2->end[PTNodeType_Spacing];
 				}
 			}
 			return p1;
@@ -1150,7 +1141,7 @@ namespace
 					p1 = ::ParseChar('\'', p1);
 					if (p1)
 					{
-						p1 = ::Visit(p1, PTNodeType_Spacing, v);
+						p1 = p1->end[PTNodeType_Spacing];
 					}
 				}
 			}
@@ -1189,7 +1180,7 @@ namespace
 					p1 = ::ParseChar('\"', p1);
 					if (p1)
 					{
-						p1 = ::Visit(p1, PTNodeType_Spacing, v);
+						p1 = p1->end[PTNodeType_Spacing];
 					}
 				}
 			}
@@ -1216,7 +1207,7 @@ namespace
 			PTNode* p1 = ::ParseChar('!', p0);
 			if (p1)
 			{
-				p1 = ::Visit(p1, PTNodeType_Spacing, v);
+				p1 = p1->end[PTNodeType_Spacing];
 			}
 			return p1;
 		}
@@ -1228,7 +1219,7 @@ namespace
 			PTNode* p1 = ::ParseChar('(', p0);
 			if (p1)
 			{
-				p1 = ::Visit(p1, PTNodeType_Spacing, v);
+				p1 = p1->end[PTNodeType_Spacing];
 			}
 			return p1;
 		}
@@ -1240,7 +1231,7 @@ namespace
 			PTNode* p1 = ::ParseChar('+', p0);
 			if (p1)
 			{
-				p1 = ::Visit(p1, PTNodeType_Spacing, v);
+				p1 = p1->end[PTNodeType_Spacing];
 			}
 			return p1;
 		}
@@ -1249,23 +1240,18 @@ namespace
 		{
 			if (!Parse::Prefix(p0))
 				return 0;
-			PTNode* p1 = Prefix_1(p0, v);
-			p1 = p1 ? p1 : p0;
+			PTNode* p1 = p0->end[PTNodeType_AND];
+			if (!p1)
+			{
+				p1 = p0->end[PTNodeType_NOT];
+				if (!p1)
+				{
+					p1 = p0;
+				}
+			}
 			if (p1)
 			{
 				p1 = ::Visit(p1, PTNodeType_Suffix, v);
-			}
-			return p1;
-		}
-
-		static PTNode* Prefix_1(PTNode* p0, PTNodeVisitor& v)
-		{
-			if (!Parse::Prefix_1(p0))
-				return 0;
-			PTNode* p1 = AND(p0, v);
-			if (!p1)
-			{
-				p1 = NOT(p0, v);
 			}
 			return p1;
 		}
@@ -1286,7 +1272,7 @@ namespace
 						p1 = ::Visit(p0, PTNodeType_Class, v);
 						if (!p1)
 						{
-							p1 = DOT(p0, v);
+							p1 = p0->end[PTNodeType_DOT];
 						}
 					}
 				}
@@ -1301,7 +1287,7 @@ namespace
 			PTNode* p1 = ::Visit(p0, PTNodeType_Identifier, v);
 			if (p1)
 			{
-				p1 = ::Visit(p1, PTNodeType_Spacing, v);
+				p1 = p1->end[PTNodeType_Spacing];
 				if (p1)
 				{
 					PTNode* p2 = ::Visit(p1, PTNodeType_LEFTARROW, v);
@@ -1334,7 +1320,7 @@ namespace
 			PTNode* p1 = ::ParseChar('?', p0);
 			if (p1)
 			{
-				p1 = ::Visit(p1, PTNodeType_Spacing, v);
+				p1 = p1->end[PTNodeType_Spacing];
 			}
 			return p1;
 		}
@@ -1347,7 +1333,11 @@ namespace
 			if (p1)
 			{
 				PTNode* p2 = Range_1(p1, v);
-				p1 = p2 ? p2 : p1;
+				if (!p2)
+				{
+					p2 = p1;
+				}
+				p1 = p2;
 			}
 			return p1;
 		}
@@ -1371,7 +1361,7 @@ namespace
 			PTNode* p1 = ::ParseChar('/', p0);
 			if (p1)
 			{
-				p1 = ::Visit(p1, PTNodeType_Spacing, v);
+				p1 = p1->end[PTNodeType_Spacing];
 			}
 			return p1;
 		}
@@ -1383,7 +1373,7 @@ namespace
 			PTNode* p1 = ::ParseChar('*', p0);
 			if (p1)
 			{
-				p1 = ::Visit(p1, PTNodeType_Spacing, v);
+				p1 = p1->end[PTNodeType_Spacing];
 			}
 			return p1;
 		}
@@ -1445,24 +1435,20 @@ namespace
 			PTNode* p1 = ::Visit(p0, PTNodeType_Primary, v);
 			if (p1)
 			{
-				PTNode* p2 = Suffix_1(p1, v);
-				p1 = p2 ? p2 : p1;
-			}
-			return p1;
-		}
-
-		static PTNode* Suffix_1(PTNode* p0, PTNodeVisitor& v)
-		{
-			if (!Parse::Suffix_1(p0))
-				return 0;
-			PTNode* p1 = QUESTION(p0, v);
-			if (!p1)
-			{
-				p1 = STAR(p0, v);
-				if (!p1)
+				PTNode* p2 = p1->end[PTNodeType_QUESTION];
+				if (!p2)
 				{
-					p1 = PLUS(p0, v);
+					p2 = p1->end[PTNodeType_STAR];
+					if (!p2)
+					{
+						p2 = p1->end[PTNodeType_PLUS];
+						if (!p2)
+						{
+							p2 = p1;
+						}
+					}
 				}
+				p1 = p2;
 			}
 			return p1;
 		}
@@ -1499,7 +1485,6 @@ namespace PEGParser
 			case PTNodeType_OPEN: return Parse::OPEN(_symbol);
 			case PTNodeType_PLUS: return Parse::PLUS(_symbol);
 			case PTNodeType_Prefix: return Parse::Prefix(_symbol);
-			case PTNodeType_Prefix_1: return Parse::Prefix_1(_symbol);
 			case PTNodeType_Primary: return Parse::Primary(_symbol);
 			case PTNodeType_Primary_1: return Parse::Primary_1(_symbol);
 			case PTNodeType_Primary_2: return Parse::Primary_2(_symbol);
@@ -1512,7 +1497,6 @@ namespace PEGParser
 			case PTNodeType_Space: return Parse::Space(_symbol);
 			case PTNodeType_Spacing: return Parse::Spacing(_symbol);
 			case PTNodeType_Suffix: return Parse::Suffix(_symbol);
-			case PTNodeType_Suffix_1: return Parse::Suffix_1(_symbol);
 		}
 		return 0;
 	}
@@ -1545,7 +1529,6 @@ namespace PEGParser
 			case PTNodeType_OPEN: return Traverse::OPEN(_symbol, _visitor);
 			case PTNodeType_PLUS: return Traverse::PLUS(_symbol, _visitor);
 			case PTNodeType_Prefix: return Traverse::Prefix(_symbol, _visitor);
-			case PTNodeType_Prefix_1: return Traverse::Prefix_1(_symbol, _visitor);
 			case PTNodeType_Primary: return Traverse::Primary(_symbol, _visitor);
 			case PTNodeType_Primary_1: return Traverse::Primary_1(_symbol, _visitor);
 			case PTNodeType_Primary_2: return Traverse::Primary_2(_symbol, _visitor);
@@ -1558,7 +1541,6 @@ namespace PEGParser
 			case PTNodeType_Space: return Traverse::Space(_symbol, _visitor);
 			case PTNodeType_Spacing: return Traverse::Spacing(_symbol, _visitor);
 			case PTNodeType_Suffix: return Traverse::Suffix(_symbol, _visitor);
-			case PTNodeType_Suffix_1: return Traverse::Suffix_1(_symbol, _visitor);
 		}
 		return 0;
 	}

@@ -10,9 +10,7 @@ enum ExpressionType
 	ExpressionType_Sequence,
 	
 	//Container
-	ExpressionType_And,
 	ExpressionType_Not,
-	ExpressionType_Optional,
 	ExpressionType_ZeroOrMore,
 	
 	//SingleChar

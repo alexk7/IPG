@@ -9,7 +9,7 @@ static bool ReferenceAnyNode(const Defs& _defs, const Expression& _expr, std::se
 		case ExpressionType_Empty:
 			break;
 			
-			//Group
+		//Group
 		case ExpressionType_Choice:
 		case ExpressionType_Sequence:
 		{
@@ -23,22 +23,20 @@ static bool ReferenceAnyNode(const Defs& _defs, const Expression& _expr, std::se
 			break;
 		}
 			
-			//Container
-		case ExpressionType_And:
+		//Container
 		case ExpressionType_Not:
 			break;
-			
-		case ExpressionType_Optional:
+
 		case ExpressionType_ZeroOrMore:
 			return ReferenceAnyNode(_defs, _expr.GetChild(), _visited);
 			
-			//SingleChar
+		//SingleChar
 		case ExpressionType_Range:
 		case ExpressionType_Char:
 		case ExpressionType_Dot:
 			return false;
 			
-			//NonTerminal
+		//NonTerminal
 		case ExpressionType_NonTerminal:
 		{
 			const std::string& nonTerminal = _expr.GetNonTerminal();
