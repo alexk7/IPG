@@ -15,6 +15,7 @@
 				62942A3613C3AA8500C2DAA9 /* test: Compare generated PEGParser.cpp files */,
 				62942A3713C3AAC000C2DAA9 /* test: Compare generated PEGParser.h files */,
 				62942A5613C4010A00C2DAA9 /* Copy generated files from IPG-Dev to IPG */,
+				620841C013C9EF9500B978A3 /* Disallow Write for bootstrapped files */,
 			);
 			dependencies = (
 				62942A6C13C4A45400C2DAA9 /* PBXTargetDependency */,
@@ -28,6 +29,7 @@
 			buildConfigurationList = 62942A5A13C40DBC00C2DAA9 /* Build configuration list for PBXAggregateTarget "peg-parser" */;
 			buildPhases = (
 				62942A5D13C40DCB00C2DAA9 /* Generate PEG Parser */,
+				620841BD13C9EE7900B978A3 /* Disallow Write for PEG Parser */,
 			);
 			dependencies = (
 				62942A6413C410FD00C2DAA9 /* PBXTargetDependency */,
@@ -107,30 +109,30 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		6223E33413C39426003142F3 /* IPG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IPG.cpp; sourceTree = "<group>"; };
-		6237CDBA13C3904900D8B067 /* IPG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IPG.cpp; sourceTree = "<group>"; };
+		6223E33413C39426003142F3 /* IPG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = IPG.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
+		6237CDBA13C3904900D8B067 /* IPG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = IPG.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		626A495513C20B3B00D24233 /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		626A496B13C212C100D24233 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; name = LICENSE; path = ../../LICENSE; sourceTree = "<group>"; };
 		628F4B6813C4F09E001AE85B /* libjson_spirit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjson_spirit.a; path = /usr/local/lib/libjson_spirit.a; sourceTree = "<absolute>"; };
 		62942A2B13C3A52B00C2DAA9 /* PEGParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PEGParser.cpp; sourceTree = "<group>"; };
 		62942A2C13C3A52B00C2DAA9 /* PEGParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PEGParser.h; sourceTree = "<group>"; };
-		62942A5413C400AC00C2DAA9 /* PEGParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PEGParser.h; sourceTree = "<group>"; };
+		62942A5413C400AC00C2DAA9 /* PEGParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = PEGParser.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		62942A7813C4A74100C2DAA9 /* Parser.cpp.tpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Parser.cpp.tpl.h; sourceTree = "<group>"; };
 		62942A7913C4A74100C2DAA9 /* Parser.h.tpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Parser.h.tpl.h; sourceTree = "<group>"; };
 		62A4E12013BCC9EA009F8403 /* ipg */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ipg; sourceTree = BUILT_PRODUCTS_DIR; };
 		62A4E12213BCC9EA009F8403 /* ipg-dev */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "ipg-dev"; sourceTree = BUILT_PRODUCTS_DIR; };
 		62C0024B13C12D3900CD7EB0 /* clean.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = clean.sh; sourceTree = "<group>"; };
-		62C0025713C16A2C00CD7EB0 /* Parser.cpp.tpl */ = {isa = PBXFileReference; explicitFileType = sourcecode.yacc; path = Parser.cpp.tpl; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
-		62C0025813C16A2C00CD7EB0 /* Parser.h.tpl */ = {isa = PBXFileReference; explicitFileType = sourcecode.yacc; path = Parser.h.tpl; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
+		62C0025713C16A2C00CD7EB0 /* Parser.cpp.tpl */ = {isa = PBXFileReference; explicitFileType = sourcecode.yacc; lineEnding = 0; path = Parser.cpp.tpl; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
+		62C0025813C16A2C00CD7EB0 /* Parser.h.tpl */ = {isa = PBXFileReference; explicitFileType = sourcecode.yacc; lineEnding = 0; path = Parser.h.tpl; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		62C0025A13C188A500CD7EB0 /* libctemplate.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libctemplate.dylib; path = usr/local/lib/libctemplate.dylib; sourceTree = SDKROOT; };
 		62D0D66313BBA55A00F9609A /* ipg.1 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.man; path = ipg.1; sourceTree = "<group>"; };
 		62D0D66513BBA5B100F9609A /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README; path = ../../README; sourceTree = "<group>"; };
-		62D0D66613BBA6AC00F9609A /* PEGParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PEGParser.cpp; sourceTree = "<group>"; };
+		62D0D66613BBA6AC00F9609A /* PEGParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = PEGParser.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		62D0D68713BBADF900F9609A /* Common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Common.cpp; sourceTree = "<group>"; };
 		62D0D68813BBADF900F9609A /* Common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Common.h; sourceTree = "<group>"; };
 		62D0D68913BBADF900F9609A /* FlattenGrammar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FlattenGrammar.cpp; sourceTree = "<group>"; };
 		62D0D68A13BBADF900F9609A /* FlattenGrammar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlattenGrammar.h; sourceTree = "<group>"; };
-		62D0D68B13BBADF900F9609A /* GenerateParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GenerateParser.cpp; sourceTree = "<group>"; };
+		62D0D68B13BBADF900F9609A /* GenerateParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = GenerateParser.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		62D0D68C13BBADF900F9609A /* GenerateParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GenerateParser.h; sourceTree = "<group>"; };
 		62D0D68D13BBADF900F9609A /* ReadFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ReadFile.cpp; sourceTree = "<group>"; };
 		62D0D68E13BBADF900F9609A /* ReadFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReadFile.h; sourceTree = "<group>"; };
@@ -357,6 +359,7 @@
 				626A495113C20B3B00D24233 /* Sources */,
 				62942A6513C4A21A00C2DAA9 /* Generate Parser Source Template String */,
 				62942A6613C4A26300C2DAA9 /* Generate Parser Header Template String */,
+				620841BF13C9EED900B978A3 /* Disallow Write for Template String Headers */,
 				62942A7C13C4EF2B00C2DAA9 /* Frameworks */,
 			);
 			buildRules = (
@@ -432,6 +435,51 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		620841BD13C9EE7900B978A3 /* Disallow Write for PEG Parser */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Disallow Write for PEG Parser";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "chmod -w ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.*";
+			showEnvVarsInLog = 0;
+		};
+		620841BF13C9EED900B978A3 /* Disallow Write for Template String Headers */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Disallow Write for Template String Headers";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "chmod -w ${SRCROOT}/../../src/cpp/Common/*.tpl.h";
+			showEnvVarsInLog = 0;
+		};
+		620841C013C9EF9500B978A3 /* Disallow Write for bootstrapped files */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Disallow Write for bootstrapped files";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "chmod -w ${SRCROOT}/../../src/cpp/IPG/*";
+			showEnvVarsInLog = 0;
+		};
 		62942A3513C3AA1000C2DAA9 /* test: Generate PEG Parser */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -497,7 +545,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rsync -r --delete ${SRCROOT}/../../src/cpp/IPG-Dev/ ${SRCROOT}/../../src/cpp/IPG";
+			shellScript = "chmod -f +w ${SRCROOT}/../../src/cpp/IPG/*\nrsync -r --delete ${SRCROOT}/../../src/cpp/IPG-Dev/ ${SRCROOT}/../../src/cpp/IPG";
 			showEnvVarsInLog = 0;
 		};
 		62942A5D13C40DCB00C2DAA9 /* Generate PEG Parser */ = {
@@ -511,12 +559,12 @@
 			);
 			name = "Generate PEG Parser";
 			outputPaths = (
-				"${SRCROOT}../../src/cpp/IPG-Dev/PEGParser.cpp",
-				"${SRCROOT}../../src/cpp/IPG-Dev/PEGParser.h",
+				"${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.cpp",
+				"${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.h",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "${BUILT_PRODUCTS_DIR}/ipg ${SRCROOT}/../../src/peg/peg.peg ${SRCROOT}/../../src/cpp/IPG-Dev/ PEGParser";
+			shellScript = "rm -f ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.cpp\nrm -f ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.h\n${BUILT_PRODUCTS_DIR}/ipg ${SRCROOT}/../../src/peg/peg.peg ${SRCROOT}/../../src/cpp/IPG-Dev/ PEGParser";
 			showEnvVarsInLog = 0;
 		};
 		62942A6513C4A21A00C2DAA9 /* Generate Parser Source Template String */ = {
@@ -533,7 +581,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/usr/local/bin/template-converter Parser.cpp.tpl ${SRCROOT}/../../src/tpl/Parser.cpp.tpl ${SRCROOT}/../../src/cpp/Common/Parser.cpp.tpl.h";
+			shellScript = "rm -f ${SRCROOT}/../../src/cpp/Common/Parser.cpp.tpl.h\n/usr/local/bin/template-converter Parser.cpp.tpl ${SRCROOT}/../../src/tpl/Parser.cpp.tpl ${SRCROOT}/../../src/cpp/Common/Parser.cpp.tpl.h";
 			showEnvVarsInLog = 0;
 		};
 		62942A6613C4A26300C2DAA9 /* Generate Parser Header Template String */ = {
@@ -550,7 +598,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/usr/local/bin/template-converter Parser.h.tpl ${SRCROOT}/../../src/tpl/Parser.h.tpl ${SRCROOT}/../../src/cpp/Common/Parser.h.tpl.h";
+			shellScript = "rm -f ${SRCROOT}/../../src/cpp/Common/Parser.h.tpl.h\n/usr/local/bin/template-converter Parser.h.tpl ${SRCROOT}/../../src/tpl/Parser.h.tpl ${SRCROOT}/../../src/cpp/Common/Parser.h.tpl.h";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */

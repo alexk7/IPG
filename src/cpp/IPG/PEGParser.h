@@ -3,6 +3,7 @@
 #ifndef PEGPARSER_H
 #define PEGPARSER_H
 
+#include <vector>
 #include <map>
 
 namespace PEGParser
@@ -47,22 +48,20 @@ namespace PEGParser
 		PTNodeType_Suffix = 36,
 	};
 
-	struct PTNode;
-	typedef std::map<PTNodeType, PTNode*> PTNodeTypeToPtr;
+	struct Node;
+	typedef std::map<PTNodeType, Node*> PTNodeTypeToPtr;
 
-	struct PTNode
+	struct Node
 	{
 		char value;
 		PTNodeTypeToPtr end;
 	};
 
-	struct PTNodeVisitor
-	{
-		virtual void operator()(PTNode* _symbol, PTNodeType _type) = 0;
-	};
+	typedef std::pair<PTNodeType, Node*> PTNodeChild;
+	typedef std::vector<PTNodeChild> PTNodeChildren;
 
-	PTNode* Parse(PTNodeType _type, PTNode* _symbol);
-	PTNode* Traverse(PTNodeType _type, PTNode* _symbol, PTNodeVisitor& _visitor);
+	Node* Parse(PTNodeType _type, Node* _symbol);
+	Node* Traverse(PTNodeType _type, Node* _symbol, PTNodeChildren& _children);
 }
 
 #endif

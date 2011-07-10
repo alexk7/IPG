@@ -125,52 +125,59 @@ public:
 			case ExpressionType_NonTerminal:
 			{
 				const std::string& nonTerminal = expr.GetNonTerminal();
-				const char* fmt = "%1% = %2%(%3%);\n";
 				if (mTraverse)
 				{
 					const Def& def = *mGrammar.defs.find(nonTerminal);
 					const DefValue& defval = def.second;
 					if (defval.isNode)
 					{
-						fmt = "%1% = ::Visit(%3%, PTNodeType_%2%, v);\n";
+						if (_resultIndex == _firstIndex)
+							_resultIndex = -1;
+						mSource << mTabs << boost::format("%1% = %2%->end.find(PTNodeType_%3%)->second;\n") % LValue(_resultIndex) % RValue(_firstIndex) % nonTerminal;
+						mSource << mTabs << boost::format("if (%1%)\n") % RValue(_resultIndex);
+						OpenBlock();
+						mSource << mTabs << boost::format("v.push_back(PTNodeChild(PTNodeType_%1%, %2%));\n") % nonTerminal % RValue(_firstIndex);
+						CloseBlock();
+						//fmt = "%1% = ::AddChild(%3%, PTNodeType_%2%, v);\n";
+						return _resultIndex;
 					}
-					else if (!defval.isNodeRef && defval.isMemoized)
+					else if (defval.isNodeRef)
 					{
-						fmt = "%1% = %3%->end[PTNodeType_%2%];\n";
-					}
-					else
-					{
-						fmt = "%1% = %2%(%3%, v);\n";
+						mSource << mTabs << boost::format("%1% = Traverse_%2%(%3%, v);\n") % LValue(_resultIndex) % nonTerminal % RValue(_firstIndex);
+						return _resultIndex;
 					}
 				}
-				mSource << mTabs << boost::format(fmt) % LValue(_resultIndex) % nonTerminal % RValue(_firstIndex);
+				mSource << mTabs << boost::format("%1% = Parse_%2%(%3%);\n") % LValue(_resultIndex) % nonTerminal % RValue(_firstIndex);
 				return _resultIndex;
 			}
 				
 			case ExpressionType_Range:
 			{
-				mSource << mTabs << boost::format("%1% = ::ParseRange(\'%2%\', \'%3%\', %4%);\n")
+				mSource << mTabs << boost::format("%1% = (%2% >= \'%3%\' && %2% <= \'%4%\') ? %5% : 0;\n")
 					% LValue(_resultIndex)
+					% Deref(_firstIndex)
 					% EscapeChar(expr.GetFirst())
 					% EscapeChar(expr.GetLast())
-					% RValue(_firstIndex);
+					% Next(_firstIndex);
 				return _resultIndex;
 			}
 				
 			case ExpressionType_Char:
 			{
-				mSource << mTabs << boost::format("%1% = ::ParseChar(\'%2%\', %3%);\n")
+				mSource << mTabs << boost::format("%1% = (%2% == \'%3%\') ? %4% : 0;\n")
 					% LValue(_resultIndex)
+					% Deref(_firstIndex)
 					% EscapeChar(expr.GetChar())
-					% RValue(_firstIndex);
+					% Next(_firstIndex);
 				return _resultIndex;
 			}
 				
 			case ExpressionType_Dot:
 			{
-				mSource << mTabs << boost::format("%1% = ::ParseAnyChar(%2%);\n")
+				mSource << mTabs << boost::format("%1% = (%2% != 0) ? %3% : 0;\n")
 					% LValue(_resultIndex)
-					% RValue(_firstIndex);
+					% Deref(_firstIndex)
+					% Next(_firstIndex);
 				return _resultIndex;
 			}
 				
@@ -205,7 +212,17 @@ public:
 			mSource << mTabs << boost::format("%1% = %2%;\n") % LValue(_toIndex) % RValue(_fromIndex); 
 	}
 	
-	std::string Not(std::string _expr)
+	static std::string Next(int _index)
+	{
+		return RValue(_index) + "+1";
+	}
+	
+	static std::string Deref(int _index)
+	{
+		return RValue(_index) + "->value";
+	}
+	
+	static std::string Not(std::string _expr)
 	{
 		return "!" + _expr;
 	}
@@ -215,7 +232,7 @@ public:
 		if (_index == -1)
 		{
 			_index = mNextVarIndex++;
-			return str(boost::format("PTNode* %1%") % RValue(_index));
+			return str(boost::format("Node* %1%") % RValue(_index));
 		}
 		else
 		{
@@ -273,7 +290,7 @@ void GenerateParser(std::string _folder, std::string _name, const Grammar& _gram
 		pDef->SetIntValue("parseResultIndex", parseResultIndex);
 		
 		std::ostringstream traverseCodeStream;
-		ParserGenerator traverserGenerator(traverseCodeStream, _grammar, true, 1);
+		ParserGenerator traverserGenerator(traverseCodeStream, _grammar, true, 2);
 		int traverseResultIndex = traverserGenerator.Emit(0, -1, i->second);
 		
 		std::string traverseCodeFilename = "traverseCode_" + i->first;

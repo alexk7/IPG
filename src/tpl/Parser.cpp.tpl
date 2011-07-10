@@ -6,76 +6,32 @@ using namespace {{name}};{{BI_NEWLINE}}
 
 namespace
 {
-	PTNode* ParseRange(char _rangeBegin, char _rangeEnd, PTNode* _symbol)
-	{
-		if (_symbol->value < _rangeBegin)
-			return 0;
-		if (_symbol->value > _rangeEnd)
-			return 0;
-		return ++_symbol;
-	}{{BI_NEWLINE}}
+	typedef PTNodeTypeToPtr::value_type MemoEntry;
+	typedef std::pair<PTNodeTypeToPtr::iterator, bool> MemoInsertResult;{{BI_NEWLINE}}
 	
-	PTNode* ParseChar(char _char, PTNode* _symbol)
-	{
-		if (_symbol->value != _char)
-			return 0;
-		return ++_symbol;
-	}{{BI_NEWLINE}}
-	
-	PTNode* ParseAnyChar(PTNode* _symbol)
-	{
-		if (_symbol->value == 0)
-			return 0;
-		return ++_symbol;
-	}{{BI_NEWLINE}}
-	
-	struct Memo
-	{
-		Memo(PTNode* _symbol, PTNodeType _type)
-		{
-			std::pair<PTNodeTypeToPtr::iterator, bool> insertResult	=
-				_symbol->end.insert(PTNodeTypeToPtr::value_type(_type, 0));{{BI_NEWLINE}}
-				
-			ppNode = &insertResult.first->second;
-			isValid = !insertResult.second;
-		}{{BI_NEWLINE}}
-		
-		PTNode** ppNode;
-		bool isValid;
-	};{{BI_NEWLINE}}
-	
-	PTNode* Visit(PTNode* _symbol, PTNodeType _type, PTNodeVisitor& _visitor)
-	{
-		PTNode* end = _symbol->end[_type];
-		if (end)
-			_visitor(_symbol, _type);
-		return end;
-	}{{BI_NEWLINE}}
-	
-	struct Parse
-	{{{#def}}{{BI_NEWLINE}}		static PTNode* {{name}}(PTNode* p0)
+	struct Private
+	{{{#def}}{{BI_NEWLINE}}		static Node* Parse_{{name}}(Node* p0)
 		{
 			{{#isMemoized}}
-			Memo memo(p0, PTNodeType_{{name}});
-			if (memo.isValid)
-				return *memo.ppNode;
+			MemoInsertResult r = p0->end.insert(MemoEntry(PTNodeType_{{name}}, 0));
+			if (!r.second)
+				return r.first->second;
 			{{/isMemoized}}
 			{{>parseCode}}
 			{{#isMemoized}}
-			*memo.ppNode = p{{parseResultIndex}};
+			r.first->second = p{{parseResultIndex}};
 			{{/isMemoized}}
 			return p{{parseResultIndex}};
 		}
 		{{/def}}
-	};{{BI_NEWLINE}}
-	
-	struct Traverse
-	{{{#def}}{{BI_NEWLINE}}		static PTNode* {{name}}(PTNode* p0, PTNodeVisitor& v)
+		
+		{{#def}}{{BI_NEWLINE}}		static Node* Traverse_{{name}}(Node* p0, PTNodeChildren& v)
 		{
-			if (!Parse::{{name}}(p0))
+			Node* p1 = Parse_{{name}}(p0);
+			if (!p1)
 				return 0;
 			{{>traverseCode}}
-			return p{{traverseResultIndex}};
+			return p1;
 		}
 		{{/def}}
 	};
@@ -83,23 +39,23 @@ namespace
 
 namespace {{name}}
 {
-	PTNode* Parse(PTNodeType _type, PTNode* _symbol)
+	Node* Parse(PTNodeType _type, Node* _symbol)
 	{
 		switch (_type)
 		{
 			{{#def}}
-			case PTNodeType_{{name}}: return Parse::{{name}}(_symbol);
+			case PTNodeType_{{name}}: return Private::Parse_{{name}}(_symbol);
 			{{/def}}
 		}
 		return 0;
 	}{{BI_NEWLINE}}
 	
-	PTNode* Traverse(PTNodeType _type, PTNode* _symbol, PTNodeVisitor& _visitor)
+	Node* Traverse(PTNodeType _type, Node* _symbol, PTNodeChildren& _children)
 	{
 		switch (_type)
 		{
 			{{#def}}
-			case PTNodeType_{{name}}: return Traverse::{{name}}(_symbol, _visitor);
+			case PTNodeType_{{name}}: return Private::Traverse_{{name}}(_symbol, _children);
 			{{/def}}
 		}
 		return 0;
