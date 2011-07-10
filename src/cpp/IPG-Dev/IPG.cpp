@@ -13,71 +13,12 @@
 
 using namespace PEGParser;
 
-static std::string ToString(const Node* _pNode, PTNodeType _type)
-{
-	std::string result;
-	if (_pNode)
-	{
-		if (_type == PTNodeType(0))
-		{
-			result.assign(1, _pNode->value);
-		}
-		else
-		{
-			PTNodeTypeToPtr::const_iterator i = _pNode->end.find(_type);
-			if (i != _pNode->end.end())
-			{
-				if (Node* pEnd = i->second)
-				{
-					result.reserve(pEnd - _pNode);
-					for (const Node* p = _pNode; p != pEnd; ++p)
-						result.push_back(p->value);
-				}
-			}
-		}
-	}
-	return result;
-}
-
-class SymbolItr
-{
-public:
-	SymbolItr(Node* _pNode)
-	:
-	mPtr(_pNode)
-	{
-	}
-	
-	SymbolItr& operator++()
-	{
-		++mPtr;
-		return *this;
-	}
-	
-	operator bool() const
-	{
-		return !mPtr;
-	}
-	
-	char operator*()
-	{
-		return mPtr->value;
-	}
-	
-	friend SymbolItr operator+(const SymbolItr& _lhs, int _rhs)
-	{
-		return SymbolItr(_lhs.mPtr + _rhs);
-	}
-	
-private:
-	Node* mPtr;
-};
-
 class PTItr
 {
 public:
 	PTItr(PTNodeType _type, Node* _pNode = 0)
 	:	mType(_type)
+	,	mpNode(_pNode)
 	, mpSiblings(new PTNodeChildren)
 	{
 		if (_pNode && _pNode->end[_type])
@@ -88,6 +29,7 @@ public:
 
 	PTItr(const PTItr& _iOther)
 	: mType(_iOther.mType)
+	,	mpNode(_iOther.mpNode)
 	, mpSiblings(_iOther.mpSiblings)
 	, miCurrent(_iOther.miCurrent)
 	{}
@@ -108,20 +50,9 @@ public:
 		SkipSiblingsWithWrongType(_childType);
 	}
 		
-	operator Node*() const
-	{
-		return *this ? miCurrent->second : 0;
-	}
-	
 	operator bool() const
 	{
-		return miCurrent != mpSiblings->end();
-	}
-	
-	operator SymbolItr() const
-	{
-		Node* pNode = *this;
-		return pNode;
+		return mpNode != 0;
 	}
 	
 	PTItr& operator++()
@@ -133,32 +64,72 @@ public:
 	
 	std::string ToString() const
 	{
-		Node* pNode = *this;
-		return ::ToString(pNode, mType);
+		std::string result;
+		Node* pEnd = End();
+		result.reserve(pEnd - mpNode);
+		for (const Node* p = mpNode; p != pEnd; ++p)
+			result.push_back(p->value);
+		return result;
 	}
-	
-	SymbolItr Begin() const
-	{
-		Node* pNode = *this;
-		return pNode;
-	}
-	
-	SymbolItr End() const
-	{
-		Node* pNode = *this;
-		return pNode ? pNode->end[mType] : 0;
-	}
-	
+		
 	PTNodeType GetType() const { return mType; }
+	
+	Node* Begin() const
+	{
+		assert(mpNode);
+		return mpNode;
+	}
+	
+	Node* End() const
+	{
+		assert(mpNode);
+		if (mType == PTNodeType(0))
+			return mpNode + 1;
+			
+		return Parse(mType, mpNode);
+	}
 	
 	PTItr GetChild(PTNodeType _childT)
 	{
-		return PTItr(GetChildren(), _childT);
+		assert(mpNode != 0);
+		if (_childT == PTNodeType(0))
+			return PTItr(PTNodeType(0), mpNode);
+		else
+			return PTItr(GetChildren(), _childT);
 	}
 
 	PTItr GetNext(PTNodeType _childT)
 	{
-		return PTItr(*this, _childT);
+		assert(mpNode != 0);
+		if (_childT == PTNodeType(0))
+			return PTItr(PTNodeType(0), mpNode + 1);
+		else
+			return PTItr(*this, _childT);
+	}
+	
+private:
+	void GoToNext(PTNodeType _childType)
+	{
+		if (mType == PTNodeType(0))
+		{
+			++mpNode;
+			if (mpNode->value == 0)
+				mpNode = 0;
+		}
+		else
+		{
+			++miCurrent;
+			SkipSiblingsWithWrongType(_childType);
+		}
+	}
+	
+	void SkipSiblingsWithWrongType(PTNodeType _childType)
+	{
+		assert(_childType != PTNodeType(0));
+		PTNodeChildren::iterator iEnd = mpSiblings->end();
+		while (miCurrent != iEnd && miCurrent->first != _childType)
+			++miCurrent;
+		mpNode = (miCurrent != iEnd) ? miCurrent->second : 0 ;
 	}
 	
 	boost::shared_ptr<PTNodeChildren> GetChildren()
@@ -166,26 +137,12 @@ public:
 		if (!mpChildren)
 		{
 			PTNodeChildren children;
-			Traverse(mType, *this, children);
+			Traverse(mType, mpNode, children);
 			mpChildren.reset(new PTNodeChildren);
 			mpChildren->swap(children);			
 		}
 		
 		return mpChildren;
-	}
-	
-private:
-	void GoToNext(PTNodeType _childType)
-	{
-		++miCurrent;
-		SkipSiblingsWithWrongType(_childType);
-	}
-	
-	void SkipSiblingsWithWrongType(PTNodeType _childType)
-	{
-		PTNodeChildren::iterator iEnd = mpSiblings->end();
-		while (miCurrent != iEnd && miCurrent->first != _childType)
-			++miCurrent;
 	}
 	
 	PTNodeType mType;
@@ -220,12 +177,13 @@ static bool ReadFile(std::vector<Node>& _symbols, const char* _filename)
 	return false;
 }
 
-static char GetChar(SymbolItr _iChar)
+static char GetChar(PTItr _iChar)
 {
-	char c = *_iChar;
+	Node* p = _iChar.Begin();
+	char c = p->value;
 	if (c == '\\')
 	{
-		c = *++_iChar;
+		c = (++p)->value;
 		if (c == 'n')
 		{
 			c = '\n';
@@ -243,7 +201,7 @@ static char GetChar(SymbolItr _iChar)
 			c -= '0';
 			for (;;)
 			{
-				char digit = *++_iChar;
+				char digit = (++p)->value;
 				if (digit < '0' || digit > '9')
 					break;
 				c = (10 * c) + (digit - '0');
@@ -261,7 +219,7 @@ static void ConvertExpression(Expression& _expr, PTItr _iExpr)
 	{
 		for (PTItr iPrefix = iSeq.GetChild(PTNodeType_Prefix); iPrefix; ++iPrefix)
 		{
-			char cPrefix = *iPrefix.Begin();
+			char cPrefix = (iPrefix.Begin())->value;
 			PTItr iSuffix = iPrefix.GetChild(PTNodeType_Suffix);
 			PTItr iPrimary = iSuffix.GetChild(PTNodeType_Primary);
 			
@@ -304,7 +262,7 @@ static void ConvertExpression(Expression& _expr, PTItr _iExpr)
 				primary.SetDot();
 			}
 			
-			char cSuffix = *iPrimary.End();
+			char cSuffix = (iPrimary.End())->value;
 			if (cSuffix == '?')
 			{
 				Expression empty;
@@ -350,7 +308,7 @@ static void ConvertGrammar(Grammar& _grammar, PTItr _iGrammar)
 		ConvertExpression(expr, iExpr);
 		
 		Def& newDef = AddDef(_grammar.defs, iId.ToString(), expr);
-		char arrowType = *(iArrow.Begin() + 1);
+		char arrowType = (iArrow.Begin() + 1)->value;
 		if (arrowType == '=')
 			newDef.second.isNode = true;
 		if (arrowType == '=' || arrowType == '<')

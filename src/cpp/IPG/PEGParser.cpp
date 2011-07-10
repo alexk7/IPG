@@ -860,9 +860,7 @@ namespace
 			{
 				Node* p3 = p2->end.find(PTNodeType_Range)->second;
 				if (p3)
-				{
 					v.push_back(PTNodeChild(PTNodeType_Range, p2));
-				}
 				p2 = p3;
 			}
 			return p1;
@@ -916,9 +914,7 @@ namespace
 				return 0;
 			Node* p2 = p0->end.find(PTNodeType_Identifier)->second;
 			if (p2)
-			{
 				v.push_back(PTNodeChild(PTNodeType_Identifier, p0));
-			}
 			if (p2)
 			{
 				p2 = Parse_Spacing(p2);
@@ -926,16 +922,12 @@ namespace
 				{
 					Node* p3 = p2->end.find(PTNodeType_LEFTARROW)->second;
 					if (p3)
-					{
 						v.push_back(PTNodeChild(PTNodeType_LEFTARROW, p2));
-					}
 					if (p3)
 					{
 						p2 = p3->end.find(PTNodeType_Expression)->second;
 						if (p2)
-						{
 							v.push_back(PTNodeChild(PTNodeType_Expression, p3));
-						}
 					}
 				}
 			}
@@ -980,9 +972,7 @@ namespace
 				return 0;
 			Node* p2 = p0->end.find(PTNodeType_Sequence)->second;
 			if (p2)
-			{
 				v.push_back(PTNodeChild(PTNodeType_Sequence, p0));
-			}
 			if (p2)
 			{
 				for (;;)
@@ -1006,9 +996,7 @@ namespace
 			{
 				Node* p3 = p2->end.find(PTNodeType_Sequence)->second;
 				if (p3)
-				{
 					v.push_back(PTNodeChild(PTNodeType_Sequence, p2));
-				}
 				p2 = p3;
 			}
 			return p1;
@@ -1024,9 +1012,7 @@ namespace
 			{
 				Node* p3 = p2->end.find(PTNodeType_Definition)->second;
 				if (p3)
-				{
 					v.push_back(PTNodeChild(PTNodeType_Definition, p2));
-				}
 				if (p3)
 				{
 					p2 = p3;
@@ -1034,9 +1020,7 @@ namespace
 					{
 						Node* p4 = p2->end.find(PTNodeType_Definition)->second;
 						if (p4)
-						{
 							v.push_back(PTNodeChild(PTNodeType_Definition, p2));
-						}
 						if (!p4)
 							break;
 						p2 = p4;
@@ -1165,9 +1149,7 @@ namespace
 			{
 				Node* p3 = p2->end.find(PTNodeType_Char)->second;
 				if (p3)
-				{
 					v.push_back(PTNodeChild(PTNodeType_Char, p2));
-				}
 				p2 = p3;
 			}
 			return p1;
@@ -1211,9 +1193,7 @@ namespace
 			{
 				Node* p3 = p2->end.find(PTNodeType_Char)->second;
 				if (p3)
-				{
 					v.push_back(PTNodeChild(PTNodeType_Char, p2));
-				}
 				p2 = p3;
 			}
 			return p1;
@@ -1276,9 +1256,7 @@ namespace
 			{
 				Node* p3 = p2->end.find(PTNodeType_Suffix)->second;
 				if (p3)
-				{
 					v.push_back(PTNodeChild(PTNodeType_Suffix, p2));
-				}
 				p2 = p3;
 			}
 			return p1;
@@ -1297,16 +1275,12 @@ namespace
 				{
 					p2 = p0->end.find(PTNodeType_Literal)->second;
 					if (p2)
-					{
 						v.push_back(PTNodeChild(PTNodeType_Literal, p0));
-					}
 					if (!p2)
 					{
 						p2 = p0->end.find(PTNodeType_Class)->second;
 						if (p2)
-						{
 							v.push_back(PTNodeChild(PTNodeType_Class, p0));
-						}
 						if (!p2)
 						{
 							p2 = Parse_DOT(p0);
@@ -1324,9 +1298,7 @@ namespace
 				return 0;
 			Node* p2 = p0->end.find(PTNodeType_Identifier)->second;
 			if (p2)
-			{
 				v.push_back(PTNodeChild(PTNodeType_Identifier, p0));
-			}
 			if (p2)
 			{
 				p2 = Parse_Spacing(p2);
@@ -1334,9 +1306,7 @@ namespace
 				{
 					Node* p3 = p2->end.find(PTNodeType_LEFTARROW)->second;
 					if (p3)
-					{
 						v.push_back(PTNodeChild(PTNodeType_LEFTARROW, p2));
-					}
 					p2 = p3 ? 0 : p2;
 				}
 			}
@@ -1353,9 +1323,7 @@ namespace
 			{
 				Node* p3 = p2->end.find(PTNodeType_Expression)->second;
 				if (p3)
-				{
 					v.push_back(PTNodeChild(PTNodeType_Expression, p2));
-				}
 				if (p3)
 				{
 					p2 = Parse_CLOSE(p3);
@@ -1384,9 +1352,7 @@ namespace
 				return 0;
 			Node* p2 = p0->end.find(PTNodeType_Char)->second;
 			if (p2)
-			{
 				v.push_back(PTNodeChild(PTNodeType_Char, p0));
-			}
 			if (p2)
 			{
 				Node* p3 = Traverse_Range_1(p2, v);
@@ -1409,9 +1375,7 @@ namespace
 			{
 				Node* p3 = p2->end.find(PTNodeType_Char)->second;
 				if (p3)
-				{
 					v.push_back(PTNodeChild(PTNodeType_Char, p2));
-				}
 				p2 = p3;
 			}
 			return p1;
@@ -1453,9 +1417,7 @@ namespace
 			{
 				Node* p3 = p2->end.find(PTNodeType_Prefix)->second;
 				if (p3)
-				{
 					v.push_back(PTNodeChild(PTNodeType_Prefix, p2));
-				}
 				if (!p3)
 					break;
 				p2 = p3;
@@ -1507,9 +1469,7 @@ namespace
 				return 0;
 			Node* p2 = p0->end.find(PTNodeType_Primary)->second;
 			if (p2)
-			{
 				v.push_back(PTNodeChild(PTNodeType_Primary, p0));
-			}
 			if (p2)
 			{
 				Node* p3 = Parse_QUESTION(p2);

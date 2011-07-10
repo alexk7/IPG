@@ -135,9 +135,7 @@ public:
 							_resultIndex = -1;
 						mSource << mTabs << boost::format("%1% = %2%->end.find(PTNodeType_%3%)->second;\n") % LValue(_resultIndex) % RValue(_firstIndex) % nonTerminal;
 						mSource << mTabs << boost::format("if (%1%)\n") % RValue(_resultIndex);
-						OpenBlock();
-						mSource << mTabs << boost::format("v.push_back(PTNodeChild(PTNodeType_%1%, %2%));\n") % nonTerminal % RValue(_firstIndex);
-						CloseBlock();
+						mSource << mTabs.Next() << boost::format("v.push_back(PTNodeChild(PTNodeType_%1%, %2%));\n") % nonTerminal % RValue(_firstIndex);
 						//fmt = "%1% = ::AddChild(%3%, PTNodeType_%2%, v);\n";
 						return _resultIndex;
 					}
