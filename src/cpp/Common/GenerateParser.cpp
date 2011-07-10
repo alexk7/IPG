@@ -3,7 +3,6 @@
 #include "Grammar.h"
 
 #include <ctemplate/template.h>
-#include <json_spirit.h>
 #include <boost/format.hpp>
 
 class Tabs
