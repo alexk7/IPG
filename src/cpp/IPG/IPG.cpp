@@ -351,6 +351,7 @@ int main(int argc, char* argv[])
 				Grammar grammar;
 				ConvertGrammar(grammar, PTItr(PTNodeType_Grammar, &nodes[0]));
 				FlattenGrammar(grammar);
+				//std::cout << grammar;
 				
 				GenerateParser(folder, name, grammar);
 			}

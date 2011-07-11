@@ -7,25 +7,24 @@ static bool ReferenceAnyNode(const Defs& _defs, const Expression& _expr, std::se
 	switch (_expr.GetType())
 	{
 		case ExpressionType_Empty:
-			break;
+			return false;
 			
 		//Group
 		case ExpressionType_Choice:
 		case ExpressionType_Sequence:
 		{
-			const Expressions& children = _expr.GetChildren();
-			size_t childCount = children.size();
-			for (size_t i = 0; i < childCount; ++i)
-			{
-				if (ReferenceAnyNode(_defs, children[i], _visited))
-					return true;
-			}
-			break;
+			const Expression::Group& group = _expr.GetGroup();
+			if (ReferenceAnyNode(_defs, group.first, _visited))
+				return true;
+			if (ReferenceAnyNode(_defs, group.second, _visited))
+				return true;
+				
+			return false;
 		}
 			
 		//Container
 		case ExpressionType_Not:
-			break;
+			return false;
 
 		case ExpressionType_ZeroOrMore:
 			return ReferenceAnyNode(_defs, _expr.GetChild(), _visited);
@@ -51,11 +50,12 @@ static bool ReferenceAnyNode(const Defs& _defs, const Expression& _expr, std::se
 			return result;
 		}
 			
-		case ExpressionType_Count:
+		default:
+		{
 			assert(false);
+			return false;
+		}
 	}
-	
-	return false;
 }
 
 static bool ReferenceAnyNode(const Defs& _defs, const Expression& _expr)
@@ -81,35 +81,35 @@ static void CreateNonTerminal(Defs& _defs, const std::string& _name,
 	FlattenExpression(_defs, newName, newDef.second);
 }
 
-static int FlattenExpression(Defs& _defs, const std::string& _name,
-                             Expression& _expression, int _index)
+static int FlattenChild(Defs& _defs, const std::string& _name, ExpressionType _parentType, Expression& _child, int _index)
+{
+	if (_parentType == ExpressionType_Choice)
+	{
+		ExpressionType childType = _child.GetType();
+		if (childType == ExpressionType_NonTerminal)
+		{
+			const std::string& nonTerminal = _child.GetNonTerminal();
+			_defs.find(nonTerminal)->second.isMemoized = true;
+			return _index;
+		}
+		else if (ReferenceAnyNode(_defs, _child))
+		{
+			CreateNonTerminal(_defs, _name, _child, _index++);
+			return _index;
+		}
+	}
+	
+	return FlattenExpression(_defs, _name, _child, _index);
+}
+
+static int FlattenExpression(Defs& _defs, const std::string& _name, Expression& _expression, int _index)
 {
 	ExpressionType type = _expression.GetType();
 	if (IsGroup(type))
 	{
-		Expressions& children = _expression.GetChildren();
-		size_t childCount = children.size();
-		for (size_t i = 0; i < childCount; ++i)
-		{
-			Expression& child = children[i];
-			if (type == ExpressionType_Choice)
-			{
-				ExpressionType childType = child.GetType();
-				if (childType == ExpressionType_NonTerminal)
-				{
-					const std::string& nonTerminal = child.GetNonTerminal();
-					_defs.find(nonTerminal)->second.isMemoized = true;
-					continue;
-				}
-				else if (ReferenceAnyNode(_defs, child))
-				{
-					CreateNonTerminal(_defs, _name, child, _index++);
-					continue;
-				}
-			}
-			
-			_index = FlattenExpression(_defs, _name, child, _index);
-		}
+		Expression::Group& group = _expression.GetGroup();
+		_index = FlattenChild(_defs, _name, type, group.first, _index);
+		_index = FlattenChild(_defs, _name, type, group.second, _index);
 	}
 	else if (IsContainer(type))
 	{

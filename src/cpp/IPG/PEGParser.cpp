@@ -351,8 +351,9 @@ namespace
 				}
 				if (p2)
 				{
-					p1 = Parse_Spacing(p2);
+					p2 = Parse_Spacing(p2);
 				}
+				p1 = p2;
 			}
 			r.first->second = p1;
 			return p1;
@@ -527,18 +528,6 @@ namespace
 			if (!p1)
 			{
 				p1 = Parse_Primary_2(p0);
-				if (!p1)
-				{
-					p1 = Parse_Literal(p0);
-					if (!p1)
-					{
-						p1 = Parse_Class(p0);
-						if (!p1)
-						{
-							p1 = Parse_DOT(p0);
-						}
-					}
-				}
 			}
 			r.first->second = p1;
 			return p1;
@@ -568,6 +557,20 @@ namespace
 			MemoInsertResult r = p0->end.insert(MemoEntry(PTNodeType_Primary_2, 0));
 			if (!r.second)
 				return r.first->second;
+			Node* p1 = Parse_Primary_2_1(p0);
+			if (!p1)
+			{
+				p1 = Parse_Primary_2_2(p0);
+			}
+			r.first->second = p1;
+			return p1;
+		}
+
+		static Node* Parse_Primary_2_1(Node* p0)
+		{
+			MemoInsertResult r = p0->end.insert(MemoEntry(PTNodeType_Primary_2_1, 0));
+			if (!r.second)
+				return r.first->second;
 			Node* p1 = Parse_OPEN(p0);
 			if (p1)
 			{
@@ -576,6 +579,34 @@ namespace
 				{
 					p1 = Parse_CLOSE(p1);
 				}
+			}
+			r.first->second = p1;
+			return p1;
+		}
+
+		static Node* Parse_Primary_2_2(Node* p0)
+		{
+			MemoInsertResult r = p0->end.insert(MemoEntry(PTNodeType_Primary_2_2, 0));
+			if (!r.second)
+				return r.first->second;
+			Node* p1 = Parse_Literal(p0);
+			if (!p1)
+			{
+				p1 = Parse_Primary_2_2_1(p0);
+			}
+			r.first->second = p1;
+			return p1;
+		}
+
+		static Node* Parse_Primary_2_2_1(Node* p0)
+		{
+			MemoInsertResult r = p0->end.insert(MemoEntry(PTNodeType_Primary_2_2_1, 0));
+			if (!r.second)
+				return r.first->second;
+			Node* p1 = Parse_Class(p0);
+			if (!p1)
+			{
+				p1 = Parse_DOT(p0);
 			}
 			r.first->second = p1;
 			return p1;
@@ -925,10 +956,12 @@ namespace
 						v.push_back(PTNodeChild(PTNodeType_LEFTARROW, p2));
 					if (p3)
 					{
-						p2 = p3->end.find(PTNodeType_Expression)->second;
-						if (p2)
+						Node* p4 = p3->end.find(PTNodeType_Expression)->second;
+						if (p4)
 							v.push_back(PTNodeChild(PTNodeType_Expression, p3));
+						p3 = p4;
 					}
+					p2 = p3;
 				}
 			}
 			return p1;
@@ -1015,21 +1048,21 @@ namespace
 					v.push_back(PTNodeChild(PTNodeType_Definition, p2));
 				if (p3)
 				{
-					p2 = p3;
 					for (;;)
 					{
-						Node* p4 = p2->end.find(PTNodeType_Definition)->second;
+						Node* p4 = p3->end.find(PTNodeType_Definition)->second;
 						if (p4)
-							v.push_back(PTNodeChild(PTNodeType_Definition, p2));
+							v.push_back(PTNodeChild(PTNodeType_Definition, p3));
 						if (!p4)
 							break;
-						p2 = p4;
+						p3 = p4;
 					}
-					if (p2)
+					if (p3)
 					{
-						p2 = Parse_EndOfFile(p2);
+						p3 = Parse_EndOfFile(p3);
 					}
 				}
+				p2 = p3;
 			}
 			return p1;
 		}
@@ -1092,8 +1125,9 @@ namespace
 				}
 				if (p3)
 				{
-					p2 = Parse_Spacing(p3);
+					p3 = Parse_Spacing(p3);
 				}
+				p2 = p3;
 			}
 			return p1;
 		}
@@ -1271,22 +1305,6 @@ namespace
 			if (!p2)
 			{
 				p2 = Traverse_Primary_2(p0, v);
-				if (!p2)
-				{
-					p2 = p0->end.find(PTNodeType_Literal)->second;
-					if (p2)
-						v.push_back(PTNodeChild(PTNodeType_Literal, p0));
-					if (!p2)
-					{
-						p2 = p0->end.find(PTNodeType_Class)->second;
-						if (p2)
-							v.push_back(PTNodeChild(PTNodeType_Class, p0));
-						if (!p2)
-						{
-							p2 = Parse_DOT(p0);
-						}
-					}
-				}
 			}
 			return p1;
 		}
@@ -1318,6 +1336,19 @@ namespace
 			Node* p1 = Parse_Primary_2(p0);
 			if (!p1)
 				return 0;
+			Node* p2 = Traverse_Primary_2_1(p0, v);
+			if (!p2)
+			{
+				p2 = Traverse_Primary_2_2(p0, v);
+			}
+			return p1;
+		}
+
+		static Node* Traverse_Primary_2_1(Node* p0, PTNodeChildren& v)
+		{
+			Node* p1 = Parse_Primary_2_1(p0);
+			if (!p1)
+				return 0;
 			Node* p2 = Parse_OPEN(p0);
 			if (p2)
 			{
@@ -1326,8 +1357,39 @@ namespace
 					v.push_back(PTNodeChild(PTNodeType_Expression, p2));
 				if (p3)
 				{
-					p2 = Parse_CLOSE(p3);
+					p3 = Parse_CLOSE(p3);
 				}
+				p2 = p3;
+			}
+			return p1;
+		}
+
+		static Node* Traverse_Primary_2_2(Node* p0, PTNodeChildren& v)
+		{
+			Node* p1 = Parse_Primary_2_2(p0);
+			if (!p1)
+				return 0;
+			Node* p2 = p0->end.find(PTNodeType_Literal)->second;
+			if (p2)
+				v.push_back(PTNodeChild(PTNodeType_Literal, p0));
+			if (!p2)
+			{
+				p2 = Traverse_Primary_2_2_1(p0, v);
+			}
+			return p1;
+		}
+
+		static Node* Traverse_Primary_2_2_1(Node* p0, PTNodeChildren& v)
+		{
+			Node* p1 = Parse_Primary_2_2_1(p0);
+			if (!p1)
+				return 0;
+			Node* p2 = p0->end.find(PTNodeType_Class)->second;
+			if (p2)
+				v.push_back(PTNodeChild(PTNodeType_Class, p0));
+			if (!p2)
+			{
+				p2 = Parse_DOT(p0);
 			}
 			return p1;
 		}
@@ -1525,6 +1587,9 @@ namespace PEGParser
 			case PTNodeType_Primary: return Private::Parse_Primary(_symbol);
 			case PTNodeType_Primary_1: return Private::Parse_Primary_1(_symbol);
 			case PTNodeType_Primary_2: return Private::Parse_Primary_2(_symbol);
+			case PTNodeType_Primary_2_1: return Private::Parse_Primary_2_1(_symbol);
+			case PTNodeType_Primary_2_2: return Private::Parse_Primary_2_2(_symbol);
+			case PTNodeType_Primary_2_2_1: return Private::Parse_Primary_2_2_1(_symbol);
 			case PTNodeType_QUESTION: return Private::Parse_QUESTION(_symbol);
 			case PTNodeType_Range: return Private::Parse_Range(_symbol);
 			case PTNodeType_Range_1: return Private::Parse_Range_1(_symbol);
@@ -1569,6 +1634,9 @@ namespace PEGParser
 			case PTNodeType_Primary: return Private::Traverse_Primary(_symbol, _children);
 			case PTNodeType_Primary_1: return Private::Traverse_Primary_1(_symbol, _children);
 			case PTNodeType_Primary_2: return Private::Traverse_Primary_2(_symbol, _children);
+			case PTNodeType_Primary_2_1: return Private::Traverse_Primary_2_1(_symbol, _children);
+			case PTNodeType_Primary_2_2: return Private::Traverse_Primary_2_2(_symbol, _children);
+			case PTNodeType_Primary_2_2_1: return Private::Traverse_Primary_2_2_1(_symbol, _children);
 			case PTNodeType_QUESTION: return Private::Traverse_QUESTION(_symbol, _children);
 			case PTNodeType_Range: return Private::Traverse_Range(_symbol, _children);
 			case PTNodeType_Range_1: return Private::Traverse_Range_1(_symbol, _children);

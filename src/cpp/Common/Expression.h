@@ -1,6 +1,8 @@
 #ifndef EXPRESSION_H_
 #define EXPRESSION_H_
 
+#include <boost/variant.hpp>
+
 enum ExpressionType
 {
 	ExpressionType_Empty,
@@ -24,12 +26,11 @@ enum ExpressionType
 	ExpressionType_Count
 };
 
-class Expression;
-typedef std::vector<Expression> Expressions;
-
 class Expression
 {
 public:
+	typedef std::pair<Expression, Expression> Group;
+
 	Expression() : mType(ExpressionType_Empty) {}
 	void Swap(Expression& _other);
 	
@@ -50,8 +51,8 @@ public:
 	
 	const std::string& GetNonTerminal() const;
 	
-	Expressions& GetChildren();
-	const Expressions& GetChildren() const;
+	Group& GetGroup();
+	const Group& GetGroup() const;
 	
 	Expression& GetChild();
 	const Expression& GetChild() const;
@@ -61,11 +62,18 @@ private:
 	void PrintChildWithPrefix(std::ostream& _os, char _prefix) const;
 	void PrintChildWithSuffix(std::ostream& _os, char _prefix) const;
 	static void PrintRangeChar(std::ostream& _os, char _char);
+	template <class T> T& SetType(ExpressionType _type);
+	
+	typedef boost::variant<
+		char,
+		std::pair<char, char>,
+		std::string,
+		boost::recursive_wrapper<Expression>,
+		boost::recursive_wrapper<Group>
+	> Data;
 	
 	ExpressionType mType;
-	Expressions mChildren;
-	std::string mText;
-	char mChar1, mChar2;
+	Data mData;
 };
 
 bool IsGroup(ExpressionType _type);

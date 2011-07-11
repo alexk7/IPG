@@ -58,44 +58,27 @@ public:
 			{
 				if (_resultIndex == _firstIndex)
 					_resultIndex = -1;
-				const Expressions& children = expr.GetChildren();
-				int tempIndex = Emit(_firstIndex, _resultIndex, children[0]);
+				const Expression::Group& group = expr.GetGroup();
+				int tempIndex = Emit(_firstIndex, _resultIndex, group.first);
 				If(Not(RValue(tempIndex)));
 				_resultIndex = tempIndex;
-				size_t last = children.size()-1;
-				for (size_t i = 1; i < last; ++i)
-				{
-					OpenBlock();
-					tempIndex = Emit(_firstIndex, _resultIndex, children[i]);
-					Assign(_resultIndex, tempIndex);
-					If(Not(RValue(_resultIndex)));
-				}
 				OpenBlock();
-				tempIndex = Emit(_firstIndex, _resultIndex, children[last]);
+				tempIndex = Emit(_firstIndex, _resultIndex, group.second);
 				Assign(_resultIndex, tempIndex);
-				for (size_t i = last; i > 0; --i)
-					CloseBlock();
+				CloseBlock();
 				return _resultIndex;
 			}
 				
 			case ExpressionType_Sequence:
 			{
-				const Expressions& children = expr.GetChildren();
-				int tempIndex = Emit(_firstIndex, _resultIndex, children[0]);
+				const Expression::Group& group = expr.GetGroup();
+				int tempIndex = Emit(_firstIndex, _resultIndex, group.first);
 				If(RValue(tempIndex));
 				_resultIndex = tempIndex;
-				size_t last = children.size()-1;
-				for (size_t i = 1; i < last; ++i)
-				{
-					OpenBlock();
-					tempIndex = Emit(tempIndex, _resultIndex, children[i]);
-					If(RValue(tempIndex));
-				}
 				OpenBlock();
-				tempIndex = Emit(tempIndex, _resultIndex, children[last]);
+				tempIndex = Emit(tempIndex, _resultIndex, group.second);
 				Assign(_resultIndex, tempIndex);
-				for (size_t i = last; i > 0; --i)
-					CloseBlock();
+				CloseBlock();
 				return _resultIndex;
 			}
 
@@ -135,7 +118,6 @@ public:
 						mSource << mTabs << boost::format("%1% = %2%->end.find(PTNodeType_%3%)->second;\n") % LValue(_resultIndex) % RValue(_firstIndex) % nonTerminal;
 						mSource << mTabs << boost::format("if (%1%)\n") % RValue(_resultIndex);
 						mSource << mTabs.Next() << boost::format("v.push_back(PTNodeChild(PTNodeType_%1%, %2%));\n") % nonTerminal % RValue(_firstIndex);
-						//fmt = "%1% = ::AddChild(%3%, PTNodeType_%2%, v);\n";
 						return _resultIndex;
 					}
 					else if (defval.isNodeRef)
