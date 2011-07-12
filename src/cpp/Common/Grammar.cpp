@@ -5,11 +5,8 @@ Def& AddDef(Defs& _defs, const std::string& _name, Expression& _e)
 {
 	std::pair<Defs::iterator, bool> result = _defs.insert(Def(_name, DefValue()));
 	if (!result.second)
-	{
-		std::string errorMsg = "Duplicate definition: ";
-		errorMsg += _name;
-		throw std::runtime_error(errorMsg);
-	}
+		throw std::runtime_error(str(boost::format("Duplicate definition: %1%") % _name));
+
 	Def& newDef = *result.first;
 	newDef.second.Swap(_e);
 	return newDef;

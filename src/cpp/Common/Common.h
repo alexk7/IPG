@@ -21,4 +21,6 @@
 
 #include <stdexcept>
 
+#include <boost/format.hpp>
+
 #endif /* COMMON_H_ */

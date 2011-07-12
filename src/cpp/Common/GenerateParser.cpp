@@ -3,7 +3,6 @@
 #include "Grammar.h"
 
 #include <ctemplate/template.h>
-#include <boost/format.hpp>
 
 class Tabs
 {
@@ -26,6 +25,218 @@ static std::ostream& operator<<(std::ostream& _os, Tabs _tabs)
 	return _os;
 }
 
+/*
+class ParserGenerator
+{
+	std::ostream& mSource;
+	const Grammar& mGrammar;
+	Tabs mTabs;
+	int mNextVarIndex;
+	bool mTraverse;
+	
+public:
+	ParserGenerator(std::ostream& _source, const Grammar& _grammar,
+									bool _traverse, int nextVarIndex)
+	: mSource(_source)
+	, mGrammar(_grammar)
+	, mTabs(3)
+	, mNextVarIndex(nextVarIndex)
+	, mTraverse(_traverse)
+	{
+	}
+	
+	int Emit(int _firstIndex, int _resultIndex, const Expression& expr)
+	{		
+		switch (expr.GetType())
+		{
+			case ExpressionType_Empty:
+			{
+				Assign(_resultIndex, _firstIndex);
+				return _resultIndex;
+			}
+				
+			case ExpressionType_Choice:
+			{
+				int backtrackIndex = (_firstIndex == _resultIndex) ? -1 : _firstIndex;
+				Assign(backtrackIndex, _firstIndex);
+				const Expression::Group& group = expr.GetGroup();
+				_resultIndex = Emit(backtrackIndex, _resultIndex, group.first);
+				If(Not(RValue(_resultIndex)));
+				OpenBlock();
+				_resultIndex = Emit(backtrackIndex, _resultIndex, group.second);
+				CloseBlock();
+				return _resultIndex;
+			}
+				
+			case ExpressionType_Sequence:
+			{
+				const Expression::Group& group = expr.GetGroup();
+				_resultIndex = Emit(_firstIndex, _resultIndex, group.first);
+				If(RValue(_resultIndex));
+				OpenBlock();
+				_resultIndex = Emit(_resultIndex, _resultIndex, group.second);
+				CloseBlock();
+				return _resultIndex;
+			}
+
+			case ExpressionType_Not:
+			{
+				Assign(_resultIndex, _firstIndex);
+				int tempIndex = Emit(_firstIndex, -1, expr.GetChild());
+				If(RValue(tempIndex));
+				mSource << mTabs.Next() << boost::format("%1% = 0;\n") % LValue(_resultIndex);
+				return _resultIndex;
+			}
+				
+			case ExpressionType_ZeroOrMore:
+			{
+				Assign(_resultIndex, _firstIndex);
+				mSource << mTabs << "for (;;)\n";
+				OpenBlock();
+				int tempIndex = Emit(_resultIndex, -1, expr.GetChild());
+				If(Not(RValue(tempIndex)));
+				mSource << mTabs.Next() << "break;\n";
+				Assign(_resultIndex, tempIndex);
+				CloseBlock();
+				return _resultIndex;
+			}
+				
+			case ExpressionType_NonTerminal:
+			{
+				const std::string& nonTerminal = expr.GetNonTerminal();
+				if (mTraverse)
+				{
+					const Def& def = *mGrammar.defs.find(nonTerminal);
+					const DefValue& defval = def.second;
+					if (defval.isNode)
+					{
+						mSource << mTabs << boost::format("%1% = %2%->end.find(PTNodeType_%3%)->second;\n") % LValue(_resultIndex) % RValue(_firstIndex) % nonTerminal;
+						mSource << mTabs << boost::format("if (%1%)\n") % RValue(_resultIndex);
+						mSource << mTabs.Next() << boost::format("v.push_back(PTNodeChild(PTNodeType_%1%, %2%));\n") % nonTerminal % RValue(_firstIndex);
+						return _resultIndex;
+					}
+					else if (defval.isNodeRef)
+					{
+						mSource << mTabs << boost::format("%1% = Traverse_%2%(%3%, v);\n") % LValue(_resultIndex) % nonTerminal % RValue(_firstIndex);
+						return _resultIndex;
+					}
+				}
+				mSource << mTabs << boost::format("%1% = Parse_%2%(%3%);\n") % LValue(_resultIndex) % nonTerminal % RValue(_firstIndex);
+				return _resultIndex;
+			}
+				
+			case ExpressionType_Range:
+			{
+				mSource << mTabs << boost::format("%1% = (%2% >= \'%3%\' && %2% <= \'%4%\') ? %5% : 0;\n")
+					% LValue(_resultIndex)
+					% Deref(_firstIndex)
+					% EscapeChar(expr.GetFirst())
+					% EscapeChar(expr.GetLast())
+					% Next(_firstIndex);
+				return _resultIndex;
+			}
+				
+			case ExpressionType_Char:
+			{
+				mSource << mTabs << boost::format("%1% = (%2% == \'%3%\') ? %4% : 0;\n")
+					% LValue(_resultIndex)
+					% Deref(_firstIndex)
+					% EscapeChar(expr.GetChar())
+					% Next(_firstIndex);
+				return _resultIndex;
+			}
+				
+			case ExpressionType_Dot:
+			{
+				mSource << mTabs << boost::format("%1% = (%2% != 0) ? %3% : 0;\n")
+					% LValue(_resultIndex)
+					% Deref(_firstIndex)
+					% Next(_firstIndex);
+				return _resultIndex;
+			}
+				
+			default:
+			{
+				assert(false);
+				return -1;
+			}
+		}
+	}	
+	
+	void If(std::string _cond)
+	{
+		mSource << mTabs << boost::format("if (%1%)\n") % _cond;
+	}
+	
+	void OpenBlock()
+	{
+		mSource << mTabs << "{\n";
+		++mTabs;
+	}
+	
+	void CloseBlock()
+	{
+		--mTabs;
+		mSource << mTabs << "}\n";
+	}
+	
+	void Assign(int& _toIndex, int _fromIndex)
+	{
+		if (_toIndex != _fromIndex)
+			mSource << mTabs << boost::format("%1% = %2%;\n") % LValue(_toIndex) % RValue(_fromIndex); 
+	}
+	
+	static std::string Next(int _index)
+	{
+		return RValue(_index) + "+1";
+	}
+	
+	static std::string Deref(int _index)
+	{
+		return RValue(_index) + "->value";
+	}
+	
+	static std::string Not(std::string _expr)
+	{
+		return "!" + _expr;
+	}
+	
+	std::string LValue(int& _index)
+	{
+		if (_index == -1)
+		{
+			_index = mNextVarIndex++;
+			return str(boost::format("Node* %1%") % RValue(_index));
+		}
+		else
+		{
+			return RValue(_index);
+		}
+	}
+	
+	static std::string RValue(int _index)
+	{
+		assert(_index != -1);
+		return str(boost::format("p%1%") % _index);
+	}
+	
+	static std::string EscapeChar(char _c)
+	{
+		switch (_c)
+		{
+			case '\\': return "\\\\";
+			case '\n': return "\\n";
+			case '\r': return "\\r";
+			case '\t': return "\\t";
+			case '\'': return "\\\'";
+			case '\"': return "\\\"";
+			default: return std::string(1, _c);
+		}
+	}
+};
+//*/
+
+//*
 class ParserGenerator
 {
 	std::ostream& mSource;
@@ -239,6 +450,7 @@ public:
 		}
 	}
 };
+//*/
 
 void GenerateParser(std::string _folder, std::string _name, const Grammar& _grammar)
 {
@@ -259,7 +471,7 @@ void GenerateParser(std::string _folder, std::string _name, const Grammar& _gram
 		
 		std::ostringstream parseCodeStream;
 		ParserGenerator parserGenerator(parseCodeStream, _grammar, false, 1);
-		int parseResultIndex = parserGenerator.Emit(0, -1, i->second);
+		int parseResultIndex = parserGenerator.Emit(0, 0, i->second);
 		
 		std::string parseCodeFilename = "parseCode_" + i->first;
 		std::string parseCode = parseCodeStream.str();
@@ -270,7 +482,7 @@ void GenerateParser(std::string _folder, std::string _name, const Grammar& _gram
 		
 		std::ostringstream traverseCodeStream;
 		ParserGenerator traverserGenerator(traverseCodeStream, _grammar, true, 2);
-		int traverseResultIndex = traverserGenerator.Emit(0, -1, i->second);
+		int traverseResultIndex = traverserGenerator.Emit(0, 0, i->second);
 		
 		std::string traverseCodeFilename = "traverseCode_" + i->first;
 		std::string traverseCode = traverseCodeStream.str();

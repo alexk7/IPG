@@ -1,0 +1,9 @@
+Plan for having explicit backtracking where needed instead of always keeping backtracking value just in case:
+
+- no longer assume we need to preserve the value in p{{_firstIndex}}
+- explicitely assign to a new variable when backtracking is needed and backtrack using it instead of p{{_firstIndex}}
+- do that for every expression type
+- Emit should now always honor resultIndex
+	- The return value is still relevant, because we can pass -1 to generate a new variable.
+
+After that, I should be able to reuse this backtracking logic to implement backtracking of partial results for Traverse (which should be named GetChildren).

@@ -15,7 +15,6 @@
 				62942A3613C3AA8500C2DAA9 /* test: Compare generated PEGParser.cpp files */,
 				62942A3713C3AAC000C2DAA9 /* test: Compare generated PEGParser.h files */,
 				62942A5613C4010A00C2DAA9 /* Copy generated files from IPG-Dev to IPG */,
-				620841C013C9EF9500B978A3 /* Disallow Write for bootstrapped files */,
 			);
 			dependencies = (
 				62942A6C13C4A45400C2DAA9 /* PBXTargetDependency */,
@@ -29,7 +28,6 @@
 			buildConfigurationList = 62942A5A13C40DBC00C2DAA9 /* Build configuration list for PBXAggregateTarget "peg-parser" */;
 			buildPhases = (
 				62942A5D13C40DCB00C2DAA9 /* Generate PEG Parser */,
-				620841BD13C9EE7900B978A3 /* Disallow Write for PEG Parser */,
 			);
 			dependencies = (
 				62942A6413C410FD00C2DAA9 /* PBXTargetDependency */,
@@ -111,6 +109,8 @@
 /* Begin PBXFileReference section */
 		6223E33413C39426003142F3 /* IPG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = IPG.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		6237CDBA13C3904900D8B067 /* IPG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = IPG.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
+		625BDA4613CB95FE00EE6FD6 /* NOTES */ = {isa = PBXFileReference; lastKnownFileType = text; name = NOTES; path = ../../NOTES; sourceTree = "<group>"; };
+		625BDA4913CBB08C00EE6FD6 /* diff-parsers.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "diff-parsers.sh"; sourceTree = "<group>"; };
 		626A495513C20B3B00D24233 /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		626A496B13C212C100D24233 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; name = LICENSE; path = ../../LICENSE; sourceTree = "<group>"; };
 		62942A2B13C3A52B00C2DAA9 /* PEGParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PEGParser.cpp; sourceTree = "<group>"; };
@@ -233,6 +233,7 @@
 			isa = PBXGroup;
 			children = (
 				62C0024B13C12D3900CD7EB0 /* clean.sh */,
+				625BDA4913CBB08C00EE6FD6 /* diff-parsers.sh */,
 			);
 			path = sh;
 			sourceTree = "<group>";
@@ -257,6 +258,7 @@
 		62D0D64613BBA50000F9609A = {
 			isa = PBXGroup;
 			children = (
+				625BDA4613CB95FE00EE6FD6 /* NOTES */,
 				62D0D66513BBA5B100F9609A /* README */,
 				626A496B13C212C100D24233 /* LICENSE */,
 				626A495013C208B400D24233 /* Sources */,
@@ -357,7 +359,6 @@
 				626A495113C20B3B00D24233 /* Sources */,
 				62942A6513C4A21A00C2DAA9 /* Generate Parser Source Template String */,
 				62942A6613C4A26300C2DAA9 /* Generate Parser Header Template String */,
-				620841BF13C9EED900B978A3 /* Disallow Write for Template String Headers */,
 				62942A7C13C4EF2B00C2DAA9 /* Frameworks */,
 			);
 			buildRules = (
@@ -433,51 +434,6 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		620841BD13C9EE7900B978A3 /* Disallow Write for PEG Parser */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Disallow Write for PEG Parser";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "chmod -w ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.*";
-			showEnvVarsInLog = 0;
-		};
-		620841BF13C9EED900B978A3 /* Disallow Write for Template String Headers */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Disallow Write for Template String Headers";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "chmod -w ${SRCROOT}/../../src/cpp/Common/*.tpl.h";
-			showEnvVarsInLog = 0;
-		};
-		620841C013C9EF9500B978A3 /* Disallow Write for bootstrapped files */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Disallow Write for bootstrapped files";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "chmod -w ${SRCROOT}/../../src/cpp/IPG/*";
-			showEnvVarsInLog = 0;
-		};
 		62942A3513C3AA1000C2DAA9 /* test: Generate PEG Parser */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -543,7 +499,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "chmod -f +w ${SRCROOT}/../../src/cpp/IPG/*\nrsync -r --delete ${SRCROOT}/../../src/cpp/IPG-Dev/ ${SRCROOT}/../../src/cpp/IPG";
+			shellScript = "rsync -r --delete ${SRCROOT}/../../src/cpp/IPG-Dev/ ${SRCROOT}/../../src/cpp/IPG";
 			showEnvVarsInLog = 0;
 		};
 		62942A5D13C40DCB00C2DAA9 /* Generate PEG Parser */ = {
