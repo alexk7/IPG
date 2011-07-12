@@ -1,2 +1,7 @@
 .DS_Store
 install
+src/cpp/Common/Parser.cpp.tpl.h
+src/cpp/Common/Parser.h.tpl.h
+src/cpp/IPG-Dev/PEGParser.cpp
+src/cpp/IPG-Dev/PEGParser.h
+build/xcode/ipg.xcodeproj/project.xcworkspace/xcuserdata/alexk7.xcuserdatad/UserInterfaceState.xcuserstate
