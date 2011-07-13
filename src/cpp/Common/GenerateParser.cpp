@@ -20,12 +20,12 @@ private:
 static std::ostream& operator<<(std::ostream& _os, Tabs _tabs)
 {
 	size_t tabLevel = _tabs.GetTabLevel();
-	for (size_t i = 0; i < tabLevel; ++i)
-		_os << "\t";
+	while (tabLevel--)
+		_os.put('\t');
 	return _os;
 }
 
-/*
+/* new
 class ParserGenerator
 {
 	std::ostream& mSource;
@@ -236,7 +236,7 @@ public:
 };
 //*/
 
-//*
+//* original
 class ParserGenerator
 {
 	std::ostream& mSource;

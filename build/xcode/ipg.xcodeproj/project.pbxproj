@@ -467,7 +467,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cmp ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.cpp ${TEMP_DIR}/PEGParser.cpp";
+			shellScript = "cmp -b ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.cpp ${TEMP_DIR}/PEGParser.cpp";
 			showEnvVarsInLog = 0;
 		};
 		62942A3713C3AAC000C2DAA9 /* test: Compare generated PEGParser.h files */ = {
@@ -484,7 +484,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cmp ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.h ${TEMP_DIR}/PEGParser.h";
+			shellScript = "cmp -b ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.h ${TEMP_DIR}/PEGParser.h";
 			showEnvVarsInLog = 0;
 		};
 		62942A5613C4010A00C2DAA9 /* Copy generated files from IPG-Dev to IPG */ = {
@@ -499,7 +499,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rsync -r --delete ${SRCROOT}/../../src/cpp/IPG-Dev/ ${SRCROOT}/../../src/cpp/IPG";
+			shellScript = "rsync ${SRCROOT}/../../src/cpp/IPG-Dev/IPG.cpp ${SRCROOT}/../../src/cpp/IPG/IPG.cpp\nrsync ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.cpp ${SRCROOT}/../../src/cpp/IPG/PEGParser.cpp\nrsync ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.h ${SRCROOT}/../../src/cpp/IPG/PEGParser.h";
 			showEnvVarsInLog = 0;
 		};
 		62942A5D13C40DCB00C2DAA9 /* Generate PEG Parser */ = {
