@@ -41,24 +41,24 @@ namespace
 	}{{BI_NEWLINE}}
 	
 	struct Private
-	{{{#def}}{{BI_NEWLINE}}		static Node* Parse_{{name}}(Node* p0)
+	{{{#def}}{{BI_NEWLINE}}		static Node* Parse_{{name}}(Node* p)
 		{
 			{{#isMemoized}}
-			MemoInsertResult r = p0->end.insert(MemoEntry(PTNodeType_{{name}}, 0));
+			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_{{name}}, 0));
 			if (!r.second)
 				return r.first->second;
 			{{/isMemoized}}
 			{{>parseCode}}
 			{{#isMemoized}}
-			r.first->second = p{{parseResultIndex}};
+			r.first->second = p;
 			{{/isMemoized}}
-			return p{{parseResultIndex}};
+			return p;
 		}
 		{{/def}}
 		
-		{{#def}}{{BI_NEWLINE}}		static Node* Traverse_{{name}}(Node* p0, PTNodeChildren& v)
+		{{#def}}{{BI_NEWLINE}}		static Node* Traverse_{{name}}(Node* p, PTNodeChildren& v)
 		{
-			Node* p1 = Parse_{{name}}(p0);
+			Node* p1 = Parse_{{name}}(p);
 			if (!p1)
 				return 0;
 			{{>traverseCode}}

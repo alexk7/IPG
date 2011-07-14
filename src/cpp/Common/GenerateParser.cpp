@@ -23,60 +23,71 @@ public:
 	{
 	}
 	
-	int Emit(int _firstIndex, int _resultIndex, const Expression& expr)
-	{		
+	void Emit(const Expression& expr)
+	{
 		switch (expr.GetType())
 		{
 			case ExpressionType_Empty:
 			{
-				Assign(_resultIndex, _firstIndex);
-				return _resultIndex;
+				break;
 			}
 				
 			case ExpressionType_Choice:
 			{
-				int backtrackIndex = (_firstIndex == _resultIndex) ? -1 : _firstIndex;
-				Assign(backtrackIndex, _firstIndex);
-				const Expression::Group& group = expr.GetGroup();
-				_resultIndex = Emit(backtrackIndex, _resultIndex, group.first);
-				If(Not(RValue(_resultIndex)));
+				int backtrackIndex = Assign(-1, 0);
+				const Expression::Group* pGroup = &expr.GetGroup();
+				Emit(pGroup->first);
+				If(Not(RValue(0)));
 				OpenBlock();
-				_resultIndex = Emit(backtrackIndex, _resultIndex, group.second);
-				CloseBlock();
-				return _resultIndex;
+				int openCount = 1;
+				while (pGroup->second.GetType() == ExpressionType_Choice)
+				{
+					pGroup = &pGroup->second.GetGroup();
+					Assign(0, backtrackIndex);
+					Emit(pGroup->first);
+					If(Not(RValue(0)));
+					OpenBlock();
+					++openCount;
+				}
+				Assign(0, backtrackIndex);
+				Emit(pGroup->second);
+				while (openCount--)
+					CloseBlock();
+				break;
 			}
 				
 			case ExpressionType_Sequence:
 			{
 				const Expression::Group& group = expr.GetGroup();
-				_resultIndex = Emit(_firstIndex, _resultIndex, group.first);
-				If(RValue(_resultIndex));
+				Emit(group.first);
+				If(RValue(0));
 				OpenBlock();
-				_resultIndex = Emit(_resultIndex, _resultIndex, group.second);
+				Emit(group.second);
 				CloseBlock();
-				return _resultIndex;
+				break;
 			}
 
 			case ExpressionType_Not:
 			{
-				Assign(_resultIndex, _firstIndex);
-				int tempIndex = Emit(_firstIndex, -1, expr.GetChild());
-				If(RValue(tempIndex));
-				mSource << mTabs.Next() << boost::format("%1% = 0;\n") % LValue(_resultIndex);
-				return _resultIndex;
+				int backtrackIndex = Assign(-1, 0);
+				Emit(expr.GetChild());
+				mSource << mTabs.Next() << boost::format("%1% = %1% ? 0 : %2%;\n") % RValue(0) % RValue(backtrackIndex);
+				break;
 			}
 				
 			case ExpressionType_ZeroOrMore:
 			{
-				Assign(_resultIndex, _firstIndex);
 				mSource << mTabs << "for (;;)\n";
 				OpenBlock();
-				int tempIndex = Emit(_resultIndex, -1, expr.GetChild());
-				If(Not(RValue(tempIndex)));
-				mSource << mTabs.Next() << "break;\n";
-				Assign(_resultIndex, tempIndex);
+				int backtrackIndex = Assign(-1, 0);
+				Emit(expr.GetChild());
+				If(Not(RValue(0)));
+				OpenBlock();
+				Assign(0, backtrackIndex);
+				mSource << mTabs << "break;\n";
 				CloseBlock();
-				return _resultIndex;
+				CloseBlock();
+				break;
 			}
 				
 			case ExpressionType_NonTerminal:
@@ -88,57 +99,55 @@ public:
 					const DefValue& defval = def.second;
 					if (defval.isNode)
 					{
-						int memoIndex = (_firstIndex == _resultIndex) ? -1 : _firstIndex;
-						Assign(memoIndex, _firstIndex);
-						mSource << mTabs << boost::format("%1% = %2%->end.find(PTNodeType_%3%)->second;\n") % LValue(_resultIndex) % RValue(memoIndex) % nonTerminal;
-						mSource << mTabs << boost::format("if (%1%)\n") % RValue(_resultIndex);
-						mSource << mTabs.Next() << boost::format("v.push_back(PTNodeChild(PTNodeType_%1%, %2%));\n") % nonTerminal % RValue(memoIndex);
-						return _resultIndex;
+						int backtrackIndex = Assign(-1, 0);
+						mSource << mTabs << boost::format("%1% = %1%->end.find(PTNodeType_%2%)->second;\n") % RValue(0) % nonTerminal;
+						mSource << mTabs << boost::format("if (%1%)\n") % RValue(0);
+						mSource << mTabs.Next() << boost::format("v.push_back(PTNodeChild(PTNodeType_%1%, %2%));\n") % nonTerminal % RValue(backtrackIndex);
+						break;
 					}
 					else if (defval.isNodeRef)
 					{
-						mSource << mTabs << boost::format("%1% = Traverse_%2%(%3%, v);\n") % LValue(_resultIndex) % nonTerminal % RValue(_firstIndex);
-						return _resultIndex;
+						mSource << mTabs << boost::format("%1% = Traverse_%2%(%1%, v);\n") % RValue(0) % nonTerminal;
+						break;
 					}
 				}
-				mSource << mTabs << boost::format("%1% = Parse_%2%(%3%);\n") % LValue(_resultIndex) % nonTerminal % RValue(_firstIndex);
-				return _resultIndex;
+				mSource << mTabs << boost::format("%1% = Parse_%2%(%1%);\n") % RValue(0) % nonTerminal;
+				break;
 			}
 				
 			case ExpressionType_Range:
 			{
 				mSource << mTabs << boost::format("%1% = (%2% >= \'%3%\' && %2% <= \'%4%\') ? %5% : 0;\n")
-					% LValue(_resultIndex)
-					% Deref(_firstIndex)
+					% RValue(0)
+					% Deref(0)
 					% EscapeChar(expr.GetFirst())
 					% EscapeChar(expr.GetLast())
-					% Next(_firstIndex);
-				return _resultIndex;
+					% Next(0);
+				break;
 			}
 				
 			case ExpressionType_Char:
 			{
 				mSource << mTabs << boost::format("%1% = (%2% == \'%3%\') ? %4% : 0;\n")
-					% LValue(_resultIndex)
-					% Deref(_firstIndex)
+					% RValue(0)
+					% Deref(0)
 					% EscapeChar(expr.GetChar())
-					% Next(_firstIndex);
-				return _resultIndex;
+					% Next(0);
+				break;
 			}
 				
 			case ExpressionType_Dot:
 			{
 				mSource << mTabs << boost::format("%1% = (%2% != 0) ? %3% : 0;\n")
-					% LValue(_resultIndex)
-					% Deref(_firstIndex)
-					% Next(_firstIndex);
-				return _resultIndex;
+					% RValue(0)
+					% Deref(0)
+					% Next(0);
+				break;
 			}
 				
 			default:
 			{
 				assert(false);
-				return -1;
 			}
 		}
 	}	
@@ -160,12 +169,13 @@ public:
 		mSource << mTabs << "}\n";
 	}
 	
-	void Assign(int& _toIndex, int _fromIndex)
+	int Assign(int _toIndex, int _fromIndex)
 	{
 		if (_toIndex != _fromIndex)
-			mSource << mTabs << boost::format("%1% = %2%;\n") % LValue(_toIndex) % RValue(_fromIndex); 
+			mSource << mTabs << boost::format("%1% = %2%;\n") % LValue(_toIndex) % RValue(_fromIndex);
+		return _toIndex;
 	}
-	
+		
 	static std::string Next(int _index)
 	{
 		return RValue(_index) + "+1";
@@ -197,7 +207,10 @@ public:
 	static std::string RValue(int _index)
 	{
 		assert(_index != -1);
-		return str(boost::format("p%1%") % _index);
+		if (_index == 0)
+			return "p";
+		else
+			return str(boost::format("p%1%") % _index);
 	}
 };
 
@@ -220,25 +233,25 @@ void GenerateParser(std::string _folder, std::string _name, const Grammar& _gram
 		
 		std::ostringstream parseCodeStream;
 		ParserGenerator parserGenerator(parseCodeStream, _grammar, false, 1);
-		int parseResultIndex = parserGenerator.Emit(0, 0, i->second);
+		parserGenerator.Emit(i->second);
 		
 		std::string parseCodeFilename = "parseCode_" + i->first;
 		std::string parseCode = parseCodeStream.str();
 		ctemplate::StringToTemplateCache(parseCodeFilename, parseCode, ctemplate::STRIP_BLANK_LINES);
 		
 		pDef->AddIncludeDictionary("parseCode")->SetFilename(parseCodeFilename);
-		pDef->SetIntValue("parseResultIndex", parseResultIndex);
+		pDef->SetIntValue("parseResultIndex", 0);
 		
 		std::ostringstream traverseCodeStream;
 		ParserGenerator traverserGenerator(traverseCodeStream, _grammar, true, 2);
-		int traverseResultIndex = traverserGenerator.Emit(0, 0, i->second);
+		traverserGenerator.Emit(i->second);
 		
 		std::string traverseCodeFilename = "traverseCode_" + i->first;
 		std::string traverseCode = traverseCodeStream.str();
 		ctemplate::StringToTemplateCache(traverseCodeFilename, traverseCode, ctemplate::STRIP_BLANK_LINES);
 
 		pDef->AddIncludeDictionary("traverseCode")->SetFilename(traverseCodeFilename);
-		pDef->SetIntValue("traverseResultIndex", traverseResultIndex);
+		pDef->SetIntValue("traverseResultIndex", 0);
 	}
 
 	std::string sourceText;
