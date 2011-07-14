@@ -2,12 +2,43 @@
 // DO NOT EDIT!
 #include "{{name}}.h"{{BI_NEWLINE}}
 
+#include <ostream>
+#include <iomanip>{{BI_NEWLINE}}
+
 using namespace {{name}};{{BI_NEWLINE}}
 
 namespace
 {
 	typedef PTNodeTypeToPtr::value_type MemoEntry;
 	typedef std::pair<PTNodeTypeToPtr::iterator, bool> MemoInsertResult;{{BI_NEWLINE}}
+	
+	struct EscapeChar
+	{
+		EscapeChar(char _c) : c(_c) {}
+		char c;
+	};{{BI_NEWLINE}}
+	
+	inline std::ostream& operator<<(std::ostream& _os, EscapeChar _e)
+	{
+		char c = _e.c;
+		switch (c)
+		{
+			case '\\': c = '\\'; break;
+			case '\n': c = 'n';  break;
+			case '\r': c = 'r';  break;
+			case '\t': c = 't';  break;
+			case '\'': c = '\''; break;
+			case '\"': c = '\"'; break;
+			
+			default:
+				_os.put(c);
+				return _os;
+		}
+		
+		_os.put('\\');
+		_os.put(c);
+		return _os;
+	}{{BI_NEWLINE}}
 	
 	struct Private
 	{{{#def}}{{BI_NEWLINE}}		static Node* Parse_{{name}}(Node* p0)
@@ -59,5 +90,45 @@ namespace {{name}}
 			{{/def}}
 		}
 		return 0;
+	}
+	
+	void Print(std::ostream& _os, PTNodeType _type, Node* _pNode, int _tabs, int _maxLineSize)
+	{
+		Node* pEnd = Parse(_type, _pNode);
+		if (!pEnd)
+			return;
+
+		int tabCount = _tabs;
+		while (tabCount--)
+		  _os << "    ";
+		
+		switch (_type)
+		{
+			{{#def}}
+			case PTNodeType_{{name}}: _os << "{{name}}"; break;
+			{{/def}}
+		}
+		
+		_os << ": \"";
+
+		size_t lineSize = 0;
+		for (Node* p = _pNode; p != pEnd; ++p)
+		{
+			_os << EscapeChar(p->value);
+			if (++lineSize >= _maxLineSize)
+			{
+				_os << "...";
+				break;
+			}
+		}
+		
+		_os << "\"\n";
+		
+		PTNodeChildren children;
+		Traverse(_type, _pNode, children);
+		for (PTNodeChildren::iterator i = children.begin(), iEnd = children.end(); i != iEnd; ++i)
+		{
+			Print(_os, i->first, i->second, _tabs + 1, _maxLineSize);
+		}
 	}
 }

@@ -65,10 +65,12 @@ public:
 	std::string ToString() const
 	{
 		std::string result;
-		Node* pEnd = End();
-		result.reserve(pEnd - mpNode);
-		for (const Node* p = mpNode; p != pEnd; ++p)
-			result.push_back(p->value);
+		if (Node* pEnd = End())
+		{
+			result.reserve(pEnd - mpNode);
+			for (const Node* p = mpNode; p != pEnd; ++p)
+				result.push_back(p->value);
+		}
 		return result;
 	}
 		
@@ -345,12 +347,16 @@ int main(int argc, char* argv[])
 			std::string folder = argv[2];
 			std::string name = argv[3];
 			
-			bool bParsed = (PEGParser::Parse(PTNodeType_Grammar, &nodes[0]) == &nodes.back());
+			Node* pGrammar = &nodes[0];
+			bool bParsed = (PEGParser::Parse(PTNodeType_Grammar, pGrammar) == &nodes.back());
 			if (bParsed)
 			{
+				Print(std::cout, PTNodeType_Grammar, pGrammar);
+			
 				Grammar grammar;
-				ConvertGrammar(grammar, PTItr(PTNodeType_Grammar, &nodes[0]));
+				ConvertGrammar(grammar, PTItr(PTNodeType_Grammar, pGrammar));
 				FlattenGrammar(grammar);
+				
 				//std::cout << grammar;
 				
 				GenerateParser(folder, name, grammar);

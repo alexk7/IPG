@@ -2,12 +2,41 @@
 // DO NOT EDIT!
 #include "PEGParser.h"
 
+#include <ostream>
+#include <iomanip>
+
 using namespace PEGParser;
 
 namespace
 {
 	typedef PTNodeTypeToPtr::value_type MemoEntry;
 	typedef std::pair<PTNodeTypeToPtr::iterator, bool> MemoInsertResult;
+
+	struct EscapeChar
+	{
+		EscapeChar(char _c) : c(_c) {}
+		char c;
+	};
+
+	inline std::ostream& operator<<(std::ostream& _os, EscapeChar _e)
+	{
+		char c = _e.c;
+		switch (c)
+		{
+			case '\\': c = '\\'; break;
+			case '\n': c = 'n';  break;
+			case '\r': c = 'r';  break;
+			case '\t': c = 't';  break;
+			case '\'': c = '\''; break;
+			case '\"': c = '\"'; break;
+			default:
+				_os.put(c);
+				return _os;
+		}
+		_os.put('\\');
+		_os.put(c);
+		return _os;
+	}
 
 	struct Private
 	{
@@ -1644,5 +1673,74 @@ namespace PEGParser
 			case PTNodeType_Suffix: return Private::Traverse_Suffix(_symbol, _children);
 		}
 		return 0;
+	}
+	void Print(std::ostream& _os, PTNodeType _type, Node* _pNode, int _tabs, int _maxLineSize)
+	{
+		Node* pEnd = Parse(_type, _pNode);
+		if (!pEnd)
+			return;
+		int tabCount = _tabs;
+		while (tabCount--)
+		  _os << "    ";
+		switch (_type)
+		{
+			case PTNodeType_AND: _os << "AND"; break;
+			case PTNodeType_CLOSE: _os << "CLOSE"; break;
+			case PTNodeType_Char: _os << "Char"; break;
+			case PTNodeType_Class: _os << "Class"; break;
+			case PTNodeType_Class_1: _os << "Class_1"; break;
+			case PTNodeType_Comment: _os << "Comment"; break;
+			case PTNodeType_DOT: _os << "DOT"; break;
+			case PTNodeType_Definition: _os << "Definition"; break;
+			case PTNodeType_EndOfFile: _os << "EndOfFile"; break;
+			case PTNodeType_EndOfLine: _os << "EndOfLine"; break;
+			case PTNodeType_Expression: _os << "Expression"; break;
+			case PTNodeType_Expression_1: _os << "Expression_1"; break;
+			case PTNodeType_Grammar: _os << "Grammar"; break;
+			case PTNodeType_Identifier: _os << "Identifier"; break;
+			case PTNodeType_LEFTARROW: _os << "LEFTARROW"; break;
+			case PTNodeType_Literal: _os << "Literal"; break;
+			case PTNodeType_Literal_1: _os << "Literal_1"; break;
+			case PTNodeType_Literal_1_1: _os << "Literal_1_1"; break;
+			case PTNodeType_Literal_2: _os << "Literal_2"; break;
+			case PTNodeType_Literal_2_1: _os << "Literal_2_1"; break;
+			case PTNodeType_NOT: _os << "NOT"; break;
+			case PTNodeType_OPEN: _os << "OPEN"; break;
+			case PTNodeType_PLUS: _os << "PLUS"; break;
+			case PTNodeType_Prefix: _os << "Prefix"; break;
+			case PTNodeType_Primary: _os << "Primary"; break;
+			case PTNodeType_Primary_1: _os << "Primary_1"; break;
+			case PTNodeType_Primary_2: _os << "Primary_2"; break;
+			case PTNodeType_Primary_2_1: _os << "Primary_2_1"; break;
+			case PTNodeType_Primary_2_2: _os << "Primary_2_2"; break;
+			case PTNodeType_Primary_2_2_1: _os << "Primary_2_2_1"; break;
+			case PTNodeType_QUESTION: _os << "QUESTION"; break;
+			case PTNodeType_Range: _os << "Range"; break;
+			case PTNodeType_Range_1: _os << "Range_1"; break;
+			case PTNodeType_SLASH: _os << "SLASH"; break;
+			case PTNodeType_STAR: _os << "STAR"; break;
+			case PTNodeType_Sequence: _os << "Sequence"; break;
+			case PTNodeType_Space: _os << "Space"; break;
+			case PTNodeType_Spacing: _os << "Spacing"; break;
+			case PTNodeType_Suffix: _os << "Suffix"; break;
+		}
+		_os << ": \"";
+		size_t lineSize = 0;
+		for (Node* p = _pNode; p != pEnd; ++p)
+		{
+			_os << EscapeChar(p->value);
+			if (++lineSize >= _maxLineSize)
+			{
+				_os << "...";
+				break;
+			}
+		}
+		_os << "\"\n";
+		PTNodeChildren children;
+		Traverse(_type, _pNode, children);
+		for (PTNodeChildren::iterator i = children.begin(), iEnd = children.end(); i != iEnd; ++i)
+		{
+			Print(_os, i->first, i->second, _tabs + 1, _maxLineSize);
+		}
 	}
 }

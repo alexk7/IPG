@@ -65,6 +65,7 @@ namespace PEGParser
 
 	Node* Parse(PTNodeType _type, Node* _symbol);
 	Node* Traverse(PTNodeType _type, Node* _symbol, PTNodeChildren& _children);
+	void Print(std::ostream& _os, PTNodeType _type, Node* _pNode, int _tabs = 0, int _maxLineSize = 100);
 }
 
 #endif

@@ -4,27 +4,6 @@
 
 #include <ctemplate/template.h>
 
-class Tabs
-{
-public:
-	Tabs(size_t _tabLevel = 0) : mTabLevel(_tabLevel) {}
-	Tabs& operator++() { ++mTabLevel; return *this; }
-	Tabs& operator--() { --mTabLevel; return *this; }
-	Tabs Next() const  { return Tabs(mTabLevel + 1); }
-	size_t GetTabLevel() const { return mTabLevel; }
-	
-private:
-	size_t mTabLevel;
-};
-
-static std::ostream& operator<<(std::ostream& _os, Tabs _tabs)
-{
-	size_t tabLevel = _tabs.GetTabLevel();
-	while (tabLevel--)
-		_os.put('\t');
-	return _os;
-}
-
 /* new
 class ParserGenerator
 {
@@ -110,9 +89,11 @@ public:
 					const DefValue& defval = def.second;
 					if (defval.isNode)
 					{
-						mSource << mTabs << boost::format("%1% = %2%->end.find(PTNodeType_%3%)->second;\n") % LValue(_resultIndex) % RValue(_firstIndex) % nonTerminal;
+						int tempIndex = (_firstIndex == _resultIndex) ? -1 : _resultIndex;
+						Assign(tempIndex, _firstIndex);
+						mSource << mTabs << boost::format("%1% = %2%->end.find(PTNodeType_%3%)->second;\n") % LValue(_resultIndex) % RValue(tempIndex) % nonTerminal;
 						mSource << mTabs << boost::format("if (%1%)\n") % RValue(_resultIndex);
-						mSource << mTabs.Next() << boost::format("v.push_back(PTNodeChild(PTNodeType_%1%, %2%));\n") % nonTerminal % RValue(_firstIndex);
+						mSource << mTabs.Next() << boost::format("v.push_back(PTNodeChild(PTNodeType_%1%, %2%));\n") % nonTerminal % RValue(tempIndex);
 						return _resultIndex;
 					}
 					else if (defval.isNodeRef)
@@ -218,20 +199,6 @@ public:
 	{
 		assert(_index != -1);
 		return str(boost::format("p%1%") % _index);
-	}
-	
-	static std::string EscapeChar(char _c)
-	{
-		switch (_c)
-		{
-			case '\\': return "\\\\";
-			case '\n': return "\\n";
-			case '\r': return "\\r";
-			case '\t': return "\\t";
-			case '\'': return "\\\'";
-			case '\"': return "\\\"";
-			default: return std::string(1, _c);
-		}
 	}
 };
 //*/
@@ -434,20 +401,6 @@ public:
 	{
 		assert(_index != -1);
 		return str(boost::format("p%1%") % _index);
-	}
-	
-	static std::string EscapeChar(char _c)
-	{
-		switch (_c)
-		{
-			case '\\': return "\\\\";
-			case '\n': return "\\n";
-			case '\r': return "\\r";
-			case '\t': return "\\t";
-			case '\'': return "\\\'";
-			case '\"': return "\\\"";
-			default: return std::string(1, _c);
-		}
 	}
 };
 //*/
