@@ -69,42 +69,44 @@ namespace
 			MemoInsertResult r = p0->end.insert(MemoEntry(PTNodeType_Char, 0));
 			if (!r.second)
 				return r.first->second;
-			Node* p1 = (p0->value == '\\') ? p0+1 : 0;
-			if (p1)
+			Node* p1 = p0;
+			p0 = (p1->value == '\\') ? p1+1 : 0;
+			if (p0)
 			{
-				Node* p2 = (p1->value == 'n') ? p1+1 : 0;
-				if (!p2)
+				Node* p2 = p0;
+				p0 = (p2->value == 'n') ? p2+1 : 0;
+				if (!p0)
 				{
-					p2 = (p1->value == 'r') ? p1+1 : 0;
-					if (!p2)
+					p0 = (p2->value == 'r') ? p2+1 : 0;
+					if (!p0)
 					{
-						p2 = (p1->value == 't') ? p1+1 : 0;
-						if (!p2)
+						p0 = (p2->value == 't') ? p2+1 : 0;
+						if (!p0)
 						{
-							p2 = (p1->value == '\'') ? p1+1 : 0;
-							if (!p2)
+							p0 = (p2->value == '\'') ? p2+1 : 0;
+							if (!p0)
 							{
-								p2 = (p1->value == '\"') ? p1+1 : 0;
-								if (!p2)
+								p0 = (p2->value == '\"') ? p2+1 : 0;
+								if (!p0)
 								{
-									p2 = (p1->value == '[') ? p1+1 : 0;
-									if (!p2)
+									p0 = (p2->value == '[') ? p2+1 : 0;
+									if (!p0)
 									{
-										p2 = (p1->value == ']') ? p1+1 : 0;
-										if (!p2)
+										p0 = (p2->value == ']') ? p2+1 : 0;
+										if (!p0)
 										{
-											p2 = (p1->value == '\\') ? p1+1 : 0;
-											if (!p2)
+											p0 = (p2->value == '\\') ? p2+1 : 0;
+											if (!p0)
 											{
-												p2 = (p1->value >= '1' && p1->value <= '9') ? p1+1 : 0;
-												if (p2)
+												p0 = (p2->value >= '1' && p2->value <= '9') ? p2+1 : 0;
+												if (p0)
 												{
 													for (;;)
 													{
-														Node* p3 = (p2->value >= '0' && p2->value <= '9') ? p2+1 : 0;
+														Node* p3 = (p0->value >= '0' && p0->value <= '9') ? p0+1 : 0;
 														if (!p3)
 															break;
-														p2 = p3;
+														p0 = p3;
 													}
 												}
 											}
@@ -115,19 +117,20 @@ namespace
 						}
 					}
 				}
-				p1 = p2;
 			}
-			if (!p1)
+			if (!p0)
 			{
-				p1 = (p0->value == '\\') ? p0+1 : 0;
-				p1 = p1 ? 0 : p0;
-				if (p1)
+				p0 = p1;
+				Node* p4 = (p1->value == '\\') ? p1+1 : 0;
+				if (p4)
+					p0 = 0;
+				if (p0)
 				{
-					p1 = (p1->value != 0) ? p1+1 : 0;
+					p0 = (p0->value != 0) ? p0+1 : 0;
 				}
 			}
-			r.first->second = p1;
-			return p1;
+			r.first->second = p0;
+			return p0;
 		}
 
 		static Node* Parse_Class(Node* p0)
@@ -164,7 +167,8 @@ namespace
 			if (!r.second)
 				return r.first->second;
 			Node* p1 = (p0->value == ']') ? p0+1 : 0;
-			p0 = p1 ? 0 : p0;
+			if (p1)
+				p0 = 0;
 			if (p0)
 			{
 				p0 = Parse_Range(p0);
@@ -180,8 +184,10 @@ namespace
 			{
 				for (;;)
 				{
-					Node* p1 = Parse_EndOfLine(p0);
-					p1 = p1 ? 0 : p0;
+					Node* p1 = p0;
+					Node* p2 = Parse_EndOfLine(p0);
+					if (p2)
+						p1 = 0;
 					if (p1)
 					{
 						p1 = (p1->value != 0) ? p1+1 : 0;
@@ -237,26 +243,28 @@ namespace
 		static Node* Parse_EndOfFile(Node* p0)
 		{
 			Node* p1 = (p0->value != 0) ? p0+1 : 0;
-			p0 = p1 ? 0 : p0;
+			if (p1)
+				p0 = 0;
 			return p0;
 		}
 
 		static Node* Parse_EndOfLine(Node* p0)
 		{
-			Node* p1 = (p0->value == '\r') ? p0+1 : 0;
-			if (p1)
+			Node* p1 = p0;
+			p0 = (p1->value == '\r') ? p1+1 : 0;
+			if (p0)
 			{
-				p1 = (p1->value == '\n') ? p1+1 : 0;
+				p0 = (p0->value == '\n') ? p0+1 : 0;
 			}
-			if (!p1)
+			if (!p0)
 			{
-				p1 = (p0->value == '\n') ? p0+1 : 0;
-				if (!p1)
+				p0 = (p1->value == '\n') ? p1+1 : 0;
+				if (!p0)
 				{
-					p1 = (p0->value == '\r') ? p0+1 : 0;
+					p0 = (p1->value == '\r') ? p1+1 : 0;
 				}
 			}
-			return p1;
+			return p0;
 		}
 
 		static Node* Parse_Expression(Node* p0)
@@ -326,39 +334,40 @@ namespace
 			MemoInsertResult r = p0->end.insert(MemoEntry(PTNodeType_Identifier, 0));
 			if (!r.second)
 				return r.first->second;
-			Node* p1 = (p0->value >= 'a' && p0->value <= 'z') ? p0+1 : 0;
-			if (!p1)
+			Node* p1 = p0;
+			p0 = (p1->value >= 'a' && p1->value <= 'z') ? p1+1 : 0;
+			if (!p0)
 			{
-				p1 = (p0->value >= 'A' && p0->value <= 'Z') ? p0+1 : 0;
-				if (!p1)
+				p0 = (p1->value >= 'A' && p1->value <= 'Z') ? p1+1 : 0;
+				if (!p0)
 				{
-					p1 = (p0->value == '_') ? p0+1 : 0;
+					p0 = (p1->value == '_') ? p1+1 : 0;
 				}
 			}
-			if (p1)
+			if (p0)
 			{
 				for (;;)
 				{
-					Node* p2 = (p1->value >= 'a' && p1->value <= 'z') ? p1+1 : 0;
+					Node* p2 = (p0->value >= 'a' && p0->value <= 'z') ? p0+1 : 0;
 					if (!p2)
 					{
-						p2 = (p1->value >= 'A' && p1->value <= 'Z') ? p1+1 : 0;
+						p2 = (p0->value >= 'A' && p0->value <= 'Z') ? p0+1 : 0;
 						if (!p2)
 						{
-							p2 = (p1->value >= '0' && p1->value <= '9') ? p1+1 : 0;
+							p2 = (p0->value >= '0' && p0->value <= '9') ? p0+1 : 0;
 							if (!p2)
 							{
-								p2 = (p1->value == '_') ? p1+1 : 0;
+								p2 = (p0->value == '_') ? p0+1 : 0;
 							}
 						}
 					}
 					if (!p2)
 						break;
-					p1 = p2;
+					p0 = p2;
 				}
 			}
-			r.first->second = p1;
-			return p1;
+			r.first->second = p0;
+			return p0;
 		}
 
 		static Node* Parse_LEFTARROW(Node* p0)
@@ -369,20 +378,20 @@ namespace
 			p0 = (p0->value == '<') ? p0+1 : 0;
 			if (p0)
 			{
-				Node* p1 = (p0->value == '-') ? p0+1 : 0;
-				if (!p1)
+				Node* p1 = p0;
+				p0 = (p1->value == '-') ? p1+1 : 0;
+				if (!p0)
 				{
-					p1 = (p0->value == '=') ? p0+1 : 0;
-					if (!p1)
+					p0 = (p1->value == '=') ? p1+1 : 0;
+					if (!p0)
 					{
-						p1 = (p0->value == '<') ? p0+1 : 0;
+						p0 = (p1->value == '<') ? p1+1 : 0;
 					}
 				}
-				if (p1)
+				if (p0)
 				{
-					p1 = Parse_Spacing(p1);
+					p0 = Parse_Spacing(p0);
 				}
-				p0 = p1;
 			}
 			r.first->second = p0;
 			return p0;
@@ -393,13 +402,14 @@ namespace
 			MemoInsertResult r = p0->end.insert(MemoEntry(PTNodeType_Literal, 0));
 			if (!r.second)
 				return r.first->second;
-			Node* p1 = Parse_Literal_1(p0);
-			if (!p1)
+			Node* p1 = p0;
+			p0 = Parse_Literal_1(p1);
+			if (!p0)
 			{
-				p1 = Parse_Literal_2(p0);
+				p0 = Parse_Literal_2(p1);
 			}
-			r.first->second = p1;
-			return p1;
+			r.first->second = p0;
+			return p0;
 		}
 
 		static Node* Parse_Literal_1(Node* p0)
@@ -436,7 +446,8 @@ namespace
 			if (!r.second)
 				return r.first->second;
 			Node* p1 = (p0->value == '\'') ? p0+1 : 0;
-			p0 = p1 ? 0 : p0;
+			if (p1)
+				p0 = 0;
 			if (p0)
 			{
 				p0 = Parse_Char(p0);
@@ -479,7 +490,8 @@ namespace
 			if (!r.second)
 				return r.first->second;
 			Node* p1 = (p0->value == '\"') ? p0+1 : 0;
-			p0 = p1 ? 0 : p0;
+			if (p1)
+				p0 = 0;
 			if (p0)
 			{
 				p0 = Parse_Char(p0);
@@ -531,21 +543,22 @@ namespace
 			MemoInsertResult r = p0->end.insert(MemoEntry(PTNodeType_Prefix, 0));
 			if (!r.second)
 				return r.first->second;
-			Node* p1 = Parse_AND(p0);
-			if (!p1)
+			Node* p1 = p0;
+			p0 = Parse_AND(p1);
+			if (!p0)
 			{
-				p1 = Parse_NOT(p0);
-				if (!p1)
+				p0 = Parse_NOT(p1);
+				if (!p0)
 				{
-					p1 = p0;
+					p0 = p1;
 				}
 			}
-			if (p1)
+			if (p0)
 			{
-				p1 = Parse_Suffix(p1);
+				p0 = Parse_Suffix(p0);
 			}
-			r.first->second = p1;
-			return p1;
+			r.first->second = p0;
+			return p0;
 		}
 
 		static Node* Parse_Primary(Node* p0)
@@ -553,13 +566,14 @@ namespace
 			MemoInsertResult r = p0->end.insert(MemoEntry(PTNodeType_Primary, 0));
 			if (!r.second)
 				return r.first->second;
-			Node* p1 = Parse_Primary_1(p0);
-			if (!p1)
+			Node* p1 = p0;
+			p0 = Parse_Primary_1(p1);
+			if (!p0)
 			{
-				p1 = Parse_Primary_2(p0);
+				p0 = Parse_Primary_2(p1);
 			}
-			r.first->second = p1;
-			return p1;
+			r.first->second = p0;
+			return p0;
 		}
 
 		static Node* Parse_Primary_1(Node* p0)
@@ -574,7 +588,8 @@ namespace
 				if (p0)
 				{
 					Node* p1 = Parse_LEFTARROW(p0);
-					p0 = p1 ? 0 : p0;
+					if (p1)
+						p0 = 0;
 				}
 			}
 			r.first->second = p0;
@@ -586,13 +601,14 @@ namespace
 			MemoInsertResult r = p0->end.insert(MemoEntry(PTNodeType_Primary_2, 0));
 			if (!r.second)
 				return r.first->second;
-			Node* p1 = Parse_Primary_2_1(p0);
-			if (!p1)
+			Node* p1 = p0;
+			p0 = Parse_Primary_2_1(p1);
+			if (!p0)
 			{
-				p1 = Parse_Primary_2_2(p0);
+				p0 = Parse_Primary_2_2(p1);
 			}
-			r.first->second = p1;
-			return p1;
+			r.first->second = p0;
+			return p0;
 		}
 
 		static Node* Parse_Primary_2_1(Node* p0)
@@ -618,13 +634,14 @@ namespace
 			MemoInsertResult r = p0->end.insert(MemoEntry(PTNodeType_Primary_2_2, 0));
 			if (!r.second)
 				return r.first->second;
-			Node* p1 = Parse_Literal(p0);
-			if (!p1)
+			Node* p1 = p0;
+			p0 = Parse_Literal(p1);
+			if (!p0)
 			{
-				p1 = Parse_Primary_2_2_1(p0);
+				p0 = Parse_Primary_2_2_1(p1);
 			}
-			r.first->second = p1;
-			return p1;
+			r.first->second = p0;
+			return p0;
 		}
 
 		static Node* Parse_Primary_2_2_1(Node* p0)
@@ -632,13 +649,14 @@ namespace
 			MemoInsertResult r = p0->end.insert(MemoEntry(PTNodeType_Primary_2_2_1, 0));
 			if (!r.second)
 				return r.first->second;
-			Node* p1 = Parse_Class(p0);
-			if (!p1)
+			Node* p1 = p0;
+			p0 = Parse_Class(p1);
+			if (!p0)
 			{
-				p1 = Parse_DOT(p0);
+				p0 = Parse_DOT(p1);
 			}
-			r.first->second = p1;
-			return p1;
+			r.first->second = p0;
+			return p0;
 		}
 
 		static Node* Parse_QUESTION(Node* p0)
@@ -663,12 +681,12 @@ namespace
 			p0 = Parse_Char(p0);
 			if (p0)
 			{
-				Node* p1 = Parse_Range_1(p0);
-				if (!p1)
+				Node* p1 = p0;
+				p0 = Parse_Range_1(p1);
+				if (!p0)
 				{
-					p1 = p0;
+					p0 = p1;
 				}
-				p0 = p1;
 			}
 			r.first->second = p0;
 			return p0;
@@ -730,16 +748,17 @@ namespace
 
 		static Node* Parse_Space(Node* p0)
 		{
-			Node* p1 = (p0->value == ' ') ? p0+1 : 0;
-			if (!p1)
+			Node* p1 = p0;
+			p0 = (p1->value == ' ') ? p1+1 : 0;
+			if (!p0)
 			{
-				p1 = (p0->value == '\t') ? p0+1 : 0;
-				if (!p1)
+				p0 = (p1->value == '\t') ? p1+1 : 0;
+				if (!p0)
 				{
-					p1 = Parse_EndOfLine(p0);
+					p0 = Parse_EndOfLine(p1);
 				}
 			}
-			return p1;
+			return p0;
 		}
 
 		static Node* Parse_Spacing(Node* p0)
@@ -770,20 +789,20 @@ namespace
 			p0 = Parse_Primary(p0);
 			if (p0)
 			{
-				Node* p1 = Parse_QUESTION(p0);
-				if (!p1)
+				Node* p1 = p0;
+				p0 = Parse_QUESTION(p1);
+				if (!p0)
 				{
-					p1 = Parse_STAR(p0);
-					if (!p1)
+					p0 = Parse_STAR(p1);
+					if (!p0)
 					{
-						p1 = Parse_PLUS(p0);
-						if (!p1)
+						p0 = Parse_PLUS(p1);
+						if (!p0)
 						{
-							p1 = p0;
+							p0 = p1;
 						}
 					}
 				}
-				p0 = p1;
 			}
 			r.first->second = p0;
 			return p0;
@@ -820,42 +839,44 @@ namespace
 			Node* p1 = Parse_Char(p0);
 			if (!p1)
 				return 0;
-			Node* p2 = (p0->value == '\\') ? p0+1 : 0;
-			if (p2)
+			Node* p2 = p0;
+			p0 = (p2->value == '\\') ? p2+1 : 0;
+			if (p0)
 			{
-				Node* p3 = (p2->value == 'n') ? p2+1 : 0;
-				if (!p3)
+				Node* p3 = p0;
+				p0 = (p3->value == 'n') ? p3+1 : 0;
+				if (!p0)
 				{
-					p3 = (p2->value == 'r') ? p2+1 : 0;
-					if (!p3)
+					p0 = (p3->value == 'r') ? p3+1 : 0;
+					if (!p0)
 					{
-						p3 = (p2->value == 't') ? p2+1 : 0;
-						if (!p3)
+						p0 = (p3->value == 't') ? p3+1 : 0;
+						if (!p0)
 						{
-							p3 = (p2->value == '\'') ? p2+1 : 0;
-							if (!p3)
+							p0 = (p3->value == '\'') ? p3+1 : 0;
+							if (!p0)
 							{
-								p3 = (p2->value == '\"') ? p2+1 : 0;
-								if (!p3)
+								p0 = (p3->value == '\"') ? p3+1 : 0;
+								if (!p0)
 								{
-									p3 = (p2->value == '[') ? p2+1 : 0;
-									if (!p3)
+									p0 = (p3->value == '[') ? p3+1 : 0;
+									if (!p0)
 									{
-										p3 = (p2->value == ']') ? p2+1 : 0;
-										if (!p3)
+										p0 = (p3->value == ']') ? p3+1 : 0;
+										if (!p0)
 										{
-											p3 = (p2->value == '\\') ? p2+1 : 0;
-											if (!p3)
+											p0 = (p3->value == '\\') ? p3+1 : 0;
+											if (!p0)
 											{
-												p3 = (p2->value >= '1' && p2->value <= '9') ? p2+1 : 0;
-												if (p3)
+												p0 = (p3->value >= '1' && p3->value <= '9') ? p3+1 : 0;
+												if (p0)
 												{
 													for (;;)
 													{
-														Node* p4 = (p3->value >= '0' && p3->value <= '9') ? p3+1 : 0;
+														Node* p4 = (p0->value >= '0' && p0->value <= '9') ? p0+1 : 0;
 														if (!p4)
 															break;
-														p3 = p4;
+														p0 = p4;
 													}
 												}
 											}
@@ -866,15 +887,16 @@ namespace
 						}
 					}
 				}
-				p2 = p3;
 			}
-			if (!p2)
+			if (!p0)
 			{
-				p2 = (p0->value == '\\') ? p0+1 : 0;
-				p2 = p2 ? 0 : p0;
-				if (p2)
+				p0 = p2;
+				Node* p5 = (p2->value == '\\') ? p2+1 : 0;
+				if (p5)
+					p0 = 0;
+				if (p0)
 				{
-					p2 = (p2->value != 0) ? p2+1 : 0;
+					p0 = (p0->value != 0) ? p0+1 : 0;
 				}
 			}
 			return p1;
@@ -913,13 +935,14 @@ namespace
 			if (!p1)
 				return 0;
 			Node* p2 = (p0->value == ']') ? p0+1 : 0;
-			p0 = p2 ? 0 : p0;
+			if (p2)
+				p0 = 0;
 			if (p0)
 			{
-				Node* p3 = p0->end.find(PTNodeType_Range)->second;
-				if (p3)
-					v.push_back(PTNodeChild(PTNodeType_Range, p0));
-				p0 = p3;
+				Node* p3 = p0;
+				p0 = p3->end.find(PTNodeType_Range)->second;
+				if (p0)
+					v.push_back(PTNodeChild(PTNodeType_Range, p3));
 			}
 			return p1;
 		}
@@ -934,8 +957,10 @@ namespace
 			{
 				for (;;)
 				{
-					Node* p2 = Parse_EndOfLine(p0);
-					p2 = p2 ? 0 : p0;
+					Node* p2 = p0;
+					Node* p3 = Parse_EndOfLine(p0);
+					if (p3)
+						p2 = 0;
 					if (p2)
 					{
 						p2 = (p2->value != 0) ? p2+1 : 0;
@@ -970,25 +995,26 @@ namespace
 			Node* p1 = Parse_Definition(p0);
 			if (!p1)
 				return 0;
-			Node* p2 = p0->end.find(PTNodeType_Identifier)->second;
-			if (p2)
-				v.push_back(PTNodeChild(PTNodeType_Identifier, p0));
-			if (p2)
+			Node* p2 = p0;
+			p0 = p2->end.find(PTNodeType_Identifier)->second;
+			if (p0)
+				v.push_back(PTNodeChild(PTNodeType_Identifier, p2));
+			if (p0)
 			{
-				p2 = Parse_Spacing(p2);
-				if (p2)
+				p0 = Parse_Spacing(p0);
+				if (p0)
 				{
-					Node* p3 = p2->end.find(PTNodeType_LEFTARROW)->second;
-					if (p3)
-						v.push_back(PTNodeChild(PTNodeType_LEFTARROW, p2));
-					if (p3)
+					Node* p3 = p0;
+					p0 = p3->end.find(PTNodeType_LEFTARROW)->second;
+					if (p0)
+						v.push_back(PTNodeChild(PTNodeType_LEFTARROW, p3));
+					if (p0)
 					{
-						Node* p4 = p3->end.find(PTNodeType_Expression)->second;
-						if (p4)
-							v.push_back(PTNodeChild(PTNodeType_Expression, p3));
-						p3 = p4;
+						Node* p4 = p0;
+						p0 = p4->end.find(PTNodeType_Expression)->second;
+						if (p0)
+							v.push_back(PTNodeChild(PTNodeType_Expression, p4));
 					}
-					p2 = p3;
 				}
 			}
 			return p1;
@@ -1000,7 +1026,8 @@ namespace
 			if (!p1)
 				return 0;
 			Node* p2 = (p0->value != 0) ? p0+1 : 0;
-			p0 = p2 ? 0 : p0;
+			if (p2)
+				p0 = 0;
 			return p1;
 		}
 
@@ -1009,17 +1036,18 @@ namespace
 			Node* p1 = Parse_EndOfLine(p0);
 			if (!p1)
 				return 0;
-			Node* p2 = (p0->value == '\r') ? p0+1 : 0;
-			if (p2)
+			Node* p2 = p0;
+			p0 = (p2->value == '\r') ? p2+1 : 0;
+			if (p0)
 			{
-				p2 = (p2->value == '\n') ? p2+1 : 0;
+				p0 = (p0->value == '\n') ? p0+1 : 0;
 			}
-			if (!p2)
+			if (!p0)
 			{
-				p2 = (p0->value == '\n') ? p0+1 : 0;
-				if (!p2)
+				p0 = (p2->value == '\n') ? p2+1 : 0;
+				if (!p0)
 				{
-					p2 = (p0->value == '\r') ? p0+1 : 0;
+					p0 = (p2->value == '\r') ? p2+1 : 0;
 				}
 			}
 			return p1;
@@ -1030,17 +1058,18 @@ namespace
 			Node* p1 = Parse_Expression(p0);
 			if (!p1)
 				return 0;
-			Node* p2 = p0->end.find(PTNodeType_Sequence)->second;
-			if (p2)
-				v.push_back(PTNodeChild(PTNodeType_Sequence, p0));
-			if (p2)
+			Node* p2 = p0;
+			p0 = p2->end.find(PTNodeType_Sequence)->second;
+			if (p0)
+				v.push_back(PTNodeChild(PTNodeType_Sequence, p2));
+			if (p0)
 			{
 				for (;;)
 				{
-					Node* p3 = Traverse_Expression_1(p2, v);
+					Node* p3 = Traverse_Expression_1(p0, v);
 					if (!p3)
 						break;
-					p2 = p3;
+					p0 = p3;
 				}
 			}
 			return p1;
@@ -1054,10 +1083,10 @@ namespace
 			p0 = Parse_SLASH(p0);
 			if (p0)
 			{
-				Node* p2 = p0->end.find(PTNodeType_Sequence)->second;
-				if (p2)
-					v.push_back(PTNodeChild(PTNodeType_Sequence, p0));
-				p0 = p2;
+				Node* p2 = p0;
+				p0 = p2->end.find(PTNodeType_Sequence)->second;
+				if (p0)
+					v.push_back(PTNodeChild(PTNodeType_Sequence, p2));
 			}
 			return p1;
 		}
@@ -1070,26 +1099,26 @@ namespace
 			p0 = Parse_Spacing(p0);
 			if (p0)
 			{
-				Node* p2 = p0->end.find(PTNodeType_Definition)->second;
-				if (p2)
-					v.push_back(PTNodeChild(PTNodeType_Definition, p0));
-				if (p2)
+				Node* p2 = p0;
+				p0 = p2->end.find(PTNodeType_Definition)->second;
+				if (p0)
+					v.push_back(PTNodeChild(PTNodeType_Definition, p2));
+				if (p0)
 				{
 					for (;;)
 					{
-						Node* p3 = p2->end.find(PTNodeType_Definition)->second;
+						Node* p3 = p0->end.find(PTNodeType_Definition)->second;
 						if (p3)
-							v.push_back(PTNodeChild(PTNodeType_Definition, p2));
+							v.push_back(PTNodeChild(PTNodeType_Definition, p0));
 						if (!p3)
 							break;
-						p2 = p3;
+						p0 = p3;
 					}
-					if (p2)
+					if (p0)
 					{
-						p2 = Parse_EndOfFile(p2);
+						p0 = Parse_EndOfFile(p0);
 					}
 				}
-				p0 = p2;
 			}
 			return p1;
 		}
@@ -1099,35 +1128,36 @@ namespace
 			Node* p1 = Parse_Identifier(p0);
 			if (!p1)
 				return 0;
-			Node* p2 = (p0->value >= 'a' && p0->value <= 'z') ? p0+1 : 0;
-			if (!p2)
+			Node* p2 = p0;
+			p0 = (p2->value >= 'a' && p2->value <= 'z') ? p2+1 : 0;
+			if (!p0)
 			{
-				p2 = (p0->value >= 'A' && p0->value <= 'Z') ? p0+1 : 0;
-				if (!p2)
+				p0 = (p2->value >= 'A' && p2->value <= 'Z') ? p2+1 : 0;
+				if (!p0)
 				{
-					p2 = (p0->value == '_') ? p0+1 : 0;
+					p0 = (p2->value == '_') ? p2+1 : 0;
 				}
 			}
-			if (p2)
+			if (p0)
 			{
 				for (;;)
 				{
-					Node* p3 = (p2->value >= 'a' && p2->value <= 'z') ? p2+1 : 0;
+					Node* p3 = (p0->value >= 'a' && p0->value <= 'z') ? p0+1 : 0;
 					if (!p3)
 					{
-						p3 = (p2->value >= 'A' && p2->value <= 'Z') ? p2+1 : 0;
+						p3 = (p0->value >= 'A' && p0->value <= 'Z') ? p0+1 : 0;
 						if (!p3)
 						{
-							p3 = (p2->value >= '0' && p2->value <= '9') ? p2+1 : 0;
+							p3 = (p0->value >= '0' && p0->value <= '9') ? p0+1 : 0;
 							if (!p3)
 							{
-								p3 = (p2->value == '_') ? p2+1 : 0;
+								p3 = (p0->value == '_') ? p0+1 : 0;
 							}
 						}
 					}
 					if (!p3)
 						break;
-					p2 = p3;
+					p0 = p3;
 				}
 			}
 			return p1;
@@ -1141,20 +1171,20 @@ namespace
 			p0 = (p0->value == '<') ? p0+1 : 0;
 			if (p0)
 			{
-				Node* p2 = (p0->value == '-') ? p0+1 : 0;
-				if (!p2)
+				Node* p2 = p0;
+				p0 = (p2->value == '-') ? p2+1 : 0;
+				if (!p0)
 				{
-					p2 = (p0->value == '=') ? p0+1 : 0;
-					if (!p2)
+					p0 = (p2->value == '=') ? p2+1 : 0;
+					if (!p0)
 					{
-						p2 = (p0->value == '<') ? p0+1 : 0;
+						p0 = (p2->value == '<') ? p2+1 : 0;
 					}
 				}
-				if (p2)
+				if (p0)
 				{
-					p2 = Parse_Spacing(p2);
+					p0 = Parse_Spacing(p0);
 				}
-				p0 = p2;
 			}
 			return p1;
 		}
@@ -1164,10 +1194,11 @@ namespace
 			Node* p1 = Parse_Literal(p0);
 			if (!p1)
 				return 0;
-			Node* p2 = Traverse_Literal_1(p0, v);
-			if (!p2)
+			Node* p2 = p0;
+			p0 = Traverse_Literal_1(p2, v);
+			if (!p0)
 			{
-				p2 = Traverse_Literal_2(p0, v);
+				p0 = Traverse_Literal_2(p2, v);
 			}
 			return p1;
 		}
@@ -1205,13 +1236,14 @@ namespace
 			if (!p1)
 				return 0;
 			Node* p2 = (p0->value == '\'') ? p0+1 : 0;
-			p0 = p2 ? 0 : p0;
+			if (p2)
+				p0 = 0;
 			if (p0)
 			{
-				Node* p3 = p0->end.find(PTNodeType_Char)->second;
-				if (p3)
-					v.push_back(PTNodeChild(PTNodeType_Char, p0));
-				p0 = p3;
+				Node* p3 = p0;
+				p0 = p3->end.find(PTNodeType_Char)->second;
+				if (p0)
+					v.push_back(PTNodeChild(PTNodeType_Char, p3));
 			}
 			return p1;
 		}
@@ -1249,13 +1281,14 @@ namespace
 			if (!p1)
 				return 0;
 			Node* p2 = (p0->value == '\"') ? p0+1 : 0;
-			p0 = p2 ? 0 : p0;
+			if (p2)
+				p0 = 0;
 			if (p0)
 			{
-				Node* p3 = p0->end.find(PTNodeType_Char)->second;
-				if (p3)
-					v.push_back(PTNodeChild(PTNodeType_Char, p0));
-				p0 = p3;
+				Node* p3 = p0;
+				p0 = p3->end.find(PTNodeType_Char)->second;
+				if (p0)
+					v.push_back(PTNodeChild(PTNodeType_Char, p3));
 			}
 			return p1;
 		}
@@ -1304,21 +1337,22 @@ namespace
 			Node* p1 = Parse_Prefix(p0);
 			if (!p1)
 				return 0;
-			Node* p2 = Parse_AND(p0);
-			if (!p2)
+			Node* p2 = p0;
+			p0 = Parse_AND(p2);
+			if (!p0)
 			{
-				p2 = Parse_NOT(p0);
-				if (!p2)
+				p0 = Parse_NOT(p2);
+				if (!p0)
 				{
-					p2 = p0;
+					p0 = p2;
 				}
 			}
-			if (p2)
+			if (p0)
 			{
-				Node* p3 = p2->end.find(PTNodeType_Suffix)->second;
-				if (p3)
-					v.push_back(PTNodeChild(PTNodeType_Suffix, p2));
-				p2 = p3;
+				Node* p3 = p0;
+				p0 = p3->end.find(PTNodeType_Suffix)->second;
+				if (p0)
+					v.push_back(PTNodeChild(PTNodeType_Suffix, p3));
 			}
 			return p1;
 		}
@@ -1328,10 +1362,11 @@ namespace
 			Node* p1 = Parse_Primary(p0);
 			if (!p1)
 				return 0;
-			Node* p2 = Traverse_Primary_1(p0, v);
-			if (!p2)
+			Node* p2 = p0;
+			p0 = Traverse_Primary_1(p2, v);
+			if (!p0)
 			{
-				p2 = Traverse_Primary_2(p0, v);
+				p0 = Traverse_Primary_2(p2, v);
 			}
 			return p1;
 		}
@@ -1341,18 +1376,20 @@ namespace
 			Node* p1 = Parse_Primary_1(p0);
 			if (!p1)
 				return 0;
-			Node* p2 = p0->end.find(PTNodeType_Identifier)->second;
-			if (p2)
-				v.push_back(PTNodeChild(PTNodeType_Identifier, p0));
-			if (p2)
+			Node* p2 = p0;
+			p0 = p2->end.find(PTNodeType_Identifier)->second;
+			if (p0)
+				v.push_back(PTNodeChild(PTNodeType_Identifier, p2));
+			if (p0)
 			{
-				p2 = Parse_Spacing(p2);
-				if (p2)
+				p0 = Parse_Spacing(p0);
+				if (p0)
 				{
-					Node* p3 = p2->end.find(PTNodeType_LEFTARROW)->second;
+					Node* p3 = p0->end.find(PTNodeType_LEFTARROW)->second;
 					if (p3)
-						v.push_back(PTNodeChild(PTNodeType_LEFTARROW, p2));
-					p2 = p3 ? 0 : p2;
+						v.push_back(PTNodeChild(PTNodeType_LEFTARROW, p0));
+					if (p3)
+						p0 = 0;
 				}
 			}
 			return p1;
@@ -1363,10 +1400,11 @@ namespace
 			Node* p1 = Parse_Primary_2(p0);
 			if (!p1)
 				return 0;
-			Node* p2 = Traverse_Primary_2_1(p0, v);
-			if (!p2)
+			Node* p2 = p0;
+			p0 = Traverse_Primary_2_1(p2, v);
+			if (!p0)
 			{
-				p2 = Traverse_Primary_2_2(p0, v);
+				p0 = Traverse_Primary_2_2(p2, v);
 			}
 			return p1;
 		}
@@ -1379,14 +1417,14 @@ namespace
 			p0 = Parse_OPEN(p0);
 			if (p0)
 			{
-				Node* p2 = p0->end.find(PTNodeType_Expression)->second;
-				if (p2)
-					v.push_back(PTNodeChild(PTNodeType_Expression, p0));
-				if (p2)
+				Node* p2 = p0;
+				p0 = p2->end.find(PTNodeType_Expression)->second;
+				if (p0)
+					v.push_back(PTNodeChild(PTNodeType_Expression, p2));
+				if (p0)
 				{
-					p2 = Parse_CLOSE(p2);
+					p0 = Parse_CLOSE(p0);
 				}
-				p0 = p2;
 			}
 			return p1;
 		}
@@ -1396,12 +1434,13 @@ namespace
 			Node* p1 = Parse_Primary_2_2(p0);
 			if (!p1)
 				return 0;
-			Node* p2 = p0->end.find(PTNodeType_Literal)->second;
-			if (p2)
-				v.push_back(PTNodeChild(PTNodeType_Literal, p0));
-			if (!p2)
+			Node* p2 = p0;
+			p0 = p2->end.find(PTNodeType_Literal)->second;
+			if (p0)
+				v.push_back(PTNodeChild(PTNodeType_Literal, p2));
+			if (!p0)
 			{
-				p2 = Traverse_Primary_2_2_1(p0, v);
+				p0 = Traverse_Primary_2_2_1(p2, v);
 			}
 			return p1;
 		}
@@ -1411,12 +1450,13 @@ namespace
 			Node* p1 = Parse_Primary_2_2_1(p0);
 			if (!p1)
 				return 0;
-			Node* p2 = p0->end.find(PTNodeType_Class)->second;
-			if (p2)
-				v.push_back(PTNodeChild(PTNodeType_Class, p0));
-			if (!p2)
+			Node* p2 = p0;
+			p0 = p2->end.find(PTNodeType_Class)->second;
+			if (p0)
+				v.push_back(PTNodeChild(PTNodeType_Class, p2));
+			if (!p0)
 			{
-				p2 = Parse_DOT(p0);
+				p0 = Parse_DOT(p2);
 			}
 			return p1;
 		}
@@ -1439,17 +1479,18 @@ namespace
 			Node* p1 = Parse_Range(p0);
 			if (!p1)
 				return 0;
-			Node* p2 = p0->end.find(PTNodeType_Char)->second;
-			if (p2)
-				v.push_back(PTNodeChild(PTNodeType_Char, p0));
-			if (p2)
+			Node* p2 = p0;
+			p0 = p2->end.find(PTNodeType_Char)->second;
+			if (p0)
+				v.push_back(PTNodeChild(PTNodeType_Char, p2));
+			if (p0)
 			{
-				Node* p3 = Traverse_Range_1(p2, v);
-				if (!p3)
+				Node* p3 = p0;
+				p0 = Traverse_Range_1(p3, v);
+				if (!p0)
 				{
-					p3 = p2;
+					p0 = p3;
 				}
-				p2 = p3;
 			}
 			return p1;
 		}
@@ -1462,10 +1503,10 @@ namespace
 			p0 = (p0->value == '-') ? p0+1 : 0;
 			if (p0)
 			{
-				Node* p2 = p0->end.find(PTNodeType_Char)->second;
-				if (p2)
-					v.push_back(PTNodeChild(PTNodeType_Char, p0));
-				p0 = p2;
+				Node* p2 = p0;
+				p0 = p2->end.find(PTNodeType_Char)->second;
+				if (p0)
+					v.push_back(PTNodeChild(PTNodeType_Char, p2));
 			}
 			return p1;
 		}
@@ -1518,13 +1559,14 @@ namespace
 			Node* p1 = Parse_Space(p0);
 			if (!p1)
 				return 0;
-			Node* p2 = (p0->value == ' ') ? p0+1 : 0;
-			if (!p2)
+			Node* p2 = p0;
+			p0 = (p2->value == ' ') ? p2+1 : 0;
+			if (!p0)
 			{
-				p2 = (p0->value == '\t') ? p0+1 : 0;
-				if (!p2)
+				p0 = (p2->value == '\t') ? p2+1 : 0;
+				if (!p0)
 				{
-					p2 = Parse_EndOfLine(p0);
+					p0 = Parse_EndOfLine(p2);
 				}
 			}
 			return p1;
@@ -1554,25 +1596,26 @@ namespace
 			Node* p1 = Parse_Suffix(p0);
 			if (!p1)
 				return 0;
-			Node* p2 = p0->end.find(PTNodeType_Primary)->second;
-			if (p2)
-				v.push_back(PTNodeChild(PTNodeType_Primary, p0));
-			if (p2)
+			Node* p2 = p0;
+			p0 = p2->end.find(PTNodeType_Primary)->second;
+			if (p0)
+				v.push_back(PTNodeChild(PTNodeType_Primary, p2));
+			if (p0)
 			{
-				Node* p3 = Parse_QUESTION(p2);
-				if (!p3)
+				Node* p3 = p0;
+				p0 = Parse_QUESTION(p3);
+				if (!p0)
 				{
-					p3 = Parse_STAR(p2);
-					if (!p3)
+					p0 = Parse_STAR(p3);
+					if (!p0)
 					{
-						p3 = Parse_PLUS(p2);
-						if (!p3)
+						p0 = Parse_PLUS(p3);
+						if (!p0)
 						{
-							p3 = p2;
+							p0 = p3;
 						}
 					}
 				}
-				p2 = p3;
 			}
 			return p1;
 		}

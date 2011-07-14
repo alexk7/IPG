@@ -32,10 +32,11 @@
    <LaunchAction
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.GDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.GDB"
+      displayScaleIsEnabled = "NO"
+      displayScale = "1.00"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
-      buildConfiguration = "Debug"
-      enablesOpenGLESFrameCapture = "YES">
+      buildConfiguration = "Debug">
       <BuildableProductRunnable>
          <BuildableReference
             BuildableIdentifier = "primary"
@@ -51,7 +52,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "${SRCROOT}/../../src/cpp/IPG-Dev/"
+            argument = "${SRCROOT}/../../src/cpp/Dev/Dev-"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
@@ -63,6 +64,8 @@
       </AdditionalOptions>
    </LaunchAction>
    <ProfileAction
+      displayScaleIsEnabled = "NO"
+      displayScale = "1.00"
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"

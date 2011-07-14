@@ -1,3 +1,4 @@
+Identifier <= [a-zA-Z_][a-zA-Z0-9_]*
 # Hierarchical syntax
 Grammar    <= Spacing Definition+ EndOfFile
 Definition <= Identifier Spacing LEFTARROW Expression
@@ -11,7 +12,7 @@ Primary    <= Identifier Spacing !LEFTARROW
             / Literal / Class / DOT
 
 # Lexical syntax
-Identifier <= [a-zA-Z_][a-zA-Z0-9_]*
+#Identifier <= [a-zA-Z_][a-zA-Z0-9_]*
 
 Literal   <= ['] (!['] Char)* ['] Spacing
            / ["] (!["] Char)* ["] Spacing
