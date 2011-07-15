@@ -133,7 +133,7 @@
 		62D0D69813BBAF6F00F9609A /* Expression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Expression.h; sourceTree = "<group>"; };
 		62D0D69913BBAF6F00F9609A /* Grammar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Grammar.cpp; sourceTree = "<group>"; };
 		62D0D69A13BBAF6F00F9609A /* Grammar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Grammar.h; sourceTree = "<group>"; };
-		62D0D6CE13BBBA4700F9609A /* peg.peg */ = {isa = PBXFileReference; explicitFileType = sourcecode.yacc; fileEncoding = 4; path = peg.peg; sourceTree = "<group>"; };
+		62D0D6CE13BBBA4700F9609A /* peg.peg */ = {isa = PBXFileReference; explicitFileType = sourcecode.yacc; fileEncoding = 4; path = peg.peg; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
 		62DE602613CF3C79003A5A80 /* Main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Main.cpp; sourceTree = "<group>"; };
 		62DE602713CF3C79003A5A80 /* PEGParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PEGParser.cpp; sourceTree = "<group>"; };
 		62DE602813CF3C79003A5A80 /* PEGParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PEGParser.h; sourceTree = "<group>"; };

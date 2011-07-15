@@ -3,7 +3,9 @@
 #include "{{name}}.h"{{BI_NEWLINE}}
 
 #include <cassert>
+#include <stdexcept>
 #include <ostream>
+#include <sstream>
 #include <iomanip>{{BI_NEWLINE}}
 
 using namespace {{name}};{{BI_NEWLINE}}
@@ -113,24 +115,32 @@ namespace {{name}}
 		}
 	}{{BI_NEWLINE}}
 	
+	const char* SymbolName(PTNodeType _type)
+	{
+		switch (_type)
+		{
+			{{#def}}
+			case PTNodeType_{{name}}: return "{{name}}";
+			{{/def}}
+		}{{BI_NEWLINE}}
+	}
+	
 	void Print(std::ostream& _os, PTNodeType _type, Node* _pNode, int _tabs, int _maxLineSize)
 	{
-		Node* pEnd = Parse(_type, _pNode);
+		PTNodeChildren children;
+		Node* pEnd = Traverse(_type, _pNode, children);
 		if (!pEnd)
-			return;{{BI_NEWLINE}}
+		{
+			std::ostringstream oss;
+			oss << "Parsing Failed for \"" << SymbolName(_type) << "\"";
+			throw std::runtime_error(oss.str());
+		}{{BI_NEWLINE}}
 
 		int tabCount = _tabs;
 		while (tabCount--)
 		  _os << "    ";{{BI_NEWLINE}}
 		
-		switch (_type)
-		{
-			{{#def}}
-			case PTNodeType_{{name}}: _os << "{{name}}"; break;
-			{{/def}}
-		}{{BI_NEWLINE}}
-		
-		_os << ": \"";{{BI_NEWLINE}}
+		_os << SymbolName(_type) << ": \"";{{BI_NEWLINE}}
 
 		size_t lineSize = 0;
 		for (Node* p = _pNode; p != pEnd; ++p)
@@ -145,11 +155,7 @@ namespace {{name}}
 		
 		_os << "\"\n";{{BI_NEWLINE}}
 		
-		PTNodeChildren children;
-		Traverse(_type, _pNode, children);
 		for (PTNodeChildren::iterator i = children.begin(), iEnd = children.end(); i != iEnd; ++i)
-		{
 			Print(_os, i->first, i->second, _tabs + 1, _maxLineSize);
-		}
 	}
 }

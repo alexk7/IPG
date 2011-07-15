@@ -3,7 +3,9 @@
 #include "PEGParser.h"
 
 #include <cassert>
+#include <stdexcept>
 #include <ostream>
+#include <sstream>
 #include <iomanip>
 
 using namespace PEGParser;
@@ -1125,48 +1127,56 @@ namespace PEGParser
 		}
 	}
 
+	const char* SymbolName(PTNodeType _type)
+	{
+		switch (_type)
+		{
+			case PTNodeType_AND: return "AND";
+			case PTNodeType_CLOSE: return "CLOSE";
+			case PTNodeType_Char: return "Char";
+			case PTNodeType_Class: return "Class";
+			case PTNodeType_Comment: return "Comment";
+			case PTNodeType_DOT: return "DOT";
+			case PTNodeType_Definition: return "Definition";
+			case PTNodeType_EndOfFile: return "EndOfFile";
+			case PTNodeType_EndOfLine: return "EndOfLine";
+			case PTNodeType_Expression: return "Expression";
+			case PTNodeType_Grammar: return "Grammar";
+			case PTNodeType_Identifier: return "Identifier";
+			case PTNodeType_LEFTARROW: return "LEFTARROW";
+			case PTNodeType_Literal: return "Literal";
+			case PTNodeType_NOT: return "NOT";
+			case PTNodeType_OPEN: return "OPEN";
+			case PTNodeType_PLUS: return "PLUS";
+			case PTNodeType_Prefix: return "Prefix";
+			case PTNodeType_Primary: return "Primary";
+			case PTNodeType_QUESTION: return "QUESTION";
+			case PTNodeType_Range: return "Range";
+			case PTNodeType_SLASH: return "SLASH";
+			case PTNodeType_STAR: return "STAR";
+			case PTNodeType_Sequence: return "Sequence";
+			case PTNodeType_Space: return "Space";
+			case PTNodeType_Spacing: return "Spacing";
+			case PTNodeType_Suffix: return "Suffix";
+		}
+
+	}
 	void Print(std::ostream& _os, PTNodeType _type, Node* _pNode, int _tabs, int _maxLineSize)
 	{
-		Node* pEnd = Parse(_type, _pNode);
+		PTNodeChildren children;
+		Node* pEnd = Traverse(_type, _pNode, children);
 		if (!pEnd)
-			return;
+		{
+			std::ostringstream oss;
+			oss << "Parsing Failed for \"" << SymbolName(_type) << "\"";
+			throw std::runtime_error(oss.str());
+		}
 
 		int tabCount = _tabs;
 		while (tabCount--)
 		  _os << "    ";
 
-		switch (_type)
-		{
-			case PTNodeType_AND: _os << "AND"; break;
-			case PTNodeType_CLOSE: _os << "CLOSE"; break;
-			case PTNodeType_Char: _os << "Char"; break;
-			case PTNodeType_Class: _os << "Class"; break;
-			case PTNodeType_Comment: _os << "Comment"; break;
-			case PTNodeType_DOT: _os << "DOT"; break;
-			case PTNodeType_Definition: _os << "Definition"; break;
-			case PTNodeType_EndOfFile: _os << "EndOfFile"; break;
-			case PTNodeType_EndOfLine: _os << "EndOfLine"; break;
-			case PTNodeType_Expression: _os << "Expression"; break;
-			case PTNodeType_Grammar: _os << "Grammar"; break;
-			case PTNodeType_Identifier: _os << "Identifier"; break;
-			case PTNodeType_LEFTARROW: _os << "LEFTARROW"; break;
-			case PTNodeType_Literal: _os << "Literal"; break;
-			case PTNodeType_NOT: _os << "NOT"; break;
-			case PTNodeType_OPEN: _os << "OPEN"; break;
-			case PTNodeType_PLUS: _os << "PLUS"; break;
-			case PTNodeType_Prefix: _os << "Prefix"; break;
-			case PTNodeType_Primary: _os << "Primary"; break;
-			case PTNodeType_QUESTION: _os << "QUESTION"; break;
-			case PTNodeType_Range: _os << "Range"; break;
-			case PTNodeType_SLASH: _os << "SLASH"; break;
-			case PTNodeType_STAR: _os << "STAR"; break;
-			case PTNodeType_Sequence: _os << "Sequence"; break;
-			case PTNodeType_Space: _os << "Space"; break;
-			case PTNodeType_Spacing: _os << "Spacing"; break;
-			case PTNodeType_Suffix: _os << "Suffix"; break;
-		}
-
-		_os << ": \"";
+		_os << SymbolName(_type) << ": \"";
 
 		size_t lineSize = 0;
 		for (Node* p = _pNode; p != pEnd; ++p)
@@ -1181,11 +1191,7 @@ namespace PEGParser
 
 		_os << "\"\n";
 
-		PTNodeChildren children;
-		Traverse(_type, _pNode, children);
 		for (PTNodeChildren::iterator i = children.begin(), iEnd = children.end(); i != iEnd; ++i)
-		{
 			Print(_os, i->first, i->second, _tabs + 1, _maxLineSize);
-		}
 	}
 }

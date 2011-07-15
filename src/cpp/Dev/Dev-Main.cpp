@@ -315,6 +315,8 @@ static void ConvertGrammar(Grammar& _grammar, PTItr _iGrammar)
 		if (arrowType == '=' || arrowType == '<')
 			newDef.second.isMemoized = true;
 	}
+	
+	_grammar.ComputeIsLeaf();
 }
 
 static void RegisterTemplate(const ctemplate::TemplateString&  _key, const ctemplate::TemplateString&  _content)
@@ -346,25 +348,14 @@ int main(int argc, char* argv[])
 			std::string folder = argv[2];
 			std::string name = argv[3];
 			
-			Node* pGrammar = &nodes[0];
-			bool bParsed = (PEGParser::Parse(PTNodeType_Grammar, pGrammar) == &nodes.back());
-			if (bParsed)
-			{
-				Print(std::cout, PTNodeType_Grammar, pGrammar);
+			Node* pGrammar = &nodes.front();
+			Print(std::cout, PTNodeType_Grammar, pGrammar);
 			
-				Grammar grammar;
-				ConvertGrammar(grammar, PTItr(PTNodeType_Grammar, pGrammar));
-				grammar.ComputeIsLeaf();
-				
-				//std::cout << grammar;
-				
-				GenerateParser(folder, name, grammar);
-			}
-			else
-			{
-				std::cout << argv[1] << ": Parsing Failed.\n";
-				return 1;
-			}
+			Grammar grammar;
+			ConvertGrammar(grammar, PTItr(PTNodeType_Grammar, pGrammar));
+			//std::cout << grammar;
+			
+			GenerateParser(folder, name, grammar);
 		}
 	}
 	catch (const std::exception& e)

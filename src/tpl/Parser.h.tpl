@@ -29,6 +29,7 @@ namespace {{name}}
 
 	Node* Parse(PTNodeType _type, Node* _symbol);
 	Node* Traverse(PTNodeType _type, Node* _symbol, PTNodeChildren& _children);
+	const char* SymbolName(PTNodeType _type);
 	void Print(std::ostream& _os, PTNodeType _type, Node* _pNode, int _tabs = 0, int _maxLineSize = 100);
 }{{BI_NEWLINE}}
 
