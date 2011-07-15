@@ -31,7 +31,7 @@ class Expression
 public:
 	typedef std::pair<Expression, Expression> Group;
 
-	Expression() : mType(ExpressionType_Empty) {}
+	Expression() : mType(ExpressionType_Empty), isLeaf(false) {}
 	void Swap(Expression& _other);
 	
 	void AddGroupItem(ExpressionType _groupType, Expression& _item);
@@ -56,6 +56,8 @@ public:
 	
 	Expression& GetChild();
 	const Expression& GetChild() const;
+	
+	bool isLeaf;
 	
 private:    
 	void PrintChildren(std::ostream& _os, const char* _separator, ExpressionType _parentType) const;

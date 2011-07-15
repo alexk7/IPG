@@ -9,21 +9,20 @@ class ParserGenerator
 	std::ostream& mSource;
 	const Grammar& mGrammar;
 	Tabs mTabs;
-	int mNextVarIndex;
+	int mNextBacktrackIndex;
 	bool mTraverse;
 	
 public:
-	ParserGenerator(std::ostream& _source, const Grammar& _grammar,
-									bool _traverse, int nextVarIndex)
+	ParserGenerator(std::ostream& _source, const Grammar& _grammar, bool _traverse = false)
 	: mSource(_source)
 	, mGrammar(_grammar)
 	, mTabs(3)
-	, mNextVarIndex(nextVarIndex)
+	, mNextBacktrackIndex(1)
 	, mTraverse(_traverse)
 	{
 	}
 	
-	void Emit(const Expression& expr)
+	void Emit(const Expression& expr, int _backtrackIndex = -1)
 	{
 		switch (expr.GetType())
 		{
@@ -34,33 +33,23 @@ public:
 				
 			case ExpressionType_Choice:
 			{
-				int backtrackIndex = Assign(-1, 0);
-				const Expression::Group* pGroup = &expr.GetGroup();
-				Emit(pGroup->first);
-				If(Not(RValue(0)));
+				const Expression::Group& group = expr.GetGroup();
+				bool visit = !group.first.isLeaf;
+				DefineBacktrack(_backtrackIndex, visit);
+				Emit(group.first, _backtrackIndex);
+				If("!p");
 				OpenBlock();
-				int openCount = 1;
-				while (pGroup->second.GetType() == ExpressionType_Choice)
-				{
-					pGroup = &pGroup->second.GetGroup();
-					Assign(0, backtrackIndex);
-					Emit(pGroup->first);
-					If(Not(RValue(0)));
-					OpenBlock();
-					++openCount;
-				}
-				Assign(0, backtrackIndex);
-				Emit(pGroup->second);
-				while (openCount--)
-					CloseBlock();
+				Backtrack(_backtrackIndex, visit);
+				Emit(group.second, _backtrackIndex);
+				CloseBlock();
 				break;
 			}
 				
 			case ExpressionType_Sequence:
 			{
 				const Expression::Group& group = expr.GetGroup();
-				Emit(group.first);
-				If(RValue(0));
+				Emit(group.first, _backtrackIndex);
+				If("p");
 				OpenBlock();
 				Emit(group.second);
 				CloseBlock();
@@ -69,9 +58,12 @@ public:
 
 			case ExpressionType_Not:
 			{
-				int backtrackIndex = Assign(-1, 0);
-				Emit(expr.GetChild());
-				mSource << mTabs.Next() << boost::format("%1% = %1% ? 0 : %2%;\n") % RValue(0) % RValue(backtrackIndex);
+				bool traverse = mTraverse;
+				mTraverse = false;
+				DefineBacktrack(_backtrackIndex, false);
+				Emit(expr.GetChild(), _backtrackIndex);
+				mSource << mTabs << boost::format("if (p) p = 0; else p = %1%;\n") % BacktrackVar(_backtrackIndex);
+				mTraverse = traverse;
 				break;
 			}
 				
@@ -79,11 +71,13 @@ public:
 			{
 				mSource << mTabs << "for (;;)\n";
 				OpenBlock();
-				int backtrackIndex = Assign(-1, 0);
-				Emit(expr.GetChild());
-				If(Not(RValue(0)));
+				const Expression& child = expr.GetChild();
+				bool visit = !child.isLeaf;
+				DefineBacktrack(_backtrackIndex, visit);
+				Emit(child, _backtrackIndex);
+				If("!p");
 				OpenBlock();
-				Assign(0, backtrackIndex);
+				Backtrack(_backtrackIndex, visit);
 				mSource << mTabs << "break;\n";
 				CloseBlock();
 				CloseBlock();
@@ -99,49 +93,36 @@ public:
 					const DefValue& defval = def.second;
 					if (defval.isNode)
 					{
-						int backtrackIndex = Assign(-1, 0);
-						mSource << mTabs << boost::format("%1% = %1%->end.find(PTNodeType_%2%)->second;\n") % RValue(0) % nonTerminal;
-						mSource << mTabs << boost::format("if (%1%)\n") % RValue(0);
-						mSource << mTabs.Next() << boost::format("v.push_back(PTNodeChild(PTNodeType_%1%, %2%));\n") % nonTerminal % RValue(backtrackIndex);
+						mSource << mTabs << boost::format("p = ::Visit(PTNodeType_%1%, p, v);\n") % nonTerminal;
 						break;
 					}
-					else if (defval.isNodeRef)
+					else if (!defval.isLeaf)
 					{
-						mSource << mTabs << boost::format("%1% = Traverse_%2%(%1%, v);\n") % RValue(0) % nonTerminal;
+						mSource << mTabs << boost::format("p = Traverse_%1%(p, v);\n") % nonTerminal;
 						break;
 					}
 				}
-				mSource << mTabs << boost::format("%1% = Parse_%2%(%1%);\n") % RValue(0) % nonTerminal;
+				mSource << mTabs << boost::format("p = Parse_%1%(p);\n") % nonTerminal;
 				break;
 			}
 				
 			case ExpressionType_Range:
 			{
-				mSource << mTabs << boost::format("%1% = (%2% >= \'%3%\' && %2% <= \'%4%\') ? %5% : 0;\n")
-					% RValue(0)
-					% Deref(0)
+				mSource << mTabs << boost::format("if (p->value >= \'%1%\' && p->value <= \'%2%\') ++p; else p = 0;\n")
 					% EscapeChar(expr.GetFirst())
-					% EscapeChar(expr.GetLast())
-					% Next(0);
+					% EscapeChar(expr.GetLast());
 				break;
 			}
 				
 			case ExpressionType_Char:
 			{
-				mSource << mTabs << boost::format("%1% = (%2% == \'%3%\') ? %4% : 0;\n")
-					% RValue(0)
-					% Deref(0)
-					% EscapeChar(expr.GetChar())
-					% Next(0);
+				mSource << mTabs << boost::format("if (p->value == \'%1%\') ++p; else p = 0;\n") % EscapeChar(expr.GetChar());
 				break;
 			}
 				
 			case ExpressionType_Dot:
 			{
-				mSource << mTabs << boost::format("%1% = (%2% != 0) ? %3% : 0;\n")
-					% RValue(0)
-					% Deref(0)
-					% Next(0);
+				mSource << mTabs << "if (p->value != 0) ++p; else p = 0;\n";
 				break;
 			}
 				
@@ -169,48 +150,36 @@ public:
 		mSource << mTabs << "}\n";
 	}
 	
-	int Assign(int _toIndex, int _fromIndex)
-	{
-		if (_toIndex != _fromIndex)
-			mSource << mTabs << boost::format("%1% = %2%;\n") % LValue(_toIndex) % RValue(_fromIndex);
-		return _toIndex;
-	}
-		
-	static std::string Next(int _index)
-	{
-		return RValue(_index) + "+1";
-	}
-	
-	static std::string Deref(int _index)
-	{
-		return RValue(_index) + "->value";
-	}
-	
 	static std::string Not(std::string _expr)
 	{
 		return "!" + _expr;
 	}
 	
-	std::string LValue(int& _index)
+	void DefineBacktrack(int& _backtrackIndex, bool _visit)
 	{
-		if (_index == -1)
+		if (_backtrackIndex == -1)
 		{
-			_index = mNextVarIndex++;
-			return str(boost::format("Node* %1%") % RValue(_index));
-		}
-		else
-		{
-			return RValue(_index);
+			_backtrackIndex = mNextBacktrackIndex++;
+			mSource << mTabs << boost::format("Node* %1% = p;\n") % BacktrackVar(_backtrackIndex);
+			if (mTraverse && _visit)
+				mSource << mTabs << boost::format("size_t %1% = v.size();\n") % BacktrackVar(_backtrackIndex, 's');
 		}
 	}
 	
-	static std::string RValue(int _index)
+	void Backtrack(int _backtrackIndex, bool _visit)
 	{
-		assert(_index != -1);
-		if (_index == 0)
-			return "p";
+		mSource << mTabs << boost::format("p = %1%;\n") % BacktrackVar(_backtrackIndex);
+		if (mTraverse && _visit)
+			mSource << mTabs << boost::format("v.erase(v.begin() + %1%, v.end());\n") % BacktrackVar(_backtrackIndex, 's');
+	}
+	
+	static std::string BacktrackVar(int _backtrackIndex, char _prefix = 'b')
+	{
+		assert(_backtrackIndex != -1);
+		if (_backtrackIndex == 1)
+			return str(boost::format("%1%") % _prefix);
 		else
-			return str(boost::format("p%1%") % _index);
+			return str(boost::format("%1%%2%") % _prefix % _backtrackIndex);
 	}
 };
 
@@ -227,12 +196,16 @@ void GenerateParser(std::string _folder, std::string _name, const Grammar& _gram
 		pDef->SetValue("name", i->first);
 		pDef->SetIntValue("value", ++value);
 		
-		bool isMemoized = i->second.isMemoized;
-		if (isMemoized)
+		if (i->second.isMemoized)
 			pDef->ShowSection("isMemoized");
+			
+		if (i->second.isLeaf)
+			pDef->ShowSection("isLeaf");
+		else
+			pDef->ShowSection("isInternal");
 		
 		std::ostringstream parseCodeStream;
-		ParserGenerator parserGenerator(parseCodeStream, _grammar, false, 1);
+		ParserGenerator parserGenerator(parseCodeStream, _grammar);
 		parserGenerator.Emit(i->second);
 		
 		std::string parseCodeFilename = "parseCode_" + i->first;
@@ -240,10 +213,9 @@ void GenerateParser(std::string _folder, std::string _name, const Grammar& _gram
 		ctemplate::StringToTemplateCache(parseCodeFilename, parseCode, ctemplate::STRIP_BLANK_LINES);
 		
 		pDef->AddIncludeDictionary("parseCode")->SetFilename(parseCodeFilename);
-		pDef->SetIntValue("parseResultIndex", 0);
 		
 		std::ostringstream traverseCodeStream;
-		ParserGenerator traverserGenerator(traverseCodeStream, _grammar, true, 2);
+		ParserGenerator traverserGenerator(traverseCodeStream, _grammar, true);
 		traverserGenerator.Emit(i->second);
 		
 		std::string traverseCodeFilename = "traverseCode_" + i->first;
@@ -251,7 +223,6 @@ void GenerateParser(std::string _folder, std::string _name, const Grammar& _gram
 		ctemplate::StringToTemplateCache(traverseCodeFilename, traverseCode, ctemplate::STRIP_BLANK_LINES);
 
 		pDef->AddIncludeDictionary("traverseCode")->SetFilename(traverseCodeFilename);
-		pDef->SetIntValue("traverseResultIndex", 0);
 	}
 
 	std::string sourceText;

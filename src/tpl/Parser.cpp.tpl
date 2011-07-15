@@ -2,6 +2,7 @@
 // DO NOT EDIT!
 #include "{{name}}.h"{{BI_NEWLINE}}
 
+#include <cassert>
 #include <ostream>
 #include <iomanip>{{BI_NEWLINE}}
 
@@ -9,7 +10,8 @@ using namespace {{name}};{{BI_NEWLINE}}
 
 namespace
 {
-	typedef PTNodeTypeToPtr::value_type MemoEntry;
+	typedef PTNodeTypeToPtr::value_type Memo;
+	typedef PTNodeTypeToPtr::iterator MemoIterator;
 	typedef std::pair<PTNodeTypeToPtr::iterator, bool> MemoInsertResult;{{BI_NEWLINE}}
 	
 	struct EscapeChar
@@ -18,7 +20,7 @@ namespace
 		char c;
 	};{{BI_NEWLINE}}
 	
-	inline std::ostream& operator<<(std::ostream& _os, EscapeChar _e)
+	std::ostream& operator<<(std::ostream& _os, EscapeChar _e)
 	{
 		char c = _e.c;
 		switch (c)
@@ -40,13 +42,22 @@ namespace
 		return _os;
 	}{{BI_NEWLINE}}
 	
+	Node* Visit(PTNodeType type, Node* p, PTNodeChildren& v)
+	{
+		MemoIterator i = p->end.find(type);
+		assert(i != p->end.end());
+		Node* pEnd = i->second;
+		if (pEnd)
+			v.push_back(PTNodeChild(type, p));
+		return pEnd;
+	}{{BI_NEWLINE}}
+	
 	struct Private
 	{{{#def}}{{BI_NEWLINE}}		static Node* Parse_{{name}}(Node* p)
 		{
 			{{#isMemoized}}
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_{{name}}, 0));
-			if (!r.second)
-				return r.first->second;
+			MemoInsertResult r = p->end.insert(Memo(PTNodeType_{{name}}, 0));
+			if (!r.second) return r.first->second;
 			{{/isMemoized}}
 			{{>parseCode}}
 			{{#isMemoized}}
@@ -56,14 +67,16 @@ namespace
 		}
 		{{/def}}
 		
-		{{#def}}{{BI_NEWLINE}}		static Node* Traverse_{{name}}(Node* p, PTNodeChildren& v)
+		{{#def}}
+		{{#isInternal}}{{BI_NEWLINE}}		static Node* Traverse_{{name}}(Node* p, PTNodeChildren& v)
 		{
-			Node* p1 = Parse_{{name}}(p);
-			if (!p1)
+			Node* e = Parse_{{name}}(p);
+			if (!e)
 				return 0;
 			{{>traverseCode}}
-			return p1;
+			return e;
 		}
+		{{/isInternal}}
 		{{/def}}
 	};
 }{{BI_NEWLINE}}
@@ -86,30 +99,38 @@ namespace {{name}}
 		switch (_type)
 		{
 			{{#def}}
+			{{#isInternal}}
 			case PTNodeType_{{name}}: return Private::Traverse_{{name}}(_symbol, _children);
+			{{/isInternal}}
 			{{/def}}
+			{{#def}}
+			{{#isLeaf}}
+			case PTNodeType_{{name}}:
+			{{/isLeaf}}
+			{{/def}}
+			default:
+				return Parse(_type, _symbol);
 		}
-		return 0;
-	}
+	}{{BI_NEWLINE}}
 	
 	void Print(std::ostream& _os, PTNodeType _type, Node* _pNode, int _tabs, int _maxLineSize)
 	{
 		Node* pEnd = Parse(_type, _pNode);
 		if (!pEnd)
-			return;
+			return;{{BI_NEWLINE}}
 
 		int tabCount = _tabs;
 		while (tabCount--)
-		  _os << "    ";
+		  _os << "    ";{{BI_NEWLINE}}
 		
 		switch (_type)
 		{
 			{{#def}}
 			case PTNodeType_{{name}}: _os << "{{name}}"; break;
 			{{/def}}
-		}
+		}{{BI_NEWLINE}}
 		
-		_os << ": \"";
+		_os << ": \"";{{BI_NEWLINE}}
 
 		size_t lineSize = 0;
 		for (Node* p = _pNode; p != pEnd; ++p)
@@ -120,9 +141,9 @@ namespace {{name}}
 				_os << "...";
 				break;
 			}
-		}
+		}{{BI_NEWLINE}}
 		
-		_os << "\"\n";
+		_os << "\"\n";{{BI_NEWLINE}}
 		
 		PTNodeChildren children;
 		Traverse(_type, _pNode, children);

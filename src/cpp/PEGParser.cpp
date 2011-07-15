@@ -2,6 +2,7 @@
 // DO NOT EDIT!
 #include "PEGParser.h"
 
+#include <cassert>
 #include <ostream>
 #include <iomanip>
 
@@ -9,7 +10,8 @@ using namespace PEGParser;
 
 namespace
 {
-	typedef PTNodeTypeToPtr::value_type MemoEntry;
+	typedef PTNodeTypeToPtr::value_type Memo;
+	typedef PTNodeTypeToPtr::iterator MemoIterator;
 	typedef std::pair<PTNodeTypeToPtr::iterator, bool> MemoInsertResult;
 
 	struct EscapeChar
@@ -18,7 +20,7 @@ namespace
 		char c;
 	};
 
-	inline std::ostream& operator<<(std::ostream& _os, EscapeChar _e)
+	std::ostream& operator<<(std::ostream& _os, EscapeChar _e)
 	{
 		char c = _e.c;
 		switch (c)
@@ -38,25 +40,31 @@ namespace
 		return _os;
 	}
 
+	Node* Visit(PTNodeType type, Node* p, PTNodeChildren& v)
+	{
+		MemoIterator i = p->end.find(type);
+		assert(i != p->end.end());
+		Node* pEnd = i->second;
+		if (pEnd)
+			v.push_back(PTNodeChild(type, p));
+		return pEnd;
+	}
+
 	struct Private
 	{
 		static Node* Parse_AND(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_AND, 0));
-			if (!r.second)
-				return r.first->second;
-			p = (p->value == '&') ? p+1 : 0;
+			if (p->value == '&') ++p; else p = 0;
 			if (p)
 			{
 				p = Parse_Spacing(p);
 			}
-			r.first->second = p;
 			return p;
 		}
 
 		static Node* Parse_CLOSE(Node* p)
 		{
-			p = (p->value == ')') ? p+1 : 0;
+			if (p->value == ')') ++p; else p = 0;
 			if (p)
 			{
 				p = Parse_Spacing(p);
@@ -66,56 +74,55 @@ namespace
 
 		static Node* Parse_Char(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Char, 0));
-			if (!r.second)
-				return r.first->second;
-			Node* p1 = p;
-			p = (p->value == '\\') ? p+1 : 0;
+			MemoInsertResult r = p->end.insert(Memo(PTNodeType_Char, 0));
+			if (!r.second) return r.first->second;
+			Node* b = p;
+			if (p->value == '\\') ++p; else p = 0;
 			if (p)
 			{
-				Node* p2 = p;
-				p = (p->value == 'n') ? p+1 : 0;
+				Node* b2 = p;
+				if (p->value == 'n') ++p; else p = 0;
 				if (!p)
 				{
-					p = p2;
-					p = (p->value == 'r') ? p+1 : 0;
+					p = b2;
+					if (p->value == 'r') ++p; else p = 0;
 					if (!p)
 					{
-						p = p2;
-						p = (p->value == 't') ? p+1 : 0;
+						p = b2;
+						if (p->value == 't') ++p; else p = 0;
 						if (!p)
 						{
-							p = p2;
-							p = (p->value == '\'') ? p+1 : 0;
+							p = b2;
+							if (p->value == '\'') ++p; else p = 0;
 							if (!p)
 							{
-								p = p2;
-								p = (p->value == '\"') ? p+1 : 0;
+								p = b2;
+								if (p->value == '\"') ++p; else p = 0;
 								if (!p)
 								{
-									p = p2;
-									p = (p->value == '[') ? p+1 : 0;
+									p = b2;
+									if (p->value == '[') ++p; else p = 0;
 									if (!p)
 									{
-										p = p2;
-										p = (p->value == ']') ? p+1 : 0;
+										p = b2;
+										if (p->value == ']') ++p; else p = 0;
 										if (!p)
 										{
-											p = p2;
-											p = (p->value == '\\') ? p+1 : 0;
+											p = b2;
+											if (p->value == '\\') ++p; else p = 0;
 											if (!p)
 											{
-												p = p2;
-												p = (p->value >= '1' && p->value <= '9') ? p+1 : 0;
+												p = b2;
+												if (p->value >= '1' && p->value <= '9') ++p; else p = 0;
 												if (p)
 												{
 													for (;;)
 													{
-														Node* p3 = p;
-														p = (p->value >= '0' && p->value <= '9') ? p+1 : 0;
+														Node* b3 = p;
+														if (p->value >= '0' && p->value <= '9') ++p; else p = 0;
 														if (!p)
 														{
-															p = p3;
+															p = b3;
 															break;
 														}
 													}
@@ -131,13 +138,12 @@ namespace
 			}
 			if (!p)
 			{
-				p = p1;
-				Node* p4 = p;
-				p = (p->value == '\\') ? p+1 : 0;
-					p = p ? 0 : p4;
+				p = b;
+				if (p->value == '\\') ++p; else p = 0;
+				if (p) p = 0; else p = b;
 				if (p)
 				{
-					p = (p->value != 0) ? p+1 : 0;
+					if (p->value != 0) ++p; else p = 0;
 				}
 			}
 			r.first->second = p;
@@ -146,25 +152,29 @@ namespace
 
 		static Node* Parse_Class(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Class, 0));
-			if (!r.second)
-				return r.first->second;
-			p = (p->value == '[') ? p+1 : 0;
+			MemoInsertResult r = p->end.insert(Memo(PTNodeType_Class, 0));
+			if (!r.second) return r.first->second;
+			if (p->value == '[') ++p; else p = 0;
 			if (p)
 			{
 				for (;;)
 				{
-					Node* p1 = p;
-					p = Parse_Class_1(p);
+					Node* b = p;
+					if (p->value == ']') ++p; else p = 0;
+					if (p) p = 0; else p = b;
+					if (p)
+					{
+						p = Parse_Range(p);
+					}
 					if (!p)
 					{
-						p = p1;
+						p = b;
 						break;
 					}
 				}
 				if (p)
 				{
-					p = (p->value == ']') ? p+1 : 0;
+					if (p->value == ']') ++p; else p = 0;
 					if (p)
 					{
 						p = Parse_Spacing(p);
@@ -175,40 +185,23 @@ namespace
 			return p;
 		}
 
-		static Node* Parse_Class_1(Node* p)
-		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Class_1, 0));
-			if (!r.second)
-				return r.first->second;
-			Node* p1 = p;
-			p = (p->value == ']') ? p+1 : 0;
-				p = p ? 0 : p1;
-			if (p)
-			{
-				p = Parse_Range(p);
-			}
-			r.first->second = p;
-			return p;
-		}
-
 		static Node* Parse_Comment(Node* p)
 		{
-			p = (p->value == '#') ? p+1 : 0;
+			if (p->value == '#') ++p; else p = 0;
 			if (p)
 			{
 				for (;;)
 				{
-					Node* p1 = p;
-					Node* p2 = p;
+					Node* b = p;
 					p = Parse_EndOfLine(p);
-						p = p ? 0 : p2;
+					if (p) p = 0; else p = b;
 					if (p)
 					{
-						p = (p->value != 0) ? p+1 : 0;
+						if (p->value != 0) ++p; else p = 0;
 					}
 					if (!p)
 					{
-						p = p1;
+						p = b;
 						break;
 					}
 				}
@@ -222,23 +215,18 @@ namespace
 
 		static Node* Parse_DOT(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_DOT, 0));
-			if (!r.second)
-				return r.first->second;
-			p = (p->value == '.') ? p+1 : 0;
+			if (p->value == '.') ++p; else p = 0;
 			if (p)
 			{
 				p = Parse_Spacing(p);
 			}
-			r.first->second = p;
 			return p;
 		}
 
 		static Node* Parse_Definition(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Definition, 0));
-			if (!r.second)
-				return r.first->second;
+			MemoInsertResult r = p->end.insert(Memo(PTNodeType_Definition, 0));
+			if (!r.second) return r.first->second;
 			p = Parse_Identifier(p);
 			if (p)
 			{
@@ -258,28 +246,28 @@ namespace
 
 		static Node* Parse_EndOfFile(Node* p)
 		{
-			Node* p1 = p;
-			p = (p->value != 0) ? p+1 : 0;
-				p = p ? 0 : p1;
+			Node* b = p;
+			if (p->value != 0) ++p; else p = 0;
+			if (p) p = 0; else p = b;
 			return p;
 		}
 
 		static Node* Parse_EndOfLine(Node* p)
 		{
-			Node* p1 = p;
-			p = (p->value == '\r') ? p+1 : 0;
+			Node* b = p;
+			if (p->value == '\r') ++p; else p = 0;
 			if (p)
 			{
-				p = (p->value == '\n') ? p+1 : 0;
+				if (p->value == '\n') ++p; else p = 0;
 			}
 			if (!p)
 			{
-				p = p1;
-				p = (p->value == '\n') ? p+1 : 0;
+				p = b;
+				if (p->value == '\n') ++p; else p = 0;
 				if (!p)
 				{
-					p = p1;
-					p = (p->value == '\r') ? p+1 : 0;
+					p = b;
+					if (p->value == '\r') ++p; else p = 0;
 				}
 			}
 			return p;
@@ -287,19 +275,22 @@ namespace
 
 		static Node* Parse_Expression(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Expression, 0));
-			if (!r.second)
-				return r.first->second;
+			MemoInsertResult r = p->end.insert(Memo(PTNodeType_Expression, 0));
+			if (!r.second) return r.first->second;
 			p = Parse_Sequence(p);
 			if (p)
 			{
 				for (;;)
 				{
-					Node* p1 = p;
-					p = Parse_Expression_1(p);
+					Node* b = p;
+					p = Parse_SLASH(p);
+					if (p)
+					{
+						p = Parse_Sequence(p);
+					}
 					if (!p)
 					{
-						p = p1;
+						p = b;
 						break;
 					}
 				}
@@ -308,25 +299,10 @@ namespace
 			return p;
 		}
 
-		static Node* Parse_Expression_1(Node* p)
-		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Expression_1, 0));
-			if (!r.second)
-				return r.first->second;
-			p = Parse_SLASH(p);
-			if (p)
-			{
-				p = Parse_Sequence(p);
-			}
-			r.first->second = p;
-			return p;
-		}
-
 		static Node* Parse_Grammar(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Grammar, 0));
-			if (!r.second)
-				return r.first->second;
+			MemoInsertResult r = p->end.insert(Memo(PTNodeType_Grammar, 0));
+			if (!r.second) return r.first->second;
 			p = Parse_Spacing(p);
 			if (p)
 			{
@@ -335,11 +311,11 @@ namespace
 				{
 					for (;;)
 					{
-						Node* p1 = p;
+						Node* b = p;
 						p = Parse_Definition(p);
 						if (!p)
 						{
-							p = p1;
+							p = b;
 							break;
 						}
 					}
@@ -355,46 +331,44 @@ namespace
 
 		static Node* Parse_Identifier(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Identifier, 0));
-			if (!r.second)
-				return r.first->second;
-			Node* p1 = p;
-			p = (p->value >= 'a' && p->value <= 'z') ? p+1 : 0;
+			MemoInsertResult r = p->end.insert(Memo(PTNodeType_Identifier, 0));
+			if (!r.second) return r.first->second;
+			Node* b = p;
+			if (p->value >= 'a' && p->value <= 'z') ++p; else p = 0;
 			if (!p)
 			{
-				p = p1;
-				p = (p->value >= 'A' && p->value <= 'Z') ? p+1 : 0;
+				p = b;
+				if (p->value >= 'A' && p->value <= 'Z') ++p; else p = 0;
 				if (!p)
 				{
-					p = p1;
-					p = (p->value == '_') ? p+1 : 0;
+					p = b;
+					if (p->value == '_') ++p; else p = 0;
 				}
 			}
 			if (p)
 			{
 				for (;;)
 				{
-					Node* p2 = p;
-					Node* p3 = p;
-					p = (p->value >= 'a' && p->value <= 'z') ? p+1 : 0;
+					Node* b2 = p;
+					if (p->value >= 'a' && p->value <= 'z') ++p; else p = 0;
 					if (!p)
 					{
-						p = p3;
-						p = (p->value >= 'A' && p->value <= 'Z') ? p+1 : 0;
+						p = b2;
+						if (p->value >= 'A' && p->value <= 'Z') ++p; else p = 0;
 						if (!p)
 						{
-							p = p3;
-							p = (p->value >= '0' && p->value <= '9') ? p+1 : 0;
+							p = b2;
+							if (p->value >= '0' && p->value <= '9') ++p; else p = 0;
 							if (!p)
 							{
-								p = p3;
-								p = (p->value == '_') ? p+1 : 0;
+								p = b2;
+								if (p->value == '_') ++p; else p = 0;
 							}
 						}
 					}
 					if (!p)
 					{
-						p = p2;
+						p = b2;
 						break;
 					}
 				}
@@ -405,22 +379,21 @@ namespace
 
 		static Node* Parse_LEFTARROW(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_LEFTARROW, 0));
-			if (!r.second)
-				return r.first->second;
-			p = (p->value == '<') ? p+1 : 0;
+			MemoInsertResult r = p->end.insert(Memo(PTNodeType_LEFTARROW, 0));
+			if (!r.second) return r.first->second;
+			if (p->value == '<') ++p; else p = 0;
 			if (p)
 			{
-				Node* p1 = p;
-				p = (p->value == '-') ? p+1 : 0;
+				Node* b = p;
+				if (p->value == '-') ++p; else p = 0;
 				if (!p)
 				{
-					p = p1;
-					p = (p->value == '=') ? p+1 : 0;
+					p = b;
+					if (p->value == '=') ++p; else p = 0;
 					if (!p)
 					{
-						p = p1;
-						p = (p->value == '<') ? p+1 : 0;
+						p = b;
+						if (p->value == '<') ++p; else p = 0;
 					}
 				}
 				if (p)
@@ -434,109 +407,66 @@ namespace
 
 		static Node* Parse_Literal(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Literal, 0));
-			if (!r.second)
-				return r.first->second;
-			Node* p1 = p;
-			p = Parse_Literal_1(p);
+			MemoInsertResult r = p->end.insert(Memo(PTNodeType_Literal, 0));
+			if (!r.second) return r.first->second;
+			Node* b = p;
+			if (p->value == '\'') ++p; else p = 0;
+			if (p)
+			{
+				for (;;)
+				{
+					Node* b2 = p;
+					if (p->value == '\'') ++p; else p = 0;
+					if (p) p = 0; else p = b2;
+					if (p)
+					{
+						p = Parse_Char(p);
+					}
+					if (!p)
+					{
+						p = b2;
+						break;
+					}
+				}
+				if (p)
+				{
+					if (p->value == '\'') ++p; else p = 0;
+					if (p)
+					{
+						p = Parse_Spacing(p);
+					}
+				}
+			}
 			if (!p)
 			{
-				p = p1;
-				p = Parse_Literal_2(p);
-			}
-			r.first->second = p;
-			return p;
-		}
-
-		static Node* Parse_Literal_1(Node* p)
-		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Literal_1, 0));
-			if (!r.second)
-				return r.first->second;
-			p = (p->value == '\'') ? p+1 : 0;
-			if (p)
-			{
-				for (;;)
-				{
-					Node* p1 = p;
-					p = Parse_Literal_1_1(p);
-					if (!p)
-					{
-						p = p1;
-						break;
-					}
-				}
+				p = b;
+				if (p->value == '\"') ++p; else p = 0;
 				if (p)
 				{
-					p = (p->value == '\'') ? p+1 : 0;
+					for (;;)
+					{
+						Node* b3 = p;
+						if (p->value == '\"') ++p; else p = 0;
+						if (p) p = 0; else p = b3;
+						if (p)
+						{
+							p = Parse_Char(p);
+						}
+						if (!p)
+						{
+							p = b3;
+							break;
+						}
+					}
 					if (p)
 					{
-						p = Parse_Spacing(p);
+						if (p->value == '\"') ++p; else p = 0;
+						if (p)
+						{
+							p = Parse_Spacing(p);
+						}
 					}
 				}
-			}
-			r.first->second = p;
-			return p;
-		}
-
-		static Node* Parse_Literal_1_1(Node* p)
-		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Literal_1_1, 0));
-			if (!r.second)
-				return r.first->second;
-			Node* p1 = p;
-			p = (p->value == '\'') ? p+1 : 0;
-				p = p ? 0 : p1;
-			if (p)
-			{
-				p = Parse_Char(p);
-			}
-			r.first->second = p;
-			return p;
-		}
-
-		static Node* Parse_Literal_2(Node* p)
-		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Literal_2, 0));
-			if (!r.second)
-				return r.first->second;
-			p = (p->value == '\"') ? p+1 : 0;
-			if (p)
-			{
-				for (;;)
-				{
-					Node* p1 = p;
-					p = Parse_Literal_2_1(p);
-					if (!p)
-					{
-						p = p1;
-						break;
-					}
-				}
-				if (p)
-				{
-					p = (p->value == '\"') ? p+1 : 0;
-					if (p)
-					{
-						p = Parse_Spacing(p);
-					}
-				}
-			}
-			r.first->second = p;
-			return p;
-		}
-
-		static Node* Parse_Literal_2_1(Node* p)
-		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Literal_2_1, 0));
-			if (!r.second)
-				return r.first->second;
-			Node* p1 = p;
-			p = (p->value == '\"') ? p+1 : 0;
-				p = p ? 0 : p1;
-			if (p)
-			{
-				p = Parse_Char(p);
 			}
 			r.first->second = p;
 			return p;
@@ -544,21 +474,17 @@ namespace
 
 		static Node* Parse_NOT(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_NOT, 0));
-			if (!r.second)
-				return r.first->second;
-			p = (p->value == '!') ? p+1 : 0;
+			if (p->value == '!') ++p; else p = 0;
 			if (p)
 			{
 				p = Parse_Spacing(p);
 			}
-			r.first->second = p;
 			return p;
 		}
 
 		static Node* Parse_OPEN(Node* p)
 		{
-			p = (p->value == '(') ? p+1 : 0;
+			if (p->value == '(') ++p; else p = 0;
 			if (p)
 			{
 				p = Parse_Spacing(p);
@@ -568,32 +494,27 @@ namespace
 
 		static Node* Parse_PLUS(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_PLUS, 0));
-			if (!r.second)
-				return r.first->second;
-			p = (p->value == '+') ? p+1 : 0;
+			if (p->value == '+') ++p; else p = 0;
 			if (p)
 			{
 				p = Parse_Spacing(p);
 			}
-			r.first->second = p;
 			return p;
 		}
 
 		static Node* Parse_Prefix(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Prefix, 0));
-			if (!r.second)
-				return r.first->second;
-			Node* p1 = p;
+			MemoInsertResult r = p->end.insert(Memo(PTNodeType_Prefix, 0));
+			if (!r.second) return r.first->second;
+			Node* b = p;
 			p = Parse_AND(p);
 			if (!p)
 			{
-				p = p1;
+				p = b;
 				p = Parse_NOT(p);
 				if (!p)
 				{
-					p = p1;
+					p = b;
 				}
 			}
 			if (p)
@@ -606,101 +527,47 @@ namespace
 
 		static Node* Parse_Primary(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Primary, 0));
-			if (!r.second)
-				return r.first->second;
-			Node* p1 = p;
-			p = Parse_Primary_1(p);
-			if (!p)
-			{
-				p = p1;
-				p = Parse_Primary_2(p);
-			}
-			r.first->second = p;
-			return p;
-		}
-
-		static Node* Parse_Primary_1(Node* p)
-		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Primary_1, 0));
-			if (!r.second)
-				return r.first->second;
+			MemoInsertResult r = p->end.insert(Memo(PTNodeType_Primary, 0));
+			if (!r.second) return r.first->second;
+			Node* b = p;
 			p = Parse_Identifier(p);
 			if (p)
 			{
 				p = Parse_Spacing(p);
 				if (p)
 				{
-					Node* p1 = p;
+					Node* b2 = p;
 					p = Parse_LEFTARROW(p);
-						p = p ? 0 : p1;
+					if (p) p = 0; else p = b2;
 				}
 			}
-			r.first->second = p;
-			return p;
-		}
-
-		static Node* Parse_Primary_2(Node* p)
-		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Primary_2, 0));
-			if (!r.second)
-				return r.first->second;
-			Node* p1 = p;
-			p = Parse_Primary_2_1(p);
 			if (!p)
 			{
-				p = p1;
-				p = Parse_Primary_2_2(p);
-			}
-			r.first->second = p;
-			return p;
-		}
-
-		static Node* Parse_Primary_2_1(Node* p)
-		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Primary_2_1, 0));
-			if (!r.second)
-				return r.first->second;
-			p = Parse_OPEN(p);
-			if (p)
-			{
-				p = Parse_Expression(p);
+				p = b;
+				p = Parse_OPEN(p);
 				if (p)
 				{
-					p = Parse_CLOSE(p);
+					p = Parse_Expression(p);
+					if (p)
+					{
+						p = Parse_CLOSE(p);
+					}
 				}
-			}
-			r.first->second = p;
-			return p;
-		}
-
-		static Node* Parse_Primary_2_2(Node* p)
-		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Primary_2_2, 0));
-			if (!r.second)
-				return r.first->second;
-			Node* p1 = p;
-			p = Parse_Literal(p);
-			if (!p)
-			{
-				p = p1;
-				p = Parse_Primary_2_2_1(p);
-			}
-			r.first->second = p;
-			return p;
-		}
-
-		static Node* Parse_Primary_2_2_1(Node* p)
-		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Primary_2_2_1, 0));
-			if (!r.second)
-				return r.first->second;
-			Node* p1 = p;
-			p = Parse_Class(p);
-			if (!p)
-			{
-				p = p1;
-				p = Parse_DOT(p);
+				if (!p)
+				{
+					p = b;
+					p = Parse_Literal(p);
+					if (!p)
+					{
+						p = b;
+						p = Parse_Class(p);
+						if (!p)
+						{
+							p = b;
+							p = Parse_DOT(p);
+						}
+					}
+				}
 			}
 			r.first->second = p;
 			return p;
@@ -708,46 +575,31 @@ namespace
 
 		static Node* Parse_QUESTION(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_QUESTION, 0));
-			if (!r.second)
-				return r.first->second;
-			p = (p->value == '?') ? p+1 : 0;
+			if (p->value == '?') ++p; else p = 0;
 			if (p)
 			{
 				p = Parse_Spacing(p);
 			}
-			r.first->second = p;
 			return p;
 		}
 
 		static Node* Parse_Range(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Range, 0));
-			if (!r.second)
-				return r.first->second;
+			MemoInsertResult r = p->end.insert(Memo(PTNodeType_Range, 0));
+			if (!r.second) return r.first->second;
 			p = Parse_Char(p);
 			if (p)
 			{
-				Node* p1 = p;
-				p = Parse_Range_1(p);
+				Node* b = p;
+				if (p->value == '-') ++p; else p = 0;
+				if (p)
+				{
+					p = Parse_Char(p);
+				}
 				if (!p)
 				{
-					p = p1;
+					p = b;
 				}
-			}
-			r.first->second = p;
-			return p;
-		}
-
-		static Node* Parse_Range_1(Node* p)
-		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Range_1, 0));
-			if (!r.second)
-				return r.first->second;
-			p = (p->value == '-') ? p+1 : 0;
-			if (p)
-			{
-				p = Parse_Char(p);
 			}
 			r.first->second = p;
 			return p;
@@ -755,7 +607,7 @@ namespace
 
 		static Node* Parse_SLASH(Node* p)
 		{
-			p = (p->value == '/') ? p+1 : 0;
+			if (p->value == '/') ++p; else p = 0;
 			if (p)
 			{
 				p = Parse_Spacing(p);
@@ -765,30 +617,25 @@ namespace
 
 		static Node* Parse_STAR(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_STAR, 0));
-			if (!r.second)
-				return r.first->second;
-			p = (p->value == '*') ? p+1 : 0;
+			if (p->value == '*') ++p; else p = 0;
 			if (p)
 			{
 				p = Parse_Spacing(p);
 			}
-			r.first->second = p;
 			return p;
 		}
 
 		static Node* Parse_Sequence(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Sequence, 0));
-			if (!r.second)
-				return r.first->second;
+			MemoInsertResult r = p->end.insert(Memo(PTNodeType_Sequence, 0));
+			if (!r.second) return r.first->second;
 			for (;;)
 			{
-				Node* p1 = p;
+				Node* b = p;
 				p = Parse_Prefix(p);
 				if (!p)
 				{
-					p = p1;
+					p = b;
 					break;
 				}
 			}
@@ -798,15 +645,15 @@ namespace
 
 		static Node* Parse_Space(Node* p)
 		{
-			Node* p1 = p;
-			p = (p->value == ' ') ? p+1 : 0;
+			Node* b = p;
+			if (p->value == ' ') ++p; else p = 0;
 			if (!p)
 			{
-				p = p1;
-				p = (p->value == '\t') ? p+1 : 0;
+				p = b;
+				if (p->value == '\t') ++p; else p = 0;
 				if (!p)
 				{
-					p = p1;
+					p = b;
 					p = Parse_EndOfLine(p);
 				}
 			}
@@ -815,22 +662,20 @@ namespace
 
 		static Node* Parse_Spacing(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Spacing, 0));
-			if (!r.second)
-				return r.first->second;
+			MemoInsertResult r = p->end.insert(Memo(PTNodeType_Spacing, 0));
+			if (!r.second) return r.first->second;
 			for (;;)
 			{
-				Node* p1 = p;
-				Node* p2 = p;
+				Node* b = p;
 				p = Parse_Space(p);
 				if (!p)
 				{
-					p = p2;
+					p = b;
 					p = Parse_Comment(p);
 				}
 				if (!p)
 				{
-					p = p1;
+					p = b;
 					break;
 				}
 			}
@@ -840,25 +685,24 @@ namespace
 
 		static Node* Parse_Suffix(Node* p)
 		{
-			MemoInsertResult r = p->end.insert(MemoEntry(PTNodeType_Suffix, 0));
-			if (!r.second)
-				return r.first->second;
+			MemoInsertResult r = p->end.insert(Memo(PTNodeType_Suffix, 0));
+			if (!r.second) return r.first->second;
 			p = Parse_Primary(p);
 			if (p)
 			{
-				Node* p1 = p;
+				Node* b = p;
 				p = Parse_QUESTION(p);
 				if (!p)
 				{
-					p = p1;
+					p = b;
 					p = Parse_STAR(p);
 					if (!p)
 					{
-						p = p1;
+						p = b;
 						p = Parse_PLUS(p);
 						if (!p)
 						{
-							p = p1;
+							p = b;
 						}
 					}
 				}
@@ -866,335 +710,113 @@ namespace
 			r.first->second = p;
 			return p;
 		}
-		
-		static Node* Traverse_AND(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_AND(p);
-			if (!p1)
-				return 0;
-			p = (p->value == '&') ? p+1 : 0;
-			if (p)
-			{
-				p = Parse_Spacing(p);
-			}
-			return p1;
-		}
-
-		static Node* Traverse_CLOSE(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_CLOSE(p);
-			if (!p1)
-				return 0;
-			p = (p->value == ')') ? p+1 : 0;
-			if (p)
-			{
-				p = Parse_Spacing(p);
-			}
-			return p1;
-		}
-
-		static Node* Traverse_Char(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Char(p);
-			if (!p1)
-				return 0;
-			Node* p2 = p;
-			p = (p->value == '\\') ? p+1 : 0;
-			if (p)
-			{
-				Node* p3 = p;
-				p = (p->value == 'n') ? p+1 : 0;
-				if (!p)
-				{
-					p = p3;
-					p = (p->value == 'r') ? p+1 : 0;
-					if (!p)
-					{
-						p = p3;
-						p = (p->value == 't') ? p+1 : 0;
-						if (!p)
-						{
-							p = p3;
-							p = (p->value == '\'') ? p+1 : 0;
-							if (!p)
-							{
-								p = p3;
-								p = (p->value == '\"') ? p+1 : 0;
-								if (!p)
-								{
-									p = p3;
-									p = (p->value == '[') ? p+1 : 0;
-									if (!p)
-									{
-										p = p3;
-										p = (p->value == ']') ? p+1 : 0;
-										if (!p)
-										{
-											p = p3;
-											p = (p->value == '\\') ? p+1 : 0;
-											if (!p)
-											{
-												p = p3;
-												p = (p->value >= '1' && p->value <= '9') ? p+1 : 0;
-												if (p)
-												{
-													for (;;)
-													{
-														Node* p4 = p;
-														p = (p->value >= '0' && p->value <= '9') ? p+1 : 0;
-														if (!p)
-														{
-															p = p4;
-															break;
-														}
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-			if (!p)
-			{
-				p = p2;
-				Node* p5 = p;
-				p = (p->value == '\\') ? p+1 : 0;
-					p = p ? 0 : p5;
-				if (p)
-				{
-					p = (p->value != 0) ? p+1 : 0;
-				}
-			}
-			return p1;
-		}
-
+								
 		static Node* Traverse_Class(Node* p, PTNodeChildren& v)
 		{
-			Node* p1 = Parse_Class(p);
-			if (!p1)
+			Node* e = Parse_Class(p);
+			if (!e)
 				return 0;
-			p = (p->value == '[') ? p+1 : 0;
+			if (p->value == '[') ++p; else p = 0;
 			if (p)
 			{
 				for (;;)
 				{
-					Node* p2 = p;
-					p = Traverse_Class_1(p, v);
+					Node* b = p;
+					size_t s = v.size();
+					if (p->value == ']') ++p; else p = 0;
+					if (p) p = 0; else p = b;
+					if (p)
+					{
+						p = ::Visit(PTNodeType_Range, p, v);
+					}
 					if (!p)
 					{
-						p = p2;
+						p = b;
+						v.erase(v.begin() + s, v.end());
 						break;
 					}
 				}
 				if (p)
 				{
-					p = (p->value == ']') ? p+1 : 0;
+					if (p->value == ']') ++p; else p = 0;
 					if (p)
 					{
 						p = Parse_Spacing(p);
 					}
 				}
 			}
-			return p1;
+			return e;
 		}
-
-		static Node* Traverse_Class_1(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Class_1(p);
-			if (!p1)
-				return 0;
-			Node* p2 = p;
-			p = (p->value == ']') ? p+1 : 0;
-				p = p ? 0 : p2;
-			if (p)
-			{
-				Node* p3 = p;
-				p = p->end.find(PTNodeType_Range)->second;
-				if (p)
-					v.push_back(PTNodeChild(PTNodeType_Range, p3));
-			}
-			return p1;
-		}
-
-		static Node* Traverse_Comment(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Comment(p);
-			if (!p1)
-				return 0;
-			p = (p->value == '#') ? p+1 : 0;
-			if (p)
-			{
-				for (;;)
-				{
-					Node* p2 = p;
-					Node* p3 = p;
-					p = Parse_EndOfLine(p);
-						p = p ? 0 : p3;
-					if (p)
-					{
-						p = (p->value != 0) ? p+1 : 0;
-					}
-					if (!p)
-					{
-						p = p2;
-						break;
-					}
-				}
-				if (p)
-				{
-					p = Parse_EndOfLine(p);
-				}
-			}
-			return p1;
-		}
-
-		static Node* Traverse_DOT(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_DOT(p);
-			if (!p1)
-				return 0;
-			p = (p->value == '.') ? p+1 : 0;
-			if (p)
-			{
-				p = Parse_Spacing(p);
-			}
-			return p1;
-		}
-
+						
 		static Node* Traverse_Definition(Node* p, PTNodeChildren& v)
 		{
-			Node* p1 = Parse_Definition(p);
-			if (!p1)
+			Node* e = Parse_Definition(p);
+			if (!e)
 				return 0;
-			Node* p2 = p;
-			p = p->end.find(PTNodeType_Identifier)->second;
-			if (p)
-				v.push_back(PTNodeChild(PTNodeType_Identifier, p2));
+			p = ::Visit(PTNodeType_Identifier, p, v);
 			if (p)
 			{
 				p = Parse_Spacing(p);
 				if (p)
 				{
-					Node* p3 = p;
-					p = p->end.find(PTNodeType_LEFTARROW)->second;
-					if (p)
-						v.push_back(PTNodeChild(PTNodeType_LEFTARROW, p3));
+					p = ::Visit(PTNodeType_LEFTARROW, p, v);
 					if (p)
 					{
-						Node* p4 = p;
-						p = p->end.find(PTNodeType_Expression)->second;
-						if (p)
-							v.push_back(PTNodeChild(PTNodeType_Expression, p4));
+						p = ::Visit(PTNodeType_Expression, p, v);
 					}
 				}
 			}
-			return p1;
+			return e;
 		}
-
-		static Node* Traverse_EndOfFile(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_EndOfFile(p);
-			if (!p1)
-				return 0;
-			Node* p2 = p;
-			p = (p->value != 0) ? p+1 : 0;
-				p = p ? 0 : p2;
-			return p1;
-		}
-
-		static Node* Traverse_EndOfLine(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_EndOfLine(p);
-			if (!p1)
-				return 0;
-			Node* p2 = p;
-			p = (p->value == '\r') ? p+1 : 0;
-			if (p)
-			{
-				p = (p->value == '\n') ? p+1 : 0;
-			}
-			if (!p)
-			{
-				p = p2;
-				p = (p->value == '\n') ? p+1 : 0;
-				if (!p)
-				{
-					p = p2;
-					p = (p->value == '\r') ? p+1 : 0;
-				}
-			}
-			return p1;
-		}
-
+						
 		static Node* Traverse_Expression(Node* p, PTNodeChildren& v)
 		{
-			Node* p1 = Parse_Expression(p);
-			if (!p1)
+			Node* e = Parse_Expression(p);
+			if (!e)
 				return 0;
-			Node* p2 = p;
-			p = p->end.find(PTNodeType_Sequence)->second;
-			if (p)
-				v.push_back(PTNodeChild(PTNodeType_Sequence, p2));
+			p = ::Visit(PTNodeType_Sequence, p, v);
 			if (p)
 			{
 				for (;;)
 				{
-					Node* p3 = p;
-					p = Traverse_Expression_1(p, v);
+					Node* b = p;
+					size_t s = v.size();
+					p = Parse_SLASH(p);
+					if (p)
+					{
+						p = ::Visit(PTNodeType_Sequence, p, v);
+					}
 					if (!p)
 					{
-						p = p3;
+						p = b;
+						v.erase(v.begin() + s, v.end());
 						break;
 					}
 				}
 			}
-			return p1;
+			return e;
 		}
-
-		static Node* Traverse_Expression_1(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Expression_1(p);
-			if (!p1)
-				return 0;
-			p = Parse_SLASH(p);
-			if (p)
-			{
-				Node* p2 = p;
-				p = p->end.find(PTNodeType_Sequence)->second;
-				if (p)
-					v.push_back(PTNodeChild(PTNodeType_Sequence, p2));
-			}
-			return p1;
-		}
-
+		
 		static Node* Traverse_Grammar(Node* p, PTNodeChildren& v)
 		{
-			Node* p1 = Parse_Grammar(p);
-			if (!p1)
+			Node* e = Parse_Grammar(p);
+			if (!e)
 				return 0;
 			p = Parse_Spacing(p);
 			if (p)
 			{
-				Node* p2 = p;
-				p = p->end.find(PTNodeType_Definition)->second;
-				if (p)
-					v.push_back(PTNodeChild(PTNodeType_Definition, p2));
+				p = ::Visit(PTNodeType_Definition, p, v);
 				if (p)
 				{
 					for (;;)
 					{
-						Node* p3 = p;
-						Node* p4 = p;
-						p = p->end.find(PTNodeType_Definition)->second;
-						if (p)
-							v.push_back(PTNodeChild(PTNodeType_Definition, p4));
+						Node* b = p;
+						size_t s = v.size();
+						p = ::Visit(PTNodeType_Definition, p, v);
 						if (!p)
 						{
-							p = p3;
+							p = b;
+							v.erase(v.begin() + s, v.end());
 							break;
 						}
 					}
@@ -1204,543 +826,228 @@ namespace
 					}
 				}
 			}
-			return p1;
+			return e;
 		}
-
-		static Node* Traverse_Identifier(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Identifier(p);
-			if (!p1)
-				return 0;
-			Node* p2 = p;
-			p = (p->value >= 'a' && p->value <= 'z') ? p+1 : 0;
-			if (!p)
-			{
-				p = p2;
-				p = (p->value >= 'A' && p->value <= 'Z') ? p+1 : 0;
-				if (!p)
-				{
-					p = p2;
-					p = (p->value == '_') ? p+1 : 0;
-				}
-			}
-			if (p)
-			{
-				for (;;)
-				{
-					Node* p3 = p;
-					Node* p4 = p;
-					p = (p->value >= 'a' && p->value <= 'z') ? p+1 : 0;
-					if (!p)
-					{
-						p = p4;
-						p = (p->value >= 'A' && p->value <= 'Z') ? p+1 : 0;
-						if (!p)
-						{
-							p = p4;
-							p = (p->value >= '0' && p->value <= '9') ? p+1 : 0;
-							if (!p)
-							{
-								p = p4;
-								p = (p->value == '_') ? p+1 : 0;
-							}
-						}
-					}
-					if (!p)
-					{
-						p = p3;
-						break;
-					}
-				}
-			}
-			return p1;
-		}
-
-		static Node* Traverse_LEFTARROW(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_LEFTARROW(p);
-			if (!p1)
-				return 0;
-			p = (p->value == '<') ? p+1 : 0;
-			if (p)
-			{
-				Node* p2 = p;
-				p = (p->value == '-') ? p+1 : 0;
-				if (!p)
-				{
-					p = p2;
-					p = (p->value == '=') ? p+1 : 0;
-					if (!p)
-					{
-						p = p2;
-						p = (p->value == '<') ? p+1 : 0;
-					}
-				}
-				if (p)
-				{
-					p = Parse_Spacing(p);
-				}
-			}
-			return p1;
-		}
-
+						
 		static Node* Traverse_Literal(Node* p, PTNodeChildren& v)
 		{
-			Node* p1 = Parse_Literal(p);
-			if (!p1)
+			Node* e = Parse_Literal(p);
+			if (!e)
 				return 0;
-			Node* p2 = p;
-			p = Traverse_Literal_1(p, v);
+			Node* b = p;
+			size_t s = v.size();
+			if (p->value == '\'') ++p; else p = 0;
+			if (p)
+			{
+				for (;;)
+				{
+					Node* b2 = p;
+					size_t s2 = v.size();
+					if (p->value == '\'') ++p; else p = 0;
+					if (p) p = 0; else p = b2;
+					if (p)
+					{
+						p = ::Visit(PTNodeType_Char, p, v);
+					}
+					if (!p)
+					{
+						p = b2;
+						v.erase(v.begin() + s2, v.end());
+						break;
+					}
+				}
+				if (p)
+				{
+					if (p->value == '\'') ++p; else p = 0;
+					if (p)
+					{
+						p = Parse_Spacing(p);
+					}
+				}
+			}
 			if (!p)
 			{
-				p = p2;
-				p = Traverse_Literal_2(p, v);
-			}
-			return p1;
-		}
-
-		static Node* Traverse_Literal_1(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Literal_1(p);
-			if (!p1)
-				return 0;
-			p = (p->value == '\'') ? p+1 : 0;
-			if (p)
-			{
-				for (;;)
-				{
-					Node* p2 = p;
-					p = Traverse_Literal_1_1(p, v);
-					if (!p)
-					{
-						p = p2;
-						break;
-					}
-				}
+				p = b;
+				v.erase(v.begin() + s, v.end());
+				if (p->value == '\"') ++p; else p = 0;
 				if (p)
 				{
-					p = (p->value == '\'') ? p+1 : 0;
+					for (;;)
+					{
+						Node* b3 = p;
+						size_t s3 = v.size();
+						if (p->value == '\"') ++p; else p = 0;
+						if (p) p = 0; else p = b3;
+						if (p)
+						{
+							p = ::Visit(PTNodeType_Char, p, v);
+						}
+						if (!p)
+						{
+							p = b3;
+							v.erase(v.begin() + s3, v.end());
+							break;
+						}
+					}
 					if (p)
 					{
-						p = Parse_Spacing(p);
+						if (p->value == '\"') ++p; else p = 0;
+						if (p)
+						{
+							p = Parse_Spacing(p);
+						}
 					}
 				}
 			}
-			return p1;
+			return e;
 		}
-
-		static Node* Traverse_Literal_1_1(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Literal_1_1(p);
-			if (!p1)
-				return 0;
-			Node* p2 = p;
-			p = (p->value == '\'') ? p+1 : 0;
-				p = p ? 0 : p2;
-			if (p)
-			{
-				Node* p3 = p;
-				p = p->end.find(PTNodeType_Char)->second;
-				if (p)
-					v.push_back(PTNodeChild(PTNodeType_Char, p3));
-			}
-			return p1;
-		}
-
-		static Node* Traverse_Literal_2(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Literal_2(p);
-			if (!p1)
-				return 0;
-			p = (p->value == '\"') ? p+1 : 0;
-			if (p)
-			{
-				for (;;)
-				{
-					Node* p2 = p;
-					p = Traverse_Literal_2_1(p, v);
-					if (!p)
-					{
-						p = p2;
-						break;
-					}
-				}
-				if (p)
-				{
-					p = (p->value == '\"') ? p+1 : 0;
-					if (p)
-					{
-						p = Parse_Spacing(p);
-					}
-				}
-			}
-			return p1;
-		}
-
-		static Node* Traverse_Literal_2_1(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Literal_2_1(p);
-			if (!p1)
-				return 0;
-			Node* p2 = p;
-			p = (p->value == '\"') ? p+1 : 0;
-				p = p ? 0 : p2;
-			if (p)
-			{
-				Node* p3 = p;
-				p = p->end.find(PTNodeType_Char)->second;
-				if (p)
-					v.push_back(PTNodeChild(PTNodeType_Char, p3));
-			}
-			return p1;
-		}
-
-		static Node* Traverse_NOT(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_NOT(p);
-			if (!p1)
-				return 0;
-			p = (p->value == '!') ? p+1 : 0;
-			if (p)
-			{
-				p = Parse_Spacing(p);
-			}
-			return p1;
-		}
-
-		static Node* Traverse_OPEN(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_OPEN(p);
-			if (!p1)
-				return 0;
-			p = (p->value == '(') ? p+1 : 0;
-			if (p)
-			{
-				p = Parse_Spacing(p);
-			}
-			return p1;
-		}
-
-		static Node* Traverse_PLUS(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_PLUS(p);
-			if (!p1)
-				return 0;
-			p = (p->value == '+') ? p+1 : 0;
-			if (p)
-			{
-				p = Parse_Spacing(p);
-			}
-			return p1;
-		}
-
+								
 		static Node* Traverse_Prefix(Node* p, PTNodeChildren& v)
 		{
-			Node* p1 = Parse_Prefix(p);
-			if (!p1)
+			Node* e = Parse_Prefix(p);
+			if (!e)
 				return 0;
-			Node* p2 = p;
+			Node* b = p;
 			p = Parse_AND(p);
 			if (!p)
 			{
-				p = p2;
+				p = b;
 				p = Parse_NOT(p);
 				if (!p)
 				{
-					p = p2;
+					p = b;
 				}
 			}
 			if (p)
 			{
-				Node* p3 = p;
-				p = p->end.find(PTNodeType_Suffix)->second;
-				if (p)
-					v.push_back(PTNodeChild(PTNodeType_Suffix, p3));
+				p = ::Visit(PTNodeType_Suffix, p, v);
 			}
-			return p1;
+			return e;
 		}
-
+		
 		static Node* Traverse_Primary(Node* p, PTNodeChildren& v)
 		{
-			Node* p1 = Parse_Primary(p);
-			if (!p1)
+			Node* e = Parse_Primary(p);
+			if (!e)
 				return 0;
-			Node* p2 = p;
-			p = Traverse_Primary_1(p, v);
-			if (!p)
-			{
-				p = p2;
-				p = Traverse_Primary_2(p, v);
-			}
-			return p1;
-		}
-
-		static Node* Traverse_Primary_1(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Primary_1(p);
-			if (!p1)
-				return 0;
-			Node* p2 = p;
-			p = p->end.find(PTNodeType_Identifier)->second;
-			if (p)
-				v.push_back(PTNodeChild(PTNodeType_Identifier, p2));
+			Node* b = p;
+			size_t s = v.size();
+			p = ::Visit(PTNodeType_Identifier, p, v);
 			if (p)
 			{
 				p = Parse_Spacing(p);
 				if (p)
 				{
-					Node* p3 = p;
-					Node* p4 = p;
-					p = p->end.find(PTNodeType_LEFTARROW)->second;
+					Node* b2 = p;
+					p = Parse_LEFTARROW(p);
+					if (p) p = 0; else p = b2;
+				}
+			}
+			if (!p)
+			{
+				p = b;
+				v.erase(v.begin() + s, v.end());
+				p = Parse_OPEN(p);
+				if (p)
+				{
+					p = ::Visit(PTNodeType_Expression, p, v);
 					if (p)
-						v.push_back(PTNodeChild(PTNodeType_LEFTARROW, p4));
-						p = p ? 0 : p3;
-				}
-			}
-			return p1;
-		}
-
-		static Node* Traverse_Primary_2(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Primary_2(p);
-			if (!p1)
-				return 0;
-			Node* p2 = p;
-			p = Traverse_Primary_2_1(p, v);
-			if (!p)
-			{
-				p = p2;
-				p = Traverse_Primary_2_2(p, v);
-			}
-			return p1;
-		}
-
-		static Node* Traverse_Primary_2_1(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Primary_2_1(p);
-			if (!p1)
-				return 0;
-			p = Parse_OPEN(p);
-			if (p)
-			{
-				Node* p2 = p;
-				p = p->end.find(PTNodeType_Expression)->second;
-				if (p)
-					v.push_back(PTNodeChild(PTNodeType_Expression, p2));
-				if (p)
-				{
-					p = Parse_CLOSE(p);
-				}
-			}
-			return p1;
-		}
-
-		static Node* Traverse_Primary_2_2(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Primary_2_2(p);
-			if (!p1)
-				return 0;
-			Node* p2 = p;
-			Node* p3 = p;
-			p = p->end.find(PTNodeType_Literal)->second;
-			if (p)
-				v.push_back(PTNodeChild(PTNodeType_Literal, p3));
-			if (!p)
-			{
-				p = p2;
-				p = Traverse_Primary_2_2_1(p, v);
-			}
-			return p1;
-		}
-
-		static Node* Traverse_Primary_2_2_1(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Primary_2_2_1(p);
-			if (!p1)
-				return 0;
-			Node* p2 = p;
-			Node* p3 = p;
-			p = p->end.find(PTNodeType_Class)->second;
-			if (p)
-				v.push_back(PTNodeChild(PTNodeType_Class, p3));
-			if (!p)
-			{
-				p = p2;
-				p = Parse_DOT(p);
-			}
-			return p1;
-		}
-
-		static Node* Traverse_QUESTION(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_QUESTION(p);
-			if (!p1)
-				return 0;
-			p = (p->value == '?') ? p+1 : 0;
-			if (p)
-			{
-				p = Parse_Spacing(p);
-			}
-			return p1;
-		}
-
-		static Node* Traverse_Range(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Range(p);
-			if (!p1)
-				return 0;
-			Node* p2 = p;
-			p = p->end.find(PTNodeType_Char)->second;
-			if (p)
-				v.push_back(PTNodeChild(PTNodeType_Char, p2));
-			if (p)
-			{
-				Node* p3 = p;
-				p = Traverse_Range_1(p, v);
-				if (!p)
-				{
-					p = p3;
-				}
-			}
-			return p1;
-		}
-
-		static Node* Traverse_Range_1(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Range_1(p);
-			if (!p1)
-				return 0;
-			p = (p->value == '-') ? p+1 : 0;
-			if (p)
-			{
-				Node* p2 = p;
-				p = p->end.find(PTNodeType_Char)->second;
-				if (p)
-					v.push_back(PTNodeChild(PTNodeType_Char, p2));
-			}
-			return p1;
-		}
-
-		static Node* Traverse_SLASH(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_SLASH(p);
-			if (!p1)
-				return 0;
-			p = (p->value == '/') ? p+1 : 0;
-			if (p)
-			{
-				p = Parse_Spacing(p);
-			}
-			return p1;
-		}
-
-		static Node* Traverse_STAR(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_STAR(p);
-			if (!p1)
-				return 0;
-			p = (p->value == '*') ? p+1 : 0;
-			if (p)
-			{
-				p = Parse_Spacing(p);
-			}
-			return p1;
-		}
-
-		static Node* Traverse_Sequence(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Sequence(p);
-			if (!p1)
-				return 0;
-			for (;;)
-			{
-				Node* p2 = p;
-				Node* p3 = p;
-				p = p->end.find(PTNodeType_Prefix)->second;
-				if (p)
-					v.push_back(PTNodeChild(PTNodeType_Prefix, p3));
-				if (!p)
-				{
-					p = p2;
-					break;
-				}
-			}
-			return p1;
-		}
-
-		static Node* Traverse_Space(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Space(p);
-			if (!p1)
-				return 0;
-			Node* p2 = p;
-			p = (p->value == ' ') ? p+1 : 0;
-			if (!p)
-			{
-				p = p2;
-				p = (p->value == '\t') ? p+1 : 0;
-				if (!p)
-				{
-					p = p2;
-					p = Parse_EndOfLine(p);
-				}
-			}
-			return p1;
-		}
-
-		static Node* Traverse_Spacing(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Spacing(p);
-			if (!p1)
-				return 0;
-			for (;;)
-			{
-				Node* p2 = p;
-				Node* p3 = p;
-				p = Parse_Space(p);
-				if (!p)
-				{
-					p = p3;
-					p = Parse_Comment(p);
+					{
+						p = Parse_CLOSE(p);
+					}
 				}
 				if (!p)
 				{
-					p = p2;
-					break;
-				}
-			}
-			return p1;
-		}
-
-		static Node* Traverse_Suffix(Node* p, PTNodeChildren& v)
-		{
-			Node* p1 = Parse_Suffix(p);
-			if (!p1)
-				return 0;
-			Node* p2 = p;
-			p = p->end.find(PTNodeType_Primary)->second;
-			if (p)
-				v.push_back(PTNodeChild(PTNodeType_Primary, p2));
-			if (p)
-			{
-				Node* p3 = p;
-				p = Parse_QUESTION(p);
-				if (!p)
-				{
-					p = p3;
-					p = Parse_STAR(p);
+					p = b;
+					v.erase(v.begin() + s, v.end());
+					p = ::Visit(PTNodeType_Literal, p, v);
 					if (!p)
 					{
-						p = p3;
-						p = Parse_PLUS(p);
+						p = b;
+						v.erase(v.begin() + s, v.end());
+						p = ::Visit(PTNodeType_Class, p, v);
 						if (!p)
 						{
-							p = p3;
+							p = b;
+							v.erase(v.begin() + s, v.end());
+							p = Parse_DOT(p);
 						}
 					}
 				}
 			}
-			return p1;
+			return e;
+		}
+				
+		static Node* Traverse_Range(Node* p, PTNodeChildren& v)
+		{
+			Node* e = Parse_Range(p);
+			if (!e)
+				return 0;
+			p = ::Visit(PTNodeType_Char, p, v);
+			if (p)
+			{
+				Node* b = p;
+				size_t s = v.size();
+				if (p->value == '-') ++p; else p = 0;
+				if (p)
+				{
+					p = ::Visit(PTNodeType_Char, p, v);
+				}
+				if (!p)
+				{
+					p = b;
+					v.erase(v.begin() + s, v.end());
+				}
+			}
+			return e;
+		}
+						
+		static Node* Traverse_Sequence(Node* p, PTNodeChildren& v)
+		{
+			Node* e = Parse_Sequence(p);
+			if (!e)
+				return 0;
+			for (;;)
+			{
+				Node* b = p;
+				size_t s = v.size();
+				p = ::Visit(PTNodeType_Prefix, p, v);
+				if (!p)
+				{
+					p = b;
+					v.erase(v.begin() + s, v.end());
+					break;
+				}
+			}
+			return e;
+		}
+						
+		static Node* Traverse_Suffix(Node* p, PTNodeChildren& v)
+		{
+			Node* e = Parse_Suffix(p);
+			if (!e)
+				return 0;
+			p = ::Visit(PTNodeType_Primary, p, v);
+			if (p)
+			{
+				Node* b = p;
+				p = Parse_QUESTION(p);
+				if (!p)
+				{
+					p = b;
+					p = Parse_STAR(p);
+					if (!p)
+					{
+						p = b;
+						p = Parse_PLUS(p);
+						if (!p)
+						{
+							p = b;
+						}
+					}
+				}
+			}
+			return e;
 		}
 	};
 }
@@ -1755,35 +1062,23 @@ namespace PEGParser
 			case PTNodeType_CLOSE: return Private::Parse_CLOSE(_symbol);
 			case PTNodeType_Char: return Private::Parse_Char(_symbol);
 			case PTNodeType_Class: return Private::Parse_Class(_symbol);
-			case PTNodeType_Class_1: return Private::Parse_Class_1(_symbol);
 			case PTNodeType_Comment: return Private::Parse_Comment(_symbol);
 			case PTNodeType_DOT: return Private::Parse_DOT(_symbol);
 			case PTNodeType_Definition: return Private::Parse_Definition(_symbol);
 			case PTNodeType_EndOfFile: return Private::Parse_EndOfFile(_symbol);
 			case PTNodeType_EndOfLine: return Private::Parse_EndOfLine(_symbol);
 			case PTNodeType_Expression: return Private::Parse_Expression(_symbol);
-			case PTNodeType_Expression_1: return Private::Parse_Expression_1(_symbol);
 			case PTNodeType_Grammar: return Private::Parse_Grammar(_symbol);
 			case PTNodeType_Identifier: return Private::Parse_Identifier(_symbol);
 			case PTNodeType_LEFTARROW: return Private::Parse_LEFTARROW(_symbol);
 			case PTNodeType_Literal: return Private::Parse_Literal(_symbol);
-			case PTNodeType_Literal_1: return Private::Parse_Literal_1(_symbol);
-			case PTNodeType_Literal_1_1: return Private::Parse_Literal_1_1(_symbol);
-			case PTNodeType_Literal_2: return Private::Parse_Literal_2(_symbol);
-			case PTNodeType_Literal_2_1: return Private::Parse_Literal_2_1(_symbol);
 			case PTNodeType_NOT: return Private::Parse_NOT(_symbol);
 			case PTNodeType_OPEN: return Private::Parse_OPEN(_symbol);
 			case PTNodeType_PLUS: return Private::Parse_PLUS(_symbol);
 			case PTNodeType_Prefix: return Private::Parse_Prefix(_symbol);
 			case PTNodeType_Primary: return Private::Parse_Primary(_symbol);
-			case PTNodeType_Primary_1: return Private::Parse_Primary_1(_symbol);
-			case PTNodeType_Primary_2: return Private::Parse_Primary_2(_symbol);
-			case PTNodeType_Primary_2_1: return Private::Parse_Primary_2_1(_symbol);
-			case PTNodeType_Primary_2_2: return Private::Parse_Primary_2_2(_symbol);
-			case PTNodeType_Primary_2_2_1: return Private::Parse_Primary_2_2_1(_symbol);
 			case PTNodeType_QUESTION: return Private::Parse_QUESTION(_symbol);
 			case PTNodeType_Range: return Private::Parse_Range(_symbol);
-			case PTNodeType_Range_1: return Private::Parse_Range_1(_symbol);
 			case PTNodeType_SLASH: return Private::Parse_SLASH(_symbol);
 			case PTNodeType_STAR: return Private::Parse_STAR(_symbol);
 			case PTNodeType_Sequence: return Private::Parse_Sequence(_symbol);
@@ -1798,91 +1093,71 @@ namespace PEGParser
 	{
 		switch (_type)
 		{
-			case PTNodeType_AND: return Private::Traverse_AND(_symbol, _children);
-			case PTNodeType_CLOSE: return Private::Traverse_CLOSE(_symbol, _children);
-			case PTNodeType_Char: return Private::Traverse_Char(_symbol, _children);
 			case PTNodeType_Class: return Private::Traverse_Class(_symbol, _children);
-			case PTNodeType_Class_1: return Private::Traverse_Class_1(_symbol, _children);
-			case PTNodeType_Comment: return Private::Traverse_Comment(_symbol, _children);
-			case PTNodeType_DOT: return Private::Traverse_DOT(_symbol, _children);
 			case PTNodeType_Definition: return Private::Traverse_Definition(_symbol, _children);
-			case PTNodeType_EndOfFile: return Private::Traverse_EndOfFile(_symbol, _children);
-			case PTNodeType_EndOfLine: return Private::Traverse_EndOfLine(_symbol, _children);
 			case PTNodeType_Expression: return Private::Traverse_Expression(_symbol, _children);
-			case PTNodeType_Expression_1: return Private::Traverse_Expression_1(_symbol, _children);
 			case PTNodeType_Grammar: return Private::Traverse_Grammar(_symbol, _children);
-			case PTNodeType_Identifier: return Private::Traverse_Identifier(_symbol, _children);
-			case PTNodeType_LEFTARROW: return Private::Traverse_LEFTARROW(_symbol, _children);
 			case PTNodeType_Literal: return Private::Traverse_Literal(_symbol, _children);
-			case PTNodeType_Literal_1: return Private::Traverse_Literal_1(_symbol, _children);
-			case PTNodeType_Literal_1_1: return Private::Traverse_Literal_1_1(_symbol, _children);
-			case PTNodeType_Literal_2: return Private::Traverse_Literal_2(_symbol, _children);
-			case PTNodeType_Literal_2_1: return Private::Traverse_Literal_2_1(_symbol, _children);
-			case PTNodeType_NOT: return Private::Traverse_NOT(_symbol, _children);
-			case PTNodeType_OPEN: return Private::Traverse_OPEN(_symbol, _children);
-			case PTNodeType_PLUS: return Private::Traverse_PLUS(_symbol, _children);
 			case PTNodeType_Prefix: return Private::Traverse_Prefix(_symbol, _children);
 			case PTNodeType_Primary: return Private::Traverse_Primary(_symbol, _children);
-			case PTNodeType_Primary_1: return Private::Traverse_Primary_1(_symbol, _children);
-			case PTNodeType_Primary_2: return Private::Traverse_Primary_2(_symbol, _children);
-			case PTNodeType_Primary_2_1: return Private::Traverse_Primary_2_1(_symbol, _children);
-			case PTNodeType_Primary_2_2: return Private::Traverse_Primary_2_2(_symbol, _children);
-			case PTNodeType_Primary_2_2_1: return Private::Traverse_Primary_2_2_1(_symbol, _children);
-			case PTNodeType_QUESTION: return Private::Traverse_QUESTION(_symbol, _children);
 			case PTNodeType_Range: return Private::Traverse_Range(_symbol, _children);
-			case PTNodeType_Range_1: return Private::Traverse_Range_1(_symbol, _children);
-			case PTNodeType_SLASH: return Private::Traverse_SLASH(_symbol, _children);
-			case PTNodeType_STAR: return Private::Traverse_STAR(_symbol, _children);
 			case PTNodeType_Sequence: return Private::Traverse_Sequence(_symbol, _children);
-			case PTNodeType_Space: return Private::Traverse_Space(_symbol, _children);
-			case PTNodeType_Spacing: return Private::Traverse_Spacing(_symbol, _children);
 			case PTNodeType_Suffix: return Private::Traverse_Suffix(_symbol, _children);
+			case PTNodeType_AND:
+			case PTNodeType_CLOSE:
+			case PTNodeType_Char:
+			case PTNodeType_Comment:
+			case PTNodeType_DOT:
+			case PTNodeType_EndOfFile:
+			case PTNodeType_EndOfLine:
+			case PTNodeType_Identifier:
+			case PTNodeType_LEFTARROW:
+			case PTNodeType_NOT:
+			case PTNodeType_OPEN:
+			case PTNodeType_PLUS:
+			case PTNodeType_QUESTION:
+			case PTNodeType_SLASH:
+			case PTNodeType_STAR:
+			case PTNodeType_Space:
+			case PTNodeType_Spacing:
+			default:
+				return Parse(_type, _symbol);
 		}
-		return 0;
 	}
+
 	void Print(std::ostream& _os, PTNodeType _type, Node* _pNode, int _tabs, int _maxLineSize)
 	{
 		Node* pEnd = Parse(_type, _pNode);
 		if (!pEnd)
 			return;
+
 		int tabCount = _tabs;
 		while (tabCount--)
 		  _os << "    ";
+
 		switch (_type)
 		{
 			case PTNodeType_AND: _os << "AND"; break;
 			case PTNodeType_CLOSE: _os << "CLOSE"; break;
 			case PTNodeType_Char: _os << "Char"; break;
 			case PTNodeType_Class: _os << "Class"; break;
-			case PTNodeType_Class_1: _os << "Class_1"; break;
 			case PTNodeType_Comment: _os << "Comment"; break;
 			case PTNodeType_DOT: _os << "DOT"; break;
 			case PTNodeType_Definition: _os << "Definition"; break;
 			case PTNodeType_EndOfFile: _os << "EndOfFile"; break;
 			case PTNodeType_EndOfLine: _os << "EndOfLine"; break;
 			case PTNodeType_Expression: _os << "Expression"; break;
-			case PTNodeType_Expression_1: _os << "Expression_1"; break;
 			case PTNodeType_Grammar: _os << "Grammar"; break;
 			case PTNodeType_Identifier: _os << "Identifier"; break;
 			case PTNodeType_LEFTARROW: _os << "LEFTARROW"; break;
 			case PTNodeType_Literal: _os << "Literal"; break;
-			case PTNodeType_Literal_1: _os << "Literal_1"; break;
-			case PTNodeType_Literal_1_1: _os << "Literal_1_1"; break;
-			case PTNodeType_Literal_2: _os << "Literal_2"; break;
-			case PTNodeType_Literal_2_1: _os << "Literal_2_1"; break;
 			case PTNodeType_NOT: _os << "NOT"; break;
 			case PTNodeType_OPEN: _os << "OPEN"; break;
 			case PTNodeType_PLUS: _os << "PLUS"; break;
 			case PTNodeType_Prefix: _os << "Prefix"; break;
 			case PTNodeType_Primary: _os << "Primary"; break;
-			case PTNodeType_Primary_1: _os << "Primary_1"; break;
-			case PTNodeType_Primary_2: _os << "Primary_2"; break;
-			case PTNodeType_Primary_2_1: _os << "Primary_2_1"; break;
-			case PTNodeType_Primary_2_2: _os << "Primary_2_2"; break;
-			case PTNodeType_Primary_2_2_1: _os << "Primary_2_2_1"; break;
 			case PTNodeType_QUESTION: _os << "QUESTION"; break;
 			case PTNodeType_Range: _os << "Range"; break;
-			case PTNodeType_Range_1: _os << "Range_1"; break;
 			case PTNodeType_SLASH: _os << "SLASH"; break;
 			case PTNodeType_STAR: _os << "STAR"; break;
 			case PTNodeType_Sequence: _os << "Sequence"; break;
@@ -1890,7 +1165,9 @@ namespace PEGParser
 			case PTNodeType_Spacing: _os << "Spacing"; break;
 			case PTNodeType_Suffix: _os << "Suffix"; break;
 		}
+
 		_os << ": \"";
+
 		size_t lineSize = 0;
 		for (Node* p = _pNode; p != pEnd; ++p)
 		{
@@ -1901,7 +1178,9 @@ namespace PEGParser
 				break;
 			}
 		}
+
 		_os << "\"\n";
+
 		PTNodeChildren children;
 		Traverse(_type, _pNode, children);
 		for (PTNodeChildren::iterator i = children.begin(), iEnd = children.end(); i != iEnd; ++i)

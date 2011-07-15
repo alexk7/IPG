@@ -1,7 +1,6 @@
 #include "Common.h"
 #include "Grammar.h"
 #include "GenerateParser.h"
-#include "FlattenGrammar.h"
 #include "ReadFile.h"
 #include "Parser.h.tpl.h"
 #include "Parser.cpp.tpl.h"
@@ -355,7 +354,7 @@ int main(int argc, char* argv[])
 			
 				Grammar grammar;
 				ConvertGrammar(grammar, PTItr(PTNodeType_Grammar, pGrammar));
-				FlattenGrammar(grammar);
+				grammar.ComputeIsLeaf();
 				
 				//std::cout << grammar;
 				
