@@ -3,6 +3,6 @@
 
 class Grammar;
 
-void GenerateParser(std::string _folder, std::string _name, const Grammar& _grammar);
+void GenerateParser(std::string _srcPath, std::string _folder, std::string _name, const Grammar& _grammar);
 
 #endif

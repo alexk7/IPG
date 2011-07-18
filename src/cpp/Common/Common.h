@@ -23,6 +23,7 @@
 #include <stdexcept>
 
 #include <boost/format.hpp>
+#include <boost/algorithm/string.hpp>
 
 class Tabs
 {

@@ -8,6 +8,7 @@
 #include PEG_PARSER_INCLUDE
 
 #include <boost/shared_ptr.hpp>
+#include <boost/lexical_cast.hpp>
 #include <ctemplate/template.h>
 
 using namespace PEGParser;
@@ -15,13 +16,13 @@ using namespace PEGParser;
 class PTItr
 {
 public:
-	PTItr(PTNodeType _type, Node* _pNode = 0)
+	PTItr(SymbolType _type, Node* _pNode = 0)
 	:	mType(_type)
 	,	mpNode(_pNode)
 	, mpSiblings(new PTNodeChildren)
 	{
-		if (_pNode && _pNode->end[_type])
-			mpSiblings->push_back(PTNodeChild(_type, _pNode));
+		if (mpNode && End())
+			mpSiblings->push_back(PTNodeChild(mType, mpNode));
 		
 		miCurrent = mpSiblings->begin();
 	}
@@ -31,22 +32,7 @@ public:
 	,	mpNode(_iOther.mpNode)
 	, mpSiblings(_iOther.mpSiblings)
 	, miCurrent(_iOther.miCurrent)
-	{}
-	
-	PTItr(boost::shared_ptr<PTNodeChildren> _pSiblings, PTNodeType _childType)
-	: mType(_childType)
-	, mpSiblings(_pSiblings)
-	, miCurrent(_pSiblings->begin())
 	{
-		SkipSiblingsWithWrongType(_childType);
-	}
-	
-	PTItr(const PTItr& _iOther, PTNodeType _childType)
-	: mType(_childType)
-	,	mpSiblings(_iOther.mpSiblings)
-	,	miCurrent(_iOther.miCurrent)
-	{
-		SkipSiblingsWithWrongType(_childType);
 	}
 		
 	operator bool() const
@@ -60,20 +46,8 @@ public:
 		GoToNext(mType);
 		return *this;
 	}
-	
-	std::string ToString() const
-	{
-		std::string result;
-		if (Node* pEnd = End())
-		{
-			result.reserve(pEnd - mpNode);
-			for (const Node* p = mpNode; p != pEnd; ++p)
-				result.push_back(p->value);
-		}
-		return result;
-	}
 		
-	PTNodeType GetType() const { return mType; }
+	SymbolType GetType() const { return mType; }
 	
 	Node* Begin() const
 	{
@@ -84,34 +58,50 @@ public:
 	Node* End() const
 	{
 		assert(mpNode);
-		if (mType == PTNodeType(0))
+		if (mType == SymbolType(0))
 			return mpNode + 1;
 			
 		return Parse(mType, mpNode);
 	}
 	
-	PTItr GetChild(PTNodeType _childT)
+	PTItr GetChild(SymbolType _childT)
 	{
 		assert(mpNode != 0);
-		if (_childT == PTNodeType(0))
-			return PTItr(PTNodeType(0), mpNode);
+		if (_childT == SymbolType(0))
+			return PTItr(SymbolType(0), mpNode);
 		else
 			return PTItr(GetChildren(), _childT);
 	}
 
-	PTItr GetNext(PTNodeType _childT)
+	PTItr GetNext(SymbolType _childT)
 	{
 		assert(mpNode != 0);
-		if (_childT == PTNodeType(0))
-			return PTItr(PTNodeType(0), mpNode + 1);
+		if (_childT == SymbolType(0))
+			return PTItr(SymbolType(0), mpNode + 1);
 		else
 			return PTItr(*this, _childT);
 	}
 	
 private:
-	void GoToNext(PTNodeType _childType)
+	PTItr(boost::shared_ptr<PTNodeChildren> _pSiblings, SymbolType _childType)
+	: mType(_childType)
+	, mpSiblings(_pSiblings)
+	, miCurrent(_pSiblings->begin())
 	{
-		if (mType == PTNodeType(0))
+		SkipSiblingsWithWrongType(_childType);
+	}
+	
+	PTItr(const PTItr& _iOther, SymbolType _childType)
+	: mType(_childType)
+	,	mpSiblings(_iOther.mpSiblings)
+	,	miCurrent(_iOther.miCurrent)
+	{
+		SkipSiblingsWithWrongType(_childType);
+	}
+	
+	void GoToNext(SymbolType _childType)
+	{
+		if (mType == SymbolType(0))
 		{
 			++mpNode;
 			if (mpNode->value == 0)
@@ -124,9 +114,9 @@ private:
 		}
 	}
 	
-	void SkipSiblingsWithWrongType(PTNodeType _childType)
+	void SkipSiblingsWithWrongType(SymbolType _childType)
 	{
-		assert(_childType != PTNodeType(0));
+		assert(_childType != SymbolType(0));
 		PTNodeChildren::iterator iEnd = mpSiblings->end();
 		while (miCurrent != iEnd && miCurrent->first != _childType)
 			++miCurrent;
@@ -146,7 +136,7 @@ private:
 		return mpChildren;
 	}
 	
-	PTNodeType mType;
+	SymbolType mType;
 	Node* mpNode;
 	
 	boost::shared_ptr<PTNodeChildren> mpSiblings;
@@ -155,6 +145,16 @@ private:
 	boost::shared_ptr<PTNodeChildren> mpChildren;
 };
 
+static std::ostream& operator<<(std::ostream& _os, const PTItr& _i)
+{
+	if (_i)
+	{
+		for (const Node *p = _i.Begin(), *pEnd = _i.End(); p != pEnd; ++p)
+			_os.put(p->value);
+	}
+	return _os;
+}
+	
 static bool ReadFile(std::vector<Node>& _symbols, const char* _filename)
 {
 	_symbols.clear();
@@ -216,35 +216,35 @@ static void ConvertExpression(Expression& _expr, PTItr _iExpr)
 {
 	Expression sequence, primary, charExpr;
 	
-	for (PTItr iSeq = _iExpr.GetChild(PTNodeType_Sequence); iSeq; ++iSeq)
+	for (PTItr iSeq = _iExpr.GetChild(SymbolType_Sequence); iSeq; ++iSeq)
 	{
-		for (PTItr iPrefix = iSeq.GetChild(PTNodeType_Prefix); iPrefix; ++iPrefix)
+		for (PTItr iPrefix = iSeq.GetChild(SymbolType_Prefix); iPrefix; ++iPrefix)
 		{
 			char cPrefix = (iPrefix.Begin())->value;
-			PTItr iSuffix = iPrefix.GetChild(PTNodeType_Suffix);
-			PTItr iPrimary = iSuffix.GetChild(PTNodeType_Primary);
+			PTItr iSuffix = iPrefix.GetChild(SymbolType_Suffix);
+			PTItr iPrimary = iSuffix.GetChild(SymbolType_Primary);
 			
-			if (PTItr iId = iPrimary.GetChild(PTNodeType_Identifier))
+			if (PTItr iId = iPrimary.GetChild(SymbolType_Identifier))
 			{
-				primary.SetNonTerminal(iId.ToString());
+				primary.SetNonTerminal(boost::lexical_cast<std::string>(iId));
 			}
-			else if (PTItr iExpr = iPrimary.GetChild(PTNodeType_Expression))
+			else if (PTItr iExpr = iPrimary.GetChild(SymbolType_Expression))
 			{
 				ConvertExpression(primary, iExpr);
 			}
-			else if (PTItr iLiteral = iPrimary.GetChild(PTNodeType_Literal))
+			else if (PTItr iLiteral = iPrimary.GetChild(SymbolType_Literal))
 			{
-				for (PTItr iChar = iLiteral.GetChild(PTNodeType_Char); iChar; ++iChar)
+				for (PTItr iChar = iLiteral.GetChild(SymbolType_Char); iChar; ++iChar)
 				{
 					charExpr.SetChar(GetChar(iChar));
 					primary.AddGroupItem(ExpressionType_Sequence, charExpr);
 				}
 			}
-			else if (PTItr iClass = iPrimary.GetChild(PTNodeType_Class))
+			else if (PTItr iClass = iPrimary.GetChild(SymbolType_Class))
 			{
-				for (PTItr iRange = iClass.GetChild(PTNodeType_Range); iRange; ++iRange)
+				for (PTItr iRange = iClass.GetChild(SymbolType_Range); iRange; ++iRange)
 				{
-					PTItr iChar = iRange.GetChild(PTNodeType_Char);
+					PTItr iChar = iRange.GetChild(SymbolType_Char);
 					char firstChar = GetChar(iChar);
 					if (++iChar)
 					{
@@ -299,22 +299,24 @@ static void ConvertExpression(Expression& _expr, PTItr _iExpr)
 
 static void ConvertGrammar(Grammar& _grammar, PTItr _iGrammar)
 {
-	for (PTItr iDef = _iGrammar.GetChild(PTNodeType_Definition); iDef; ++iDef)
+	for (PTItr iDef = _iGrammar.GetChild(SymbolType_Definition); iDef; ++iDef)
 	{
-		PTItr iId = iDef.GetChild(PTNodeType_Identifier);
-		PTItr iArrow = iId.GetNext(PTNodeType_LEFTARROW);
-		PTItr iExpr = iArrow.GetNext(PTNodeType_Expression);
+		PTItr iId = iDef.GetChild(SymbolType_Identifier);
+		PTItr iArrow = iId.GetNext(SymbolType_LEFTARROW);
+		PTItr iExpr = iArrow.GetNext(SymbolType_Expression);
 		
 		Expression expr;
 		ConvertExpression(expr, iExpr);
 		
-		Def& newDef = AddDef(_grammar.defs, iId.ToString(), expr);
+		Def& newDef = AddDef(_grammar.defs, boost::lexical_cast<std::string>(iId), expr);
 		char arrowType = (iArrow.Begin() + 1)->value;
 		if (arrowType == '=')
 			newDef.second.isNode = true;
 		if (arrowType == '=' || arrowType == '<')
 			newDef.second.isMemoized = true;
 	}
+	
+	_grammar.ComputeIsLeaf();
 }
 
 static void RegisterTemplate(const ctemplate::TemplateString&  _key, const ctemplate::TemplateString&  _content)
@@ -346,25 +348,14 @@ int main(int argc, char* argv[])
 			std::string folder = argv[2];
 			std::string name = argv[3];
 			
-			Node* pGrammar = &nodes[0];
-			bool bParsed = (PEGParser::Parse(PTNodeType_Grammar, pGrammar) == &nodes.back());
-			if (bParsed)
-			{
-				Print(std::cout, PTNodeType_Grammar, pGrammar);
+			Node* pGrammar = &nodes.front();
+			//Print(std::cout, SymbolType_Grammar, pGrammar);
 			
-				Grammar grammar;
-				ConvertGrammar(grammar, PTItr(PTNodeType_Grammar, pGrammar));
-				grammar.ComputeIsLeaf();
-				
-				//std::cout << grammar;
-				
-				GenerateParser(folder, name, grammar);
-			}
-			else
-			{
-				std::cout << argv[1] << ": Parsing Failed.\n";
-				return 1;
-			}
+			Grammar grammar;
+			ConvertGrammar(grammar, PTItr(SymbolType_Grammar, pGrammar));
+			//std::cout << grammar;
+			
+			GenerateParser(argv[1], folder, name, grammar);
 		}
 	}
 	catch (const std::exception& e)

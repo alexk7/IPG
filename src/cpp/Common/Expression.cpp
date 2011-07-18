@@ -60,10 +60,9 @@ void Expression::SetContainer(ExpressionType _containerType, Expression& _child)
 	}
 }
 
-void Expression::SetNonTerminal(const std::string& _identifier)
+void Expression::SetNonTerminal(std::string _identifier)
 {
-	mType = ExpressionType_NonTerminal;
-	mData = _identifier;
+	SetType<std::string>(ExpressionType_NonTerminal).swap(_identifier);
 }
 
 void Expression::SetRange(char _first, char _last)

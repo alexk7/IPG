@@ -36,7 +36,7 @@ public:
 	
 	void AddGroupItem(ExpressionType _groupType, Expression& _item);
 	void SetContainer(ExpressionType _containerType, Expression& _child);
-	void SetNonTerminal(const std::string& _identifier);
+	void SetNonTerminal(std::string _identifier);
 	void SetRange(char _first, char _last);
 	void SetChar(char _value);
 	void SetDot() { mType = ExpressionType_Dot; }

@@ -12,8 +12,7 @@
 			buildConfigurationList = 62942A3213C3A9D700C2DAA9 /* Build configuration list for PBXAggregateTarget "bootstrap" */;
 			buildPhases = (
 				62942A3513C3AA1000C2DAA9 /* test: Generate PEG Parser */,
-				62942A3613C3AA8500C2DAA9 /* test: Compare generated PEGParser.cpp files */,
-				62942A3713C3AAC000C2DAA9 /* test: Compare generated PEGParser.h files */,
+				62942A3613C3AA8500C2DAA9 /* test: Compare generated PEG Parsers */,
 				62942A5613C4010A00C2DAA9 /* Copy generated files from IPG-Dev to IPG */,
 			);
 			dependencies = (
@@ -440,7 +439,7 @@
 			shellScript = "rm -f ${TEMP_DIR}/PEGParser.cpp\nrm -f ${TEMP_DIR}/PEGParser.h\n${BUILT_PRODUCTS_DIR}/ipg-dev ${SRCROOT}/../../src/peg/peg.peg ${TEMP_DIR}/ PEGParser";
 			showEnvVarsInLog = 0;
 		};
-		62942A3613C3AA8500C2DAA9 /* test: Compare generated PEGParser.cpp files */ = {
+		62942A3613C3AA8500C2DAA9 /* test: Compare generated PEG Parsers */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -448,30 +447,15 @@
 			inputPaths = (
 				"${SRCROOT}/../../src/cpp/Dev/Dev-PEGParser.cpp",
 				"${TEMP_DIR}/PEGParser.cpp",
-			);
-			name = "test: Compare generated PEGParser.cpp files";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "cmp -b ${SRCROOT}/../../src/cpp/Dev/Dev-PEGParser.cpp ${TEMP_DIR}/PEGParser.cpp";
-			showEnvVarsInLog = 0;
-		};
-		62942A3713C3AAC000C2DAA9 /* test: Compare generated PEGParser.h files */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${SRCROOT}/../../src/cpp/Dev/Dev-PEGParser.h",
 				"${TEMP_DIR}/PEGParser.h",
+				"${SRCROOT}/../../src/cpp/Dev/Dev-PEGParser.h",
 			);
-			name = "test: Compare generated PEGParser.h files";
+			name = "test: Compare generated PEG Parsers";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "cmp -b ${SRCROOT}/../../src/cpp/Dev/Dev-PEGParser.h ${TEMP_DIR}/PEGParser.h";
+			shellPath = /bin/bash;
+			shellScript = "g++ -E -P -DNDEBUG ${SRCROOT}/../../src/cpp/Dev/Dev-PEGParser.cpp > ${TEMP_DIR}/Dev-PEGParser.i\ng++ -E -P -DNDEBUG ${TEMP_DIR}/PEGParser.cpp > ${TEMP_DIR}/PEGParser.i\ncmp -b ${TEMP_DIR}/Dev-PEGParser.i ${TEMP_DIR}/PEGParser.i";
 			showEnvVarsInLog = 0;
 		};
 		62942A5613C4010A00C2DAA9 /* Copy generated files from IPG-Dev to IPG */ = {
