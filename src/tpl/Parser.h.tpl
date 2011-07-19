@@ -1,6 +1,8 @@
+#ifndef BOOTSTRAP_TEST
 #include <vector>
 #include <boost/shared_ptr.hpp>
-#include <boost/unordered_map.hpp>{{BI_NEWLINE}}
+#include <boost/unordered_map.hpp>
+#endif{{BI_NEWLINE}}
 
 namespace {{namespace}}
 {

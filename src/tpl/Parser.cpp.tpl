@@ -1,8 +1,11 @@
+#ifndef BOOTSTRAP_TEST
 #include <cassert>
 #include <stdexcept>
 #include <ostream>
 #include <sstream>
 #include <iomanip>
+#endif{{BI_NEWLINE}}
+
 {{header}}
 
 namespace
