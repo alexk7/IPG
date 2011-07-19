@@ -54,24 +54,49 @@ const char* {{namespace}}::SymbolName({{namespace}}::SymbolType _type)
 	}
 }{{BI_NEWLINE}}
 
-{{namespace}}::Node* {{namespace}}::Parser::Parse(SymbolType _type, {{namespace}}::Node* _symbol)
+{{namespace}}::Node* {{namespace}}::Parser::Parse(SymbolType _type, {{namespace}}::Node* p)
 {
 	switch (_type)
 	{
 		{{#def}}
-		case SymbolType_{{name}}: return Parse_{{name}}(_symbol);
+		case SymbolType_{{name}}:
+		{
+			{{#isMemoized}}
+			MemoInsertResult r = p->end.insert(Memo(SymbolType_{{name}}, 0));
+			if (!r.second) return r.first->second;
+			{{/isMemoized}}
+			{{>parseCode}}
+			{{#isMemoized}}
+			r.first->second = p;
+			{{/isMemoized}}		
+		  return p;
+		}{{BI_NEWLINE}}
 		{{/def}}
+		
+		default:
+			assert(false);
+			return 0;
 	}
-	return 0;
 }{{BI_NEWLINE}}
 
-{{namespace}}::Node* {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, {{namespace}}::Node* _symbol, {{namespace}}::PTNodeChildren& _children)
+{{namespace}}::Node* {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, {{namespace}}::Node* p, {{namespace}}::PTNodeChildren& v)
 {
 	switch (_type)
 	{
 		{{#def}}
 		{{#isInternal}}
-		case SymbolType_{{name}}: return Traverse_{{name}}(_symbol, _children);
+		case SymbolType_{{name}}:
+		{
+			{{#isMemoized}}
+			MemoInsertResult r = p->end.insert(Memo(SymbolType_{{name}}, 0));
+			if (!r.second && !r.first->second) return 0;
+			{{/isMemoized}}
+			{{>traverseCode}}
+			{{#isMemoized}}
+			r.first->second = p;
+			{{/isMemoized}}
+			return p;
+		}{{BI_NEWLINE}}
 		{{/isInternal}}
 		{{/def}}
 		{{#def}}
@@ -79,8 +104,11 @@ const char* {{namespace}}::SymbolName({{namespace}}::SymbolType _type)
 		case SymbolType_{{name}}:
 		{{/isLeaf}}
 		{{/def}}
+			return Parse(_type, p);{{BI_NEWLINE}}
+			
 		default:
-			return Parse(_type, _symbol);
+			assert(false);
+			return 0;
 	}
 }{{BI_NEWLINE}}
 
@@ -125,36 +153,8 @@ void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _
 		_v.push_back(PTNodeChild(_type, _p));
 	return pEnd;
 }{{BI_NEWLINE}}
-	
-{{#def}}
-{{namespace}}::Node* {{namespace}}::Parser::Parse_{{name}}({{namespace}}::Node* p)
-{
-	{{#isMemoized}}
-	MemoInsertResult r = p->end.insert(Memo(SymbolType_{{name}}, 0));
-	if (!r.second) return r.first->second;
-	{{/isMemoized}}
-	{{>parseCode}}
-	{{#isMemoized}}
-	r.first->second = p;
-	{{/isMemoized}}
-	return p;
-}{{BI_NEWLINE}}
-{{/def}}
 
-{{#def}}
-{{#isInternal}}
-{{namespace}}::Node* {{namespace}}::Parser::Traverse_{{name}}({{namespace}}::Node* p, {{namespace}}::PTNodeChildren& v)
-{
-	{{>traverseCode}}
-	{{#isMemoized}}
-	b->end.insert(Memo(SymbolType_{{name}}, p));
-	{{/isMemoized}}
-	return p;
-}{{BI_NEWLINE}}
-{{/isInternal}}
-{{/def}}
-
-{{namespace}}::PTItr::PTItr({{namespace}}::SymbolType _type, {{namespace}}::Node* _pNode)
+{{namespace}}::Iterator::Iterator({{namespace}}::SymbolType _type, {{namespace}}::Node* _pNode)
 :	mType(_type)
 ,	mpNode(_pNode)
 , mpSiblings(new PTNodeChildren)
@@ -165,7 +165,7 @@ void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _
 	miCurrent = mpSiblings->begin();
 }{{BI_NEWLINE}}
 
-{{namespace}}::PTItr::PTItr(const {{namespace}}::PTItr& _iOther)
+{{namespace}}::Iterator::Iterator(const {{namespace}}::Iterator& _iOther)
 : mType(_iOther.mType)
 ,	mpNode(_iOther.mpNode)
 , mpSiblings(_iOther.mpSiblings)
@@ -174,30 +174,30 @@ void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _
 {
 }{{BI_NEWLINE}}
 	
-{{namespace}}::PTItr::operator bool() const
+{{namespace}}::Iterator::operator bool() const
 {
 	return mpNode != 0;
 }{{BI_NEWLINE}}
 
-{{namespace}}::PTItr& {{namespace}}::PTItr::operator++()
+{{namespace}}::Iterator& {{namespace}}::Iterator::operator++()
 {
 	mpChildren.reset();
 	GoToNext(mType);
 	return *this;
 }{{BI_NEWLINE}}
 	
-{{namespace}}::SymbolType {{namespace}}::PTItr::GetType() const
+{{namespace}}::SymbolType {{namespace}}::Iterator::GetType() const
 {
 	return mType;
 }{{BI_NEWLINE}}
 
-{{namespace}}::Node* {{namespace}}::PTItr::Begin() const
+{{namespace}}::Node* {{namespace}}::Iterator::Begin() const
 {
 	assert(mpNode);
 	return mpNode;
 }{{BI_NEWLINE}}
 
-{{namespace}}::Node* {{namespace}}::PTItr::End() const
+{{namespace}}::Node* {{namespace}}::Iterator::End() const
 {
 	assert(mpNode);
 	if (mType == SymbolType(0))
@@ -205,25 +205,25 @@ void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _
 	return mpParser->Parse(mType, mpNode);
 }{{BI_NEWLINE}}
 
-{{namespace}}::PTItr {{namespace}}::PTItr::GetChild({{namespace}}::SymbolType _childT)
+{{namespace}}::Iterator {{namespace}}::Iterator::GetChild({{namespace}}::SymbolType _childT)
 {
 	assert(mpNode != 0);
 	if (_childT == SymbolType(0))
-		return PTItr(SymbolType(0), mpNode);
+		return Iterator(SymbolType(0), mpNode);
 	else
-		return PTItr(mpParser, GetChildren(), _childT);
+		return Iterator(mpParser, GetChildren(), _childT);
 }{{BI_NEWLINE}}
 
-{{namespace}}::PTItr {{namespace}}::PTItr::GetNext({{namespace}}::SymbolType _childT)
+{{namespace}}::Iterator {{namespace}}::Iterator::GetNext({{namespace}}::SymbolType _childT)
 {
 	assert(mpNode != 0);
 	if (_childT == SymbolType(0))
-		return PTItr(SymbolType(0), mpNode + 1);
+		return Iterator(SymbolType(0), mpNode + 1);
 	else
-		return PTItr(*this, _childT);
+		return Iterator(*this, _childT);
 }{{BI_NEWLINE}}
 
-{{namespace}}::PTItr::PTItr(boost::shared_ptr<{{namespace}}::Parser> _pParser, boost::shared_ptr<{{namespace}}::PTNodeChildren> _pSiblings, {{namespace}}::SymbolType _childType)
+{{namespace}}::Iterator::Iterator(boost::shared_ptr<{{namespace}}::Parser> _pParser, boost::shared_ptr<{{namespace}}::PTNodeChildren> _pSiblings, {{namespace}}::SymbolType _childType)
 : mType(_childType)
 , mpSiblings(_pSiblings)
 , miCurrent(_pSiblings->begin())
@@ -232,7 +232,7 @@ void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _
 	SkipSiblingsWithWrongType(_childType);
 }{{BI_NEWLINE}}
 
-{{namespace}}::PTItr::PTItr(const {{namespace}}::PTItr& _iOther, {{namespace}}::SymbolType _childType)
+{{namespace}}::Iterator::Iterator(const {{namespace}}::Iterator& _iOther, {{namespace}}::SymbolType _childType)
 : mType(_childType)
 ,	mpSiblings(_iOther.mpSiblings)
 ,	miCurrent(_iOther.miCurrent)
@@ -241,7 +241,7 @@ void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _
 	SkipSiblingsWithWrongType(_childType);
 }{{BI_NEWLINE}}
 
-void {{namespace}}::PTItr::GoToNext({{namespace}}::SymbolType _childType)
+void {{namespace}}::Iterator::GoToNext({{namespace}}::SymbolType _childType)
 {
 	if (mType == SymbolType(0))
 	{
@@ -256,7 +256,7 @@ void {{namespace}}::PTItr::GoToNext({{namespace}}::SymbolType _childType)
 	}
 }{{BI_NEWLINE}}
 
-void {{namespace}}::PTItr::SkipSiblingsWithWrongType({{namespace}}::SymbolType _childType)
+void {{namespace}}::Iterator::SkipSiblingsWithWrongType({{namespace}}::SymbolType _childType)
 {
 	assert(_childType != SymbolType(0));
 	PTNodeChildren::iterator iEnd = mpSiblings->end();
@@ -265,7 +265,7 @@ void {{namespace}}::PTItr::SkipSiblingsWithWrongType({{namespace}}::SymbolType _
 	mpNode = (miCurrent != iEnd) ? miCurrent->second : 0 ;
 }{{BI_NEWLINE}}
 
-boost::shared_ptr<{{namespace}}::PTNodeChildren> {{namespace}}::PTItr::GetChildren()
+boost::shared_ptr<{{namespace}}::PTNodeChildren> {{namespace}}::Iterator::GetChildren()
 {
 	if (!mpChildren)
 	{
@@ -278,7 +278,7 @@ boost::shared_ptr<{{namespace}}::PTNodeChildren> {{namespace}}::PTItr::GetChildr
 	return mpChildren;
 }{{BI_NEWLINE}}
 
-std::ostream& {{namespace}}::operator<<(std::ostream& _os, const {{namespace}}::PTItr& _i)
+std::ostream& {{namespace}}::operator<<(std::ostream& _os, const {{namespace}}::Iterator& _i)
 {
 	if (_i)
 	{

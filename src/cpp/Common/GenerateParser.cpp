@@ -16,7 +16,7 @@ public:
 	ParserGenerator(std::ostream& _source, const Grammar& _grammar, bool _traverse = false)
 	: mSource(_source)
 	, mGrammar(_grammar)
-	, mTabs(1)
+	, mTabs(3)
 	, mNextBacktrackIndex(1)
 	, mTraverse(_traverse)
 	{
@@ -230,9 +230,7 @@ void GenerateParser(std::string _srcPath, std::string _folder, std::string _name
 		
 		std::ostringstream traverseCodeStream;
 		ParserGenerator traverserGenerator(traverseCodeStream, _grammar, true);
-		int backTrackIndex = -1;
-		traverserGenerator.DefineBacktrack(backTrackIndex, i->second.GetType() == ExpressionType_Choice && !i->second.GetGroup().first.isLeaf);
-		traverserGenerator.Emit(i->second, backTrackIndex);
+		traverserGenerator.Emit(i->second);
 		
 		std::string traverseCodeFilename = "traverseCode_" + i->first;
 		std::string traverseCode = traverseCodeStream.str();

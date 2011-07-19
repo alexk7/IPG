@@ -36,7 +36,7 @@ static bool ReadFile(std::vector<Node>& _symbols, const char* _filename)
 	return false;
 }
 
-static char GetChar(PTItr _iChar)
+static char GetChar(Iterator _iChar)
 {
 	Node* p = _iChar.Begin();
 	char c = p->value;
@@ -70,39 +70,39 @@ static char GetChar(PTItr _iChar)
 	return c;
 }
 
-static void ConvertExpression(Expression& _expr, PTItr _iExpr)
+static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 {
 	Expression sequence, primary, charExpr;
 	
-	for (PTItr iSeq = _iExpr.GetChild(SymbolType_Sequence); iSeq; ++iSeq)
+	for (Iterator iSeq = _iExpr.GetChild(SymbolType_Sequence); iSeq; ++iSeq)
 	{
-		for (PTItr iPrefix = iSeq.GetChild(SymbolType_Prefix); iPrefix; ++iPrefix)
+		for (Iterator iPrefix = iSeq.GetChild(SymbolType_Prefix); iPrefix; ++iPrefix)
 		{
 			char cPrefix = (iPrefix.Begin())->value;
-			PTItr iSuffix = iPrefix.GetChild(SymbolType_Suffix);
-			PTItr iPrimary = iSuffix.GetChild(SymbolType_Primary);
+			Iterator iSuffix = iPrefix.GetChild(SymbolType_Suffix);
+			Iterator iPrimary = iSuffix.GetChild(SymbolType_Primary);
 			
-			if (PTItr iId = iPrimary.GetChild(SymbolType_Identifier))
+			if (Iterator iId = iPrimary.GetChild(SymbolType_Identifier))
 			{
 				primary.SetNonTerminal(boost::lexical_cast<std::string>(iId));
 			}
-			else if (PTItr iExpr = iPrimary.GetChild(SymbolType_Expression))
+			else if (Iterator iExpr = iPrimary.GetChild(SymbolType_Expression))
 			{
 				ConvertExpression(primary, iExpr);
 			}
-			else if (PTItr iLiteral = iPrimary.GetChild(SymbolType_Literal))
+			else if (Iterator iLiteral = iPrimary.GetChild(SymbolType_Literal))
 			{
-				for (PTItr iChar = iLiteral.GetChild(SymbolType_Char); iChar; ++iChar)
+				for (Iterator iChar = iLiteral.GetChild(SymbolType_Char); iChar; ++iChar)
 				{
 					charExpr.SetChar(GetChar(iChar));
 					primary.AddGroupItem(ExpressionType_Sequence, charExpr);
 				}
 			}
-			else if (PTItr iClass = iPrimary.GetChild(SymbolType_Class))
+			else if (Iterator iClass = iPrimary.GetChild(SymbolType_Class))
 			{
-				for (PTItr iRange = iClass.GetChild(SymbolType_Range); iRange; ++iRange)
+				for (Iterator iRange = iClass.GetChild(SymbolType_Range); iRange; ++iRange)
 				{
-					PTItr iChar = iRange.GetChild(SymbolType_Char);
+					Iterator iChar = iRange.GetChild(SymbolType_Char);
 					char firstChar = GetChar(iChar);
 					if (++iChar)
 					{
@@ -155,13 +155,13 @@ static void ConvertExpression(Expression& _expr, PTItr _iExpr)
 	}
 }
 
-static void ConvertGrammar(Grammar& _grammar, PTItr _iGrammar)
+static void ConvertGrammar(Grammar& _grammar, Iterator _iGrammar)
 {
-	for (PTItr iDef = _iGrammar.GetChild(SymbolType_Definition); iDef; ++iDef)
+	for (Iterator iDef = _iGrammar.GetChild(SymbolType_Definition); iDef; ++iDef)
 	{
-		PTItr iId = iDef.GetChild(SymbolType_Identifier);
-		PTItr iArrow = iId.GetNext(SymbolType_LEFTARROW);
-		PTItr iExpr = iArrow.GetNext(SymbolType_Expression);
+		Iterator iId = iDef.GetChild(SymbolType_Identifier);
+		Iterator iArrow = iId.GetNext(SymbolType_LEFTARROW);
+		Iterator iExpr = iArrow.GetNext(SymbolType_Expression);
 		
 		Expression expr;
 		ConvertExpression(expr, iExpr);
@@ -207,10 +207,10 @@ int main(int argc, char* argv[])
 			std::string name = argv[3];
 			
 			Node* pGrammar = &nodes.front();
-			//Print(std::cout, SymbolType_Grammar, pGrammar);
+			//Parser().Print(std::cout, SymbolType_Grammar, pGrammar);
 			
 			Grammar grammar;
-			ConvertGrammar(grammar, PTItr(SymbolType_Grammar, pGrammar));
+			ConvertGrammar(grammar, Iterator(SymbolType_Grammar, pGrammar));
 			//std::cout << grammar;
 			
 			GenerateParser(argv[1], folder, name, grammar);

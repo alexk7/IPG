@@ -34,32 +34,24 @@ namespace {{namespace}}
 		
 	private:
 		Node* Visit(SymbolType _type, Node* _p, PTNodeChildren& _v);
-		{{#def}}
-		Node* Parse_{{name}}(Node* p);
-		{{/def}}
-		{{#def}}
-		{{#isInternal}}
-		Node* Traverse_{{name}}(Node* p, PTNodeChildren& v);
-		{{/isInternal}}
-		{{/def}}
 	};{{BI_NEWLINE}}
 	
-	class PTItr
+	class Iterator
 	{
 	public:
-		PTItr(SymbolType _type, Node* _pNode = 0);
-		PTItr(const PTItr& _iOther);
+		Iterator(SymbolType _type, Node* _pNode = 0);
+		Iterator(const Iterator& _iOther);
 		operator bool() const;
-		PTItr& operator++();
+		Iterator& operator++();
 		SymbolType GetType() const;
 		Node* Begin() const;
 		Node* End() const;
-		PTItr GetChild(SymbolType _childT);
-		PTItr GetNext(SymbolType _childT);{{BI_NEWLINE}}
+		Iterator GetChild(SymbolType _childT);
+		Iterator GetNext(SymbolType _childT);{{BI_NEWLINE}}
 		
 	private:
-		PTItr(boost::shared_ptr<Parser> _pParser, boost::shared_ptr<PTNodeChildren> _pSiblings, SymbolType _childType);
-		PTItr(const PTItr& _iOther, SymbolType _childType);
+		Iterator(boost::shared_ptr<Parser> _pParser, boost::shared_ptr<PTNodeChildren> _pSiblings, SymbolType _childType);
+		Iterator(const Iterator& _iOther, SymbolType _childType);
 		void GoToNext(SymbolType _childType);
 		void SkipSiblingsWithWrongType(SymbolType _childType);
 		boost::shared_ptr<PTNodeChildren> GetChildren();{{BI_NEWLINE}}
@@ -72,5 +64,5 @@ namespace {{namespace}}
 		boost::shared_ptr<Parser> mpParser;
 	};{{BI_NEWLINE}}
 
-	std::ostream& operator<<(std::ostream& _os, const PTItr& _i);
+	std::ostream& operator<<(std::ostream& _os, const Iterator& _i);
 }
