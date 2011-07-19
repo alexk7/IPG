@@ -16,7 +16,7 @@ public:
 	ParserGenerator(std::ostream& _source, const Grammar& _grammar, bool _traverse = false)
 	: mSource(_source)
 	, mGrammar(_grammar)
-	, mTabs(3)
+	, mTabs(1)
 	, mNextBacktrackIndex(1)
 	, mTraverse(_traverse)
 	{
@@ -94,16 +94,16 @@ public:
 					const DefValue& defval = def.second;
 					if (defval.isNode)
 					{
-						mSource << mTabs << boost::format("p = ::Visit(SymbolType_%1%, p, v);\n") % nonTerminal;
+						mSource << mTabs << boost::format("p = Visit(SymbolType_%1%, p, v);\n") % nonTerminal;
 						break;
 					}
 					else if (!defval.isLeaf)
 					{
-						mSource << mTabs << boost::format("p = Traverse_%1%(p, v);\n") % nonTerminal;
+						mSource << mTabs << boost::format("p = Traverse(SymbolType_%1%, p, v);\n") % nonTerminal;
 						break;
 					}
 				}
-				mSource << mTabs << boost::format("p = Parse_%1%(p);\n") % nonTerminal;
+				mSource << mTabs << boost::format("p = Parse(SymbolType_%1%, p);\n") % nonTerminal;
 				break;
 			}
 				
@@ -200,7 +200,7 @@ static void WriteAutoGenNotice(std::ostream& _os, const std::string& _srcPath)
 void GenerateParser(std::string _srcPath, std::string _folder, std::string _name, const Grammar& _grammar)
 {
 	ctemplate::TemplateDictionary dict(_name);
-	dict.SetValue("name", _name);
+	dict.SetValue("namespace", _name);
 
 	Defs::const_iterator i, iEnd = _grammar.defs.end();
 	long value = 0;

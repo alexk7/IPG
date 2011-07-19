@@ -13,9 +13,7 @@
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
          startingLineNumber = "355"
-         endingLineNumber = "355"
-         landmarkName = "main(int argc, char* argv[])"
-         landmarkType = "7">
+         endingLineNumber = "355">
       </FileBreakpoint>
       <FileBreakpoint
          shouldBeEnabled = "Yes"
@@ -42,8 +40,8 @@
          endingColumnNumber = "9223372036854775807"
          startingLineNumber = "382"
          endingLineNumber = "382"
-         landmarkName = "Parse_Grammar(Node* p)"
-         landmarkType = "7">
+         landmarkName = "PEGParser::Parser::Parse_Char(PEGParser::Node* p)"
+         landmarkType = "5">
       </FileBreakpoint>
    </FileBreakpoints>
    <ExceptionBreakpoints>
