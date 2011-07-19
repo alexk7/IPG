@@ -69,11 +69,11 @@ namespace
 		{{#def}}
 		{{#isInternal}}{{BI_NEWLINE}}		static Node* Traverse_{{name}}(Node* p, PTNodeChildren& v)
 		{
-			Node* e = Parse_{{name}}(p);
-			if (!e)
-				return 0;
 			{{>traverseCode}}
-			return e;
+			{{#isMemoized}}
+			b->end.insert(Memo(SymbolType_{{name}}, p));
+			{{/isMemoized}}
+			return p;
 		}
 		{{/isInternal}}
 		{{/def}}

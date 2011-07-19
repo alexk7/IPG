@@ -34,12 +34,12 @@ public:
 			case ExpressionType_Choice:
 			{
 				const Expression::Group& group = expr.GetGroup();
-				bool visit = !group.first.isLeaf;
-				DefineBacktrack(_backtrackIndex, visit);
+				bool mayUndoVisit = !group.first.isLeaf;
+				DefineBacktrack(_backtrackIndex, mayUndoVisit);
 				Emit(group.first, _backtrackIndex);
 				If("!p");
 				OpenBlock();
-				Backtrack(_backtrackIndex, visit);
+				Backtrack(_backtrackIndex, mayUndoVisit);
 				Emit(group.second, _backtrackIndex);
 				CloseBlock();
 				break;
@@ -69,15 +69,16 @@ public:
 				
 			case ExpressionType_ZeroOrMore:
 			{
+				_backtrackIndex = -1;
 				mSource << mTabs << "for (;;)\n";
 				OpenBlock();
 				const Expression& child = expr.GetChild();
-				bool visit = !child.isLeaf;
-				DefineBacktrack(_backtrackIndex, visit);
+				bool mayUndoVisit = !child.isLeaf;
+				DefineBacktrack(_backtrackIndex, mayUndoVisit);
 				Emit(child, _backtrackIndex);
 				If("!p");
 				OpenBlock();
-				Backtrack(_backtrackIndex, visit);
+				Backtrack(_backtrackIndex, mayUndoVisit);
 				mSource << mTabs << "break;\n";
 				CloseBlock();
 				CloseBlock();
@@ -155,21 +156,21 @@ public:
 		return "!" + _expr;
 	}
 	
-	void DefineBacktrack(int& _backtrackIndex, bool _visit)
+	void DefineBacktrack(int& _backtrackIndex, bool _mayUndoVisit)
 	{
 		if (_backtrackIndex == -1)
 		{
 			_backtrackIndex = mNextBacktrackIndex++;
 			mSource << mTabs << boost::format("Node* %1% = p;\n") % BacktrackVar(_backtrackIndex);
-			if (mTraverse && _visit)
+			if (mTraverse && _mayUndoVisit)
 				mSource << mTabs << boost::format("size_t %1% = v.size();\n") % BacktrackVar(_backtrackIndex, 's');
 		}
 	}
 	
-	void Backtrack(int _backtrackIndex, bool _visit)
+	void Backtrack(int _backtrackIndex, bool _undoVisit)
 	{
 		mSource << mTabs << boost::format("p = %1%;\n") % BacktrackVar(_backtrackIndex);
-		if (mTraverse && _visit)
+		if (mTraverse && _undoVisit)
 			mSource << mTabs << boost::format("v.erase(v.begin() + %1%, v.end());\n") % BacktrackVar(_backtrackIndex, 's');
 	}
 	
@@ -229,7 +230,9 @@ void GenerateParser(std::string _srcPath, std::string _folder, std::string _name
 		
 		std::ostringstream traverseCodeStream;
 		ParserGenerator traverserGenerator(traverseCodeStream, _grammar, true);
-		traverserGenerator.Emit(i->second);
+		int backTrackIndex = -1;
+		traverserGenerator.DefineBacktrack(backTrackIndex, i->second.GetType() == ExpressionType_Choice && !i->second.GetGroup().first.isLeaf);
+		traverserGenerator.Emit(i->second, backTrackIndex);
 		
 		std::string traverseCodeFilename = "traverseCode_" + i->first;
 		std::string traverseCode = traverseCodeStream.str();
