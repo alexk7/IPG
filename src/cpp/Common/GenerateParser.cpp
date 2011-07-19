@@ -208,7 +208,7 @@ void GenerateParser(std::string _srcPath, std::string _folder, std::string _name
 	{
 		ctemplate::TemplateDictionary* pDef = dict.AddSectionDictionary("def");
 		pDef->SetValue("name", i->first);
-		pDef->SetIntValue("value", ++value);
+		pDef->SetIntValue("value", value++);
 		
 		if (i->second.isMemoized)
 			pDef->ShowSection("isMemoized");
