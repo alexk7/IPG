@@ -41,13 +41,11 @@ namespace
 		return _os;
 	}{{BI_NEWLINE}}
 	
-	Node* Visit(SymbolType type, Node* p, PTNodeChildren& v)
+	Node* Visit(SymbolType _type, Node* _p, PTNodeChildren& _v)
 	{
-		MemoIterator i = p->end.find(type);
-		assert(i != p->end.end());
-		Node* pEnd = i->second;
+		Node* pEnd = Parse(_type, _p);
 		if (pEnd)
-			v.push_back(PTNodeChild(type, p));
+			_v.push_back(PTNodeChild(_type, _p));
 		return pEnd;
 	}{{BI_NEWLINE}}
 	
