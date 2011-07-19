@@ -7,9 +7,9 @@
 
 namespace
 {
-	typedef {{namespace}}::SymbolTypeToPtr::value_type Memo;
-	typedef {{namespace}}::SymbolTypeToPtr::iterator MemoIterator;
-	typedef std::pair<{{namespace}}::SymbolTypeToPtr::iterator, bool> MemoInsertResult;{{BI_NEWLINE}}
+	typedef {{namespace}}::MemoMap::value_type Memo;
+	typedef {{namespace}}::MemoMap::iterator MemoIterator;
+	typedef std::pair<{{namespace}}::MemoMap::iterator, bool> MemoInsertResult;{{BI_NEWLINE}}
 	
 	struct EscapeChar
 	{
@@ -54,7 +54,7 @@ const char* {{namespace}}::SymbolName({{namespace}}::SymbolType _type)
 	}
 }{{BI_NEWLINE}}
 
-{{namespace}}::Node* {{namespace}}::Parser::Parse(SymbolType _type, {{namespace}}::Node* p)
+const char* {{namespace}}::Parser::Parse(SymbolType _type, const char* p)
 {
 	switch (_type)
 	{
@@ -62,7 +62,7 @@ const char* {{namespace}}::SymbolName({{namespace}}::SymbolType _type)
 		case SymbolType_{{name}}:
 		{
 			{{#isMemoized}}
-			MemoInsertResult r = p->end.insert(Memo(SymbolType_{{name}}, 0));
+			MemoInsertResult r = memoMap.insert(Memo(Symbol(SymbolType_{{name}}, p), 0));
 			if (!r.second) return r.first->second;
 			{{/isMemoized}}
 			{{>parseCode}}
@@ -79,7 +79,7 @@ const char* {{namespace}}::SymbolName({{namespace}}::SymbolType _type)
 	}
 }{{BI_NEWLINE}}
 
-{{namespace}}::Node* {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, {{namespace}}::Node* p, {{namespace}}::PTNodeChildren& v)
+const char* {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, const char* p, {{namespace}}::Symbols& v)
 {
 	switch (_type)
 	{
@@ -88,7 +88,7 @@ const char* {{namespace}}::SymbolName({{namespace}}::SymbolType _type)
 		case SymbolType_{{name}}:
 		{
 			{{#isMemoized}}
-			MemoInsertResult r = p->end.insert(Memo(SymbolType_{{name}}, 0));
+			MemoInsertResult r = memoMap.insert(Memo(Symbol(SymbolType_{{name}}, p), 0));
 			if (!r.second && !r.first->second) return 0;
 			{{/isMemoized}}
 			{{>traverseCode}}
@@ -112,10 +112,10 @@ const char* {{namespace}}::SymbolName({{namespace}}::SymbolType _type)
 	}
 }{{BI_NEWLINE}}
 
-void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _type, {{namespace}}::Node* _pNode, int _tabs, int _maxLineSize)
+void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _type, const char* _pNode, int _tabs, int _maxLineSize)
 {
-	PTNodeChildren children;
-	Node* pEnd = Traverse(_type, _pNode, children);
+	Symbols children;
+	const char* pEnd = Traverse(_type, _pNode, children);
 	if (!pEnd)
 	{
 		std::ostringstream oss;
@@ -130,9 +130,9 @@ void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _
 	_os << SymbolName(_type) << ": \"";{{BI_NEWLINE}}
 
 	size_t lineSize = 0;
-	for (Node* p = _pNode; p != pEnd; ++p)
+	for (const char* p = _pNode; p != pEnd; ++p)
 	{
-		_os << EscapeChar(p->value);
+		_os << EscapeChar(*p);
 		if (++lineSize >= _maxLineSize)
 		{
 			_os << "...";
@@ -142,27 +142,55 @@ void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _
 	
 	_os << "\"\n";{{BI_NEWLINE}}
 	
-	for (PTNodeChildren::iterator i = children.begin(), iEnd = children.end(); i != iEnd; ++i)
+	for (Symbols::iterator i = children.begin(), iEnd = children.end(); i != iEnd; ++i)
 		Print(_os, i->first, i->second, _tabs + 1, _maxLineSize);
+
+	if (_tabs == 0)
+	{
+		size_t bucketCount = memoMap.bucket_count();
+		size_t collisionCount = 0;
+		for (size_t bucket = 0; bucket != bucketCount; ++bucket)
+		{
+			size_t bucketSize = memoMap.bucket_size(bucket);
+			_os << "Bucket " << bucket << " Size: " << bucketSize << "\n";			
+			if (bucketSize > 1)
+					++collisionCount;
+		}
+		_os << "Max Load Factor: " << memoMap.max_load_factor() << "\n";
+		_os << "Bucket Count: " << bucketCount << "\n";
+		_os << "Collision Count: " << collisionCount << "\n";
+		size_t nullCount = 0;
+		size_t perSymbolCount[28] = {0};
+		for (MemoMap::const_iterator j = memoMap.begin(), jEnd = memoMap.end(); j != jEnd; ++j)
+		{
+			++perSymbolCount[j->first.first];
+			if (!j->second)
+				++nullCount;
+		}
+		_os << "Null Count: " << nullCount << "\n";
+		_os << "Memo Count: " << memoMap.size() << "\n";
+		for (size_t k = 1; k <= 27; ++k)
+			_os << SymbolName(SymbolType(k)) << " Count: " << perSymbolCount[k] << "\n";
+	}
 }{{BI_NEWLINE}}
 
-{{namespace}}::Node* {{namespace}}::Parser::Visit({{namespace}}::SymbolType _type, {{namespace}}::Node* _p, {{namespace}}::PTNodeChildren& _v)
+const char* {{namespace}}::Parser::Visit({{namespace}}::SymbolType _type, const char* _p, {{namespace}}::Symbols& _v)
 {
-	Node* pEnd = Parse(_type, _p);
+	const char* pEnd = Parse(_type, _p);
 	if (pEnd)
-		_v.push_back(PTNodeChild(_type, _p));
+		_v.push_back(Symbol(_type, _p));
 	return pEnd;
 }{{BI_NEWLINE}}
 
-{{namespace}}::Iterator::Iterator({{namespace}}::SymbolType _type, {{namespace}}::Node* _pNode)
+{{namespace}}::Iterator::Iterator({{namespace}}::SymbolType _type, const char* _pNode)
 :	mType(_type)
 ,	mpNode(_pNode)
-, mpSiblings(new PTNodeChildren)
+, mpSiblings(new Symbols)
 , mpParser(new Parser)
 {
 	if (mpNode && End())
-		mpSiblings->push_back(PTNodeChild(mType, mpNode));{{BI_NEWLINE}}
-	miCurrent = mpSiblings->begin();
+		mpSiblings->push_back(Symbol(mType, mpNode));{{BI_NEWLINE}}
+	miCurrent = mpSiblings->begin();				
 }{{BI_NEWLINE}}
 
 {{namespace}}::Iterator::Iterator(const {{namespace}}::Iterator& _iOther)
@@ -191,13 +219,13 @@ void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _
 	return mType;
 }{{BI_NEWLINE}}
 
-{{namespace}}::Node* {{namespace}}::Iterator::Begin() const
+const char* {{namespace}}::Iterator::Begin() const
 {
 	assert(mpNode);
 	return mpNode;
 }{{BI_NEWLINE}}
 
-{{namespace}}::Node* {{namespace}}::Iterator::End() const
+const char* {{namespace}}::Iterator::End() const
 {
 	assert(mpNode);
 	if (mType == SymbolType(0))
@@ -223,7 +251,12 @@ void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _
 		return Iterator(*this, _childT);
 }{{BI_NEWLINE}}
 
-{{namespace}}::Iterator::Iterator(boost::shared_ptr<{{namespace}}::Parser> _pParser, boost::shared_ptr<{{namespace}}::PTNodeChildren> _pSiblings, {{namespace}}::SymbolType _childType)
+void {{namespace}}::Iterator::Print(std::ostream& _os, int _tabs, int _maxLineSize)
+{
+	mpParser->Print(_os, mType, mpNode, _tabs, _maxLineSize);
+}{{BI_NEWLINE}}
+
+{{namespace}}::Iterator::Iterator(boost::shared_ptr<{{namespace}}::Parser> _pParser, boost::shared_ptr<{{namespace}}::Symbols> _pSiblings, {{namespace}}::SymbolType _childType)
 : mType(_childType)
 , mpSiblings(_pSiblings)
 , miCurrent(_pSiblings->begin())
@@ -246,7 +279,7 @@ void {{namespace}}::Iterator::GoToNext({{namespace}}::SymbolType _childType)
 	if (mType == SymbolType(0))
 	{
 		++mpNode;
-		if (mpNode->value == 0)
+		if (*mpNode == 0)
 			mpNode = 0;
 	}
 	else
@@ -259,19 +292,19 @@ void {{namespace}}::Iterator::GoToNext({{namespace}}::SymbolType _childType)
 void {{namespace}}::Iterator::SkipSiblingsWithWrongType({{namespace}}::SymbolType _childType)
 {
 	assert(_childType != SymbolType(0));
-	PTNodeChildren::iterator iEnd = mpSiblings->end();
+	Symbols::iterator iEnd = mpSiblings->end();
 	while (miCurrent != iEnd && miCurrent->first != _childType)
 		++miCurrent;
 	mpNode = (miCurrent != iEnd) ? miCurrent->second : 0 ;
 }{{BI_NEWLINE}}
 
-boost::shared_ptr<{{namespace}}::PTNodeChildren> {{namespace}}::Iterator::GetChildren()
+boost::shared_ptr<{{namespace}}::Symbols> {{namespace}}::Iterator::GetChildren()
 {
 	if (!mpChildren)
 	{
-		PTNodeChildren children;
+		Symbols children;
 		mpParser->Traverse(mType, mpNode, children);
-		mpChildren.reset(new PTNodeChildren);
+		mpChildren.reset(new Symbols);
 		mpChildren->swap(children);			
 	}
 	
@@ -282,8 +315,8 @@ std::ostream& {{namespace}}::operator<<(std::ostream& _os, const {{namespace}}::
 {
 	if (_i)
 	{
-		for (const {{namespace}}::Node *p = _i.Begin(), *pEnd = _i.End(); p != pEnd; ++p)
-			_os.put(p->value);
+		for (const char *p = _i.Begin(), *pEnd = _i.End(); p != pEnd; ++p)
+			_os.put(*p);
 	}
 	return _os;
 }{{BI_NEWLINE}}

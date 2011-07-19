@@ -110,9 +110,9 @@
 		625BDA4913CBB08C00EE6FD6 /* diff-parsers.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "diff-parsers.sh"; sourceTree = "<group>"; };
 		626A495513C20B3B00D24233 /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		626A496B13C212C100D24233 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; name = LICENSE; path = ../../LICENSE; sourceTree = "<group>"; };
-		62942A2B13C3A52B00C2DAA9 /* Dev-PEGParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "Dev-PEGParser.cpp"; sourceTree = "<group>"; };
+		62942A2B13C3A52B00C2DAA9 /* Dev-PEGParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = "Dev-PEGParser.cpp"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		62942A2C13C3A52B00C2DAA9 /* Dev-PEGParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Dev-PEGParser.h"; sourceTree = "<group>"; };
-		62942A7813C4A74100C2DAA9 /* Parser.cpp.tpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Parser.cpp.tpl.h; sourceTree = "<group>"; };
+		62942A7813C4A74100C2DAA9 /* Parser.cpp.tpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = Parser.cpp.tpl.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		62942A7913C4A74100C2DAA9 /* Parser.h.tpl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Parser.h.tpl.h; sourceTree = "<group>"; };
 		62A4E12013BCC9EA009F8403 /* ipg */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ipg; sourceTree = BUILT_PRODUCTS_DIR; };
 		62A4E12213BCC9EA009F8403 /* ipg-dev */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "ipg-dev"; sourceTree = BUILT_PRODUCTS_DIR; };

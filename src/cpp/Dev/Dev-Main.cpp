@@ -13,36 +13,13 @@
 
 using namespace PEGParser;
 
-static bool ReadFile(std::vector<Node>& _symbols, const char* _filename)
-{
-	_symbols.clear();
-	
-	std::vector<char> text;
-	if (ReadFile(text, _filename))
-	{
-		std::size_t size = text.size();
-		_symbols.resize(size+1);
-		
-		for (size_t i = 0; i < size; ++i)
-		{
-			_symbols[i].value = text[i];
-		}
-		
-		_symbols[size].value = 0;
-		
-		return true;
-	}
-	
-	return false;
-}
-
 static char GetChar(Iterator _iChar)
 {
-	Node* p = _iChar.Begin();
-	char c = p->value;
+	const char* p = _iChar.Begin();
+	char c = *p;
 	if (c == '\\')
 	{
-		c = (++p)->value;
+		c = *++p;
 		if (c == 'n')
 		{
 			c = '\n';
@@ -60,7 +37,7 @@ static char GetChar(Iterator _iChar)
 			c -= '0';
 			for (;;)
 			{
-				char digit = (++p)->value;
+				char digit = *++p;
 				if (digit < '0' || digit > '9')
 					break;
 				c = (10 * c) + (digit - '0');
@@ -78,7 +55,7 @@ static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 	{
 		for (Iterator iPrefix = iSeq.GetChild(SymbolType_Prefix); iPrefix; ++iPrefix)
 		{
-			char cPrefix = (iPrefix.Begin())->value;
+			char cPrefix = *iPrefix.Begin();
 			Iterator iSuffix = iPrefix.GetChild(SymbolType_Suffix);
 			Iterator iPrimary = iSuffix.GetChild(SymbolType_Primary);
 			
@@ -121,7 +98,7 @@ static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 				primary.SetDot();
 			}
 			
-			char cSuffix = (iPrimary.End())->value;
+			char cSuffix = *iPrimary.End();
 			if (cSuffix == '?')
 			{
 				Expression empty;
@@ -167,7 +144,7 @@ static void ConvertGrammar(Grammar& _grammar, Iterator _iGrammar)
 		ConvertExpression(expr, iExpr);
 		
 		Def& newDef = AddDef(_grammar.defs, boost::lexical_cast<std::string>(iId), expr);
-		char arrowType = (iArrow.Begin() + 1)->value;
+		char arrowType = *(iArrow.Begin() + 1);
 		if (arrowType == '=')
 			newDef.second.isNode = true;
 		if (arrowType == '=' || arrowType == '<')
@@ -198,19 +175,21 @@ int main(int argc, char* argv[])
 	
 	try
 	{
-		std::vector<Node> nodes;
+		std::vector<char> nodes;
 		if (ReadFile(nodes, argv[1]))
 		{
+			nodes.push_back('\0');
+			
 			RegisterCPlusPlusTemplates();
 
 			std::string folder = argv[2];
 			std::string name = argv[3];
 			
-			Node* pGrammar = &nodes.front();
-			//Parser().Print(std::cout, SymbolType_Grammar, pGrammar);
+			Iterator iGrammar(SymbolType_Grammar, &nodes.front());
+			iGrammar.Print(std::cout);
 			
 			Grammar grammar;
-			ConvertGrammar(grammar, Iterator(SymbolType_Grammar, pGrammar));
+			ConvertGrammar(grammar, iGrammar);
 			//std::cout << grammar;
 			
 			GenerateParser(argv[1], folder, name, grammar);

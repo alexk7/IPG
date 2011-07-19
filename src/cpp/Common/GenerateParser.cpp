@@ -109,7 +109,7 @@ public:
 				
 			case ExpressionType_Range:
 			{
-				mSource << mTabs << boost::format("if (p->value >= \'%1%\' && p->value <= \'%2%\') ++p; else p = 0;\n")
+				mSource << mTabs << boost::format("if (*p >= \'%1%\' && *p <= \'%2%\') ++p; else p = 0;\n")
 					% EscapeChar(expr.GetFirst())
 					% EscapeChar(expr.GetLast());
 				break;
@@ -117,13 +117,13 @@ public:
 				
 			case ExpressionType_Char:
 			{
-				mSource << mTabs << boost::format("if (p->value == \'%1%\') ++p; else p = 0;\n") % EscapeChar(expr.GetChar());
+				mSource << mTabs << boost::format("if (*p == \'%1%\') ++p; else p = 0;\n") % EscapeChar(expr.GetChar());
 				break;
 			}
 				
 			case ExpressionType_Dot:
 			{
-				mSource << mTabs << "if (p->value != 0) ++p; else p = 0;\n";
+				mSource << mTabs << "if (*p != 0) ++p; else p = 0;\n";
 				break;
 			}
 				
@@ -161,7 +161,7 @@ public:
 		if (_backtrackIndex == -1)
 		{
 			_backtrackIndex = mNextBacktrackIndex++;
-			mSource << mTabs << boost::format("Node* %1% = p;\n") % BacktrackVar(_backtrackIndex);
+			mSource << mTabs << boost::format("const char* %1% = p;\n") % BacktrackVar(_backtrackIndex);
 			if (mTraverse && _mayUndoVisit)
 				mSource << mTabs << boost::format("size_t %1% = v.size();\n") % BacktrackVar(_backtrackIndex, 's');
 		}

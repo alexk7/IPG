@@ -11,56 +11,50 @@ namespace {{namespace}}
 		{{/def}}
 	};{{BI_NEWLINE}}
 
-	struct Node;
-	typedef boost::unordered_map<SymbolType, Node*> SymbolTypeToPtr;{{BI_NEWLINE}}
-
-	struct Node
-	{
-		char value;
-		SymbolTypeToPtr end;
-	};{{BI_NEWLINE}}
-	
-	typedef std::pair<SymbolType, Node*> PTNodeChild;
-	typedef std::vector<PTNodeChild> PTNodeChildren;{{BI_NEWLINE}}
-	
+	typedef std::pair<SymbolType, const char*> Symbol;
+	typedef std::vector<Symbol> Symbols;
+	typedef boost::unordered_map<Symbol, const char*> MemoMap;{{BI_NEWLINE}}
+		
 	const char* SymbolName(SymbolType _type);{{BI_NEWLINE}}
 
 	class Parser
 	{
 	public:
-		Node* Parse(SymbolType _type, Node* _symbol);
-		Node* Traverse(SymbolType _type, Node* _symbol, PTNodeChildren& _children);
-		void Print(std::ostream& _os, SymbolType _type, Node* _pNode, int _tabs = 0, int _maxLineSize = 100);{{BI_NEWLINE}}
+		const char* Parse(SymbolType _type, const char* _symbol);
+		const char* Traverse(SymbolType _type, const char* _symbol, Symbols& _children);
+		void Print(std::ostream& _os, SymbolType _type, const char* _pNode, int _tabs = 0, int _maxLineSize = 100);{{BI_NEWLINE}}
 		
 	private:
-		Node* Visit(SymbolType _type, Node* _p, PTNodeChildren& _v);
+		const char* Visit(SymbolType _type, const char* _p, Symbols& _v);
+		MemoMap memoMap;
 	};{{BI_NEWLINE}}
 	
 	class Iterator
 	{
 	public:
-		Iterator(SymbolType _type, Node* _pNode = 0);
+		Iterator(SymbolType _type, const char* _pNode = 0);
 		Iterator(const Iterator& _iOther);
 		operator bool() const;
 		Iterator& operator++();
 		SymbolType GetType() const;
-		Node* Begin() const;
-		Node* End() const;
+		const char* Begin() const;
+		const char* End() const;
 		Iterator GetChild(SymbolType _childT);
-		Iterator GetNext(SymbolType _childT);{{BI_NEWLINE}}
+		Iterator GetNext(SymbolType _childT);
+		void Print(std::ostream& _os, int _tabs = 0, int _maxLineSize = 100);{{BI_NEWLINE}}
 		
 	private:
-		Iterator(boost::shared_ptr<Parser> _pParser, boost::shared_ptr<PTNodeChildren> _pSiblings, SymbolType _childType);
+		Iterator(boost::shared_ptr<Parser> _pParser, boost::shared_ptr<Symbols> _pSiblings, SymbolType _childType);
 		Iterator(const Iterator& _iOther, SymbolType _childType);
 		void GoToNext(SymbolType _childType);
 		void SkipSiblingsWithWrongType(SymbolType _childType);
-		boost::shared_ptr<PTNodeChildren> GetChildren();{{BI_NEWLINE}}
+		boost::shared_ptr<Symbols> GetChildren();{{BI_NEWLINE}}
 		
 		SymbolType mType;
-		Node* mpNode;
-		boost::shared_ptr<PTNodeChildren> mpSiblings;
-		PTNodeChildren::iterator miCurrent;
-		boost::shared_ptr<PTNodeChildren> mpChildren;
+		const char* mpNode;
+		boost::shared_ptr<Symbols> mpSiblings;
+		Symbols::iterator miCurrent;
+		boost::shared_ptr<Symbols> mpChildren;
 		boost::shared_ptr<Parser> mpParser;
 	};{{BI_NEWLINE}}
 
