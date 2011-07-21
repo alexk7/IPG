@@ -3,6 +3,7 @@
 #include <bitset>
 #include <boost/shared_ptr.hpp>
 #include <tr1/unordered_map>
+#include <tr1/unordered_set>
 #endif{{BI_NEWLINE}}
 
 namespace {{namespace}}
@@ -17,21 +18,23 @@ namespace {{namespace}}
 
 	typedef std::pair<SymbolType, const char*> Symbol;
 	typedef std::vector<Symbol> Symbols;
-	typedef std::tr1::unordered_map<const char*, const char*> MemoMap;{{BI_NEWLINE}}
+	typedef std::tr1::unordered_map<const char*, const char*> EndMap;
+	typedef std::tr1::unordered_set<const char*> FailSet;
+	{{BI_NEWLINE}}
 		
 	const char* SymbolName(SymbolType _type);{{BI_NEWLINE}}
 
 	class Parser
 	{
 	public:
-		const char* Parse(SymbolType _type, const char* _symbol, int& _complexity);
-		const char* Traverse(SymbolType _type, const char* _symbol, Symbols& _children, int& _complexity);
+		const char* Parse(SymbolType _type, const char* _symbol, bool _memoize = true);
+		const char* Traverse(SymbolType _type, const char* _symbol, Symbols& _children, bool _memoize = true);
 		void Print(std::ostream& _os, SymbolType _type, const char* _pNode, int _tabs = 0, int _maxLineSize = 100);{{BI_NEWLINE}}
 		
 	private:
-		int SetEnd(SymbolType _type, const char* _pBegin, const char* _pEnd, int _complexity);
 		const char* Visit(SymbolType _type, const char* _p, Symbols& _v);
-		MemoMap memoMap[SymbolTypeCount];
+		EndMap end[SymbolTypeCount];
+		FailSet fail[SymbolTypeCount];
 	};{{BI_NEWLINE}}
 	
 	class Iterator

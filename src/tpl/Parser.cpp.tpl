@@ -56,33 +56,27 @@ const char* {{namespace}}::SymbolName({{namespace}}::SymbolType _type)
 	}
 }{{BI_NEWLINE}}
 
-int {{namespace}}::Parser::SetEnd(SymbolType _type, const char* _pBegin, const char* _pEnd, int _complexity)
+const char* {{namespace}}::Parser::Parse(SymbolType _type, const char* _pBegin, bool _memoize)
 {
-	if (_complexity > 32)
-	{
-		memoMap[_type][_pBegin] = _pEnd;
-		return 0;
-	}
-	else
-	{
-		return _complexity;
-	}
-}{{BI_NEWLINE}}
-
-const char* {{namespace}}::Parser::Parse(SymbolType _type, const char* _pBegin, int& _complexity)
-{
-	int complexity = 0;
 	const char* p = _pBegin;
 	switch (_type)
 	{
 		{{#def}}
 		case SymbolType_{{name}}:
 		{
-			MemoMap::iterator i = memoMap[SymbolType_{{name}}].find(_pBegin);
-			if (i != memoMap[_type].end())
+			if (fail[SymbolType_{{name}}].count(_pBegin))
+				return 0;
+			EndMap::iterator i = end[SymbolType_{{name}}].find(_pBegin);
+			if (i != end[SymbolType_{{name}}].end())
 				return i->second;
 			{{>parseCode}}
-			_complexity += SetEnd(SymbolType_{{name}}, _pBegin, p, complexity);
+			if (_memoize)
+			{
+				if (p)
+					end[SymbolType_{{name}}][_pBegin] = p;
+				else
+					fail[SymbolType_{{name}}].insert(_pBegin);
+			}
 		  return p;
 		}{{BI_NEWLINE}}
 		{{/def}}
@@ -93,9 +87,8 @@ const char* {{namespace}}::Parser::Parse(SymbolType _type, const char* _pBegin, 
 	}
 }{{BI_NEWLINE}}
 
-const char* {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, const char* _pBegin, {{namespace}}::Symbols& v, int& _complexity)
+const char* {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, const char* _pBegin, {{namespace}}::Symbols& v, bool _memoize)
 {
-	int complexity = 0;
 	const char* p = _pBegin;
 	switch (_type)
 	{
@@ -103,11 +96,16 @@ const char* {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, con
 		{{#isInternal}}
 		case SymbolType_{{name}}:
 		{
-			MemoMap::iterator i = memoMap[SymbolType_{{name}}].find(_pBegin);
-			if (i != memoMap[_type].end() && i->second == 0)
+			if (fail[SymbolType_{{name}}].count(_pBegin))
 				return 0;
 			{{>traverseCode}}
-			_complexity += SetEnd(SymbolType_{{name}}, _pBegin, p, complexity);
+			if (_memoize)
+			{
+				if (p)
+					end[SymbolType_{{name}}][_pBegin] = p;
+				else
+					fail[SymbolType_{{name}}].insert(_pBegin);
+			}
 			return p;
 		}{{BI_NEWLINE}}
 		{{/isInternal}}
@@ -117,7 +115,7 @@ const char* {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, con
 		case SymbolType_{{name}}:
 		{{/isLeaf}}
 		{{/def}}
-			return Parse(_type, p, _complexity);{{BI_NEWLINE}}
+			return Parse(_type, p);{{BI_NEWLINE}}
 			
 		default:
 			assert(false);
@@ -128,8 +126,7 @@ const char* {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, con
 void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _type, const char* _pNode, int _tabs, int _maxLineSize)
 {
 	Symbols children;
-	int complexity = 0;
-	const char* pEnd = Traverse(_type, _pNode, children, complexity);
+	const char* pEnd = Traverse(_type, _pNode, children);
 	if (!pEnd)
 		throw std::runtime_error(str(boost::format("Parsing Failed for \"%1%\"") % SymbolName(_type)));{{BI_NEWLINE}}
 
@@ -158,9 +155,10 @@ void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _
 //*
 	if (_tabs == 0)
 	{
+		_os << "Memo Count:\n";
 		for (size_t k = 0; k < SymbolTypeCount; ++k)
 		{
-			_os << boost::format("Memo Count: %|20t|%1% %|40t|%2%\n") % SymbolName(SymbolType(k)) % memoMap[k].size();
+			_os << boost::format("%1% %|20t|End: %2% %|40t|Fail: %3%\n") % SymbolName(SymbolType(k)) % end[k].size() % fail[k].size();
 		}
 	}
 //*/
@@ -168,8 +166,7 @@ void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _
 
 const char* {{namespace}}::Parser::Visit({{namespace}}::SymbolType _type, const char* _p, {{namespace}}::Symbols& _v)
 {
-	int complexity = 0;
-	const char* pEnd = Parse(_type, _p, complexity);
+	const char* pEnd = Parse(_type, _p);
 	if (pEnd)
 		_v.push_back(Symbol(_type, _p));
 	return pEnd;
@@ -221,8 +218,7 @@ const char* {{namespace}}::Iterator::Begin() const
 const char* {{namespace}}::Iterator::End() const
 {
 	assert(mpNode);
-	int complexity = 0;
-	return mpParser->Parse(mType, mpNode, complexity);
+	return mpParser->Parse(mType, mpNode);
 }{{BI_NEWLINE}}
 
 {{namespace}}::Iterator {{namespace}}::Iterator::GetChild({{namespace}}::SymbolType _childT)
@@ -279,8 +275,7 @@ boost::shared_ptr<{{namespace}}::Symbols> {{namespace}}::Iterator::GetChildren()
 	if (!mpChildren)
 	{
 		Symbols children;
-		int complexity = 0;
-		mpParser->Traverse(mType, mpNode, children, complexity);
+		mpParser->Traverse(mType, mpNode, children);
 		mpChildren.reset(new Symbols);
 		mpChildren->swap(children);			
 	}

@@ -22,7 +22,7 @@ public:
 	{
 	}
 	
-	void Emit(const Expression& expr, int _backtrackIndex = -1)
+	void Emit(const Expression& expr, bool _memoizeChildren, int _backtrackIndex = -1)
 	{
 		switch (expr.GetType())
 		{
@@ -36,11 +36,11 @@ public:
 				const Expression::Group& group = expr.GetGroup();
 				bool mayUndoVisit = !group.first.isLeaf;
 				DefineBacktrack(_backtrackIndex, mayUndoVisit);
-				Emit(group.first, _backtrackIndex);
+				Emit(group.first, _memoizeChildren, _backtrackIndex);
 				If("!p");
 				OpenBlock();
 				Backtrack(_backtrackIndex, mayUndoVisit);
-				Emit(group.second, _backtrackIndex);
+				Emit(group.second, _memoizeChildren, _backtrackIndex);
 				CloseBlock();
 				break;
 			}
@@ -48,10 +48,10 @@ public:
 			case ExpressionType_Sequence:
 			{
 				const Expression::Group& group = expr.GetGroup();
-				Emit(group.first, _backtrackIndex);
+				Emit(group.first, _memoizeChildren, _backtrackIndex);
 				If("p");
 				OpenBlock();
-				Emit(group.second);
+				Emit(group.second, _memoizeChildren);
 				CloseBlock();
 				break;
 			}
@@ -99,11 +99,11 @@ public:
 					}
 					else if (!defval.isLeaf)
 					{
-						mSource << mTabs << boost::format("p = Traverse(SymbolType_%1%, p, v, complexity);\n") % nonTerminal;
+						mSource << mTabs << boost::format("p = Traverse(SymbolType_%1%, p, v, %2%);\n") % nonTerminal % _memoizeChildren;
 						break;
 					}
 				}
-				mSource << mTabs << boost::format("p = Parse(SymbolType_%1%, p, complexity);\n") % nonTerminal;
+				mSource << mTabs << boost::format("p = Parse(SymbolType_%1%, p, %2%);\n") % nonTerminal % _memoizeChildren;
 				break;
 			}
 				
@@ -134,7 +134,6 @@ public:
 	
 	void Advance(std::string _cond)
 	{
-		mSource << mTabs << "++complexity;\n";
 		mSource << mTabs << boost::format("if (%1%)\n") % _cond;
 		mSource << mTabs.Next() << "++p;\n";
 		mSource << mTabs << "else\n";
@@ -232,7 +231,7 @@ void GenerateParser(std::string _srcPath, std::string _folder, std::string _name
 		
 		std::ostringstream parseCodeStream;
 		ParserGenerator parserGenerator(parseCodeStream, _grammar);
-		parserGenerator.Emit(i->second);
+		parserGenerator.Emit(i->second, i->second.isNode);
 		
 		std::string parseCodeFilename = "parseCode_" + i->first;
 		std::string parseCode = parseCodeStream.str();
@@ -242,7 +241,7 @@ void GenerateParser(std::string _srcPath, std::string _folder, std::string _name
 		
 		std::ostringstream traverseCodeStream;
 		ParserGenerator traverserGenerator(traverseCodeStream, _grammar, true);
-		traverserGenerator.Emit(i->second);
+		traverserGenerator.Emit(i->second, i->second.isNode);
 		
 		std::string traverseCodeFilename = "traverseCode_" + i->first;
 		std::string traverseCode = traverseCodeStream.str();
