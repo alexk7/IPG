@@ -22,7 +22,7 @@ public:
 	{
 	}
 	
-	void Emit(const Expression& expr, bool _memoizeChildren, int _backtrackIndex = -1)
+	void Emit(const Expression& expr, bool _memoizeChildren, int _backtrackIndex)
 	{
 		switch (expr.GetType())
 		{
@@ -51,7 +51,7 @@ public:
 				Emit(group.first, _memoizeChildren, _backtrackIndex);
 				If("p");
 				OpenBlock();
-				Emit(group.second, _memoizeChildren);
+				Emit(group.second, _memoizeChildren, -1);
 				CloseBlock();
 				break;
 			}
@@ -61,7 +61,7 @@ public:
 				bool traverse = mTraverse;
 				mTraverse = false;
 				DefineBacktrack(_backtrackIndex, false);
-				Emit(expr.GetChild(), _backtrackIndex);
+				Emit(expr.GetChild(), _memoizeChildren, _backtrackIndex);
 				mSource << mTabs << boost::format("if (p) p = 0; else p = %1%;\n") % BacktrackVar(_backtrackIndex);
 				mTraverse = traverse;
 				break;
@@ -75,7 +75,7 @@ public:
 				const Expression& child = expr.GetChild();
 				bool mayUndoVisit = !child.isLeaf;
 				DefineBacktrack(_backtrackIndex, mayUndoVisit);
-				Emit(child, _backtrackIndex);
+				Emit(child, _memoizeChildren, _backtrackIndex);
 				If("!p");
 				OpenBlock();
 				Backtrack(_backtrackIndex, mayUndoVisit);
@@ -231,7 +231,7 @@ void GenerateParser(std::string _srcPath, std::string _folder, std::string _name
 		
 		std::ostringstream parseCodeStream;
 		ParserGenerator parserGenerator(parseCodeStream, _grammar);
-		parserGenerator.Emit(i->second, i->second.isNode);
+		parserGenerator.Emit(i->second, i->second.isNode, -1);
 		
 		std::string parseCodeFilename = "parseCode_" + i->first;
 		std::string parseCode = parseCodeStream.str();
@@ -241,7 +241,7 @@ void GenerateParser(std::string _srcPath, std::string _folder, std::string _name
 		
 		std::ostringstream traverseCodeStream;
 		ParserGenerator traverserGenerator(traverseCodeStream, _grammar, true);
-		traverserGenerator.Emit(i->second, i->second.isNode);
+		traverserGenerator.Emit(i->second, i->second.isNode, -1);
 		
 		std::string traverseCodeFilename = "traverseCode_" + i->first;
 		std::string traverseCode = traverseCodeStream.str();
