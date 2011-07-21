@@ -2,7 +2,7 @@
 #include <vector>
 #include <bitset>
 #include <boost/shared_ptr.hpp>
-#include <boost/unordered_map.hpp>
+#include <tr1/unordered_map>
 #endif{{BI_NEWLINE}}
 
 namespace {{namespace}}
@@ -17,24 +17,21 @@ namespace {{namespace}}
 
 	typedef std::pair<SymbolType, const char*> Symbol;
 	typedef std::vector<Symbol> Symbols;
-	typedef std::bitset<SymbolTypeCount> SymbolTypeSet;
-	typedef std::pair<SymbolTypeSet, const char*> MemoValue;
-	typedef boost::unordered_multimap<const char*, MemoValue> MemoMap;{{BI_NEWLINE}}
+	typedef std::tr1::unordered_map<const char*, const char*> MemoMap;{{BI_NEWLINE}}
 		
 	const char* SymbolName(SymbolType _type);{{BI_NEWLINE}}
 
 	class Parser
 	{
 	public:
-		const char* Parse(SymbolType _type, const char* _symbol);
-		const char* Traverse(SymbolType _type, const char* _symbol, Symbols& _children);
+		const char* Parse(SymbolType _type, const char* _symbol, int& _complexity);
+		const char* Traverse(SymbolType _type, const char* _symbol, Symbols& _children, int& _complexity);
 		void Print(std::ostream& _os, SymbolType _type, const char* _pNode, int _tabs = 0, int _maxLineSize = 100);{{BI_NEWLINE}}
 		
 	private:
-		const char** GetEnd(SymbolType _type, const char* _pBegin);
-		void SetEnd(SymbolType _type, const char* _pBegin, const char* _pEnd);
+		int SetEnd(SymbolType _type, const char* _pBegin, const char* _pEnd, int _complexity);
 		const char* Visit(SymbolType _type, const char* _p, Symbols& _v);
-		MemoMap memoMap;
+		MemoMap memoMap[SymbolTypeCount];
 	};{{BI_NEWLINE}}
 	
 	class Iterator

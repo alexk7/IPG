@@ -99,31 +99,29 @@ public:
 					}
 					else if (!defval.isLeaf)
 					{
-						mSource << mTabs << boost::format("p = Traverse(SymbolType_%1%, p, v);\n") % nonTerminal;
+						mSource << mTabs << boost::format("p = Traverse(SymbolType_%1%, p, v, complexity);\n") % nonTerminal;
 						break;
 					}
 				}
-				mSource << mTabs << boost::format("p = Parse(SymbolType_%1%, p);\n") % nonTerminal;
+				mSource << mTabs << boost::format("p = Parse(SymbolType_%1%, p, complexity);\n") % nonTerminal;
 				break;
 			}
 				
 			case ExpressionType_Range:
 			{
-				mSource << mTabs << boost::format("if (*p >= \'%1%\' && *p <= \'%2%\') ++p; else p = 0;\n")
-					% EscapeChar(expr.GetFirst())
-					% EscapeChar(expr.GetLast());
+				Advance(str(boost::format("*p >= \'%1%\' && *p <= \'%2%\'") % EscapeChar(expr.GetFirst()) % EscapeChar(expr.GetLast())));
 				break;
 			}
 				
 			case ExpressionType_Char:
 			{
-				mSource << mTabs << boost::format("if (*p == \'%1%\') ++p; else p = 0;\n") % EscapeChar(expr.GetChar());
+				Advance(str(boost::format("*p == \'%1%\'") % EscapeChar(expr.GetChar())));
 				break;
 			}
 				
 			case ExpressionType_Dot:
 			{
-				mSource << mTabs << "if (*p != 0) ++p; else p = 0;\n";
+				Advance("*p != 0");
 				break;
 			}
 				
@@ -132,7 +130,16 @@ public:
 				assert(false);
 			}
 		}
-	}	
+	}
+	
+	void Advance(std::string _cond)
+	{
+		mSource << mTabs << "++complexity;\n";
+		mSource << mTabs << boost::format("if (%1%)\n") % _cond;
+		mSource << mTabs.Next() << "++p;\n";
+		mSource << mTabs << "else\n";
+		mSource << mTabs.Next() << "p = 0;\n";
+	}
 	
 	void If(std::string _cond)
 	{
@@ -209,6 +216,11 @@ void GenerateParser(std::string _srcPath, std::string _folder, std::string _name
 		ctemplate::TemplateDictionary* pDef = dict.AddSectionDictionary("def");
 		pDef->SetValue("name", i->first);
 		pDef->SetIntValue("value", value++);
+		
+		if (i->second.isNode)
+			pDef->ShowSection("isNode");
+		else
+			pDef->ShowSection("isNotNode");
 		
 		if (i->second.isMemoized)
 			pDef->ShowSection("isMemoized");

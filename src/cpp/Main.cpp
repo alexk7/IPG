@@ -5,10 +5,16 @@
 #include "Parser.h.tpl.h"
 #include "Parser.cpp.tpl.h"
 
-#include PEG_PARSER_INCLUDE
+#ifdef IPG_DEV
+#include "Dev-PEGParser.h"
+#else
+#include "PEGParser.h"
+#endif
 
 #include <boost/shared_ptr.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/program_options.hpp>
+
 #include <ctemplate/template.h>
 
 using namespace PEGParser;
@@ -159,31 +165,71 @@ static void RegisterTemplate(const ctemplate::TemplateString&  _key, const ctemp
 	ctemplate::StringToTemplateCache(_key, _content, ctemplate::STRIP_BLANK_LINES);
 }
 
-static void RegisterCPlusPlusTemplates()
+static std::string WithLineDirectives(const std::string& _code, const std::string& _filename)
 {
-	RegisterTemplate("Parser.h.tpl", Parser_h_tpl);
-	RegisterTemplate("Parser.cpp.tpl", Parser_cpp_tpl);
+	std::istringstream iss(_code);
+	std::ostringstream oss;
+	std::string line;
+	int lineNumber = 0;
+	while (getline(iss, line))
+		oss << "#line " << ++lineNumber << "\"" << _filename << "\"\n" << line << "\n";
+		
+	return oss.str();
+}
+
+static void RegisterCPlusPlusTemplates(bool _withLineDirectives)
+{
+	if (_withLineDirectives)
+	{
+		RegisterTemplate("Parser.h.tpl", WithLineDirectives(Parser_h_tpl, "../../src/tpl/Parser.h.tpl"));
+		RegisterTemplate("Parser.cpp.tpl", WithLineDirectives(Parser_cpp_tpl, "../../src/tpl/Parser.cpp.tpl"));
+	}
+	else
+	{	
+		RegisterTemplate("Parser.h.tpl", Parser_h_tpl);
+		RegisterTemplate("Parser.cpp.tpl", Parser_cpp_tpl);
+	}
 }
 
 int main(int argc, char* argv[])
 {
-	if (argc < 4)
-	{
-		std::cerr << "Usage: ipg peg.txt path-prefix name" << std::endl;
-		return 1;
-	}
-	
 	try
 	{
+		std::string pegFile;
+		std::string folder;
+		std::string name;
+	
+		namespace po = boost::program_options;
+		po::options_description options("Options");
+		options.add_options()
+		("help,h",                          "produce help message")
+		("peg-file",   po::value(&pegFile), "text file that contain the parsing expression grammar")
+		("dir",        po::value(&folder),  "destination directory for the generated files")
+		("name",       po::value(&name),    "name used for the generated files and namespace")
+		("no-lines,l",                      "don't put any #line preprocessor commands in the generated files")
+		;
+
+		po::positional_options_description positional;
+		positional.add("peg-file", 1);
+		positional.add("dir", 1);
+		positional.add("name", 1);
+		
+		po::variables_map variablesMap;
+		store(po::command_line_parser(argc, argv).options(options).positional(positional).run(), variablesMap);
+		notify(variablesMap);
+
+		if (variablesMap.count("help"))
+		{
+				std::cout << options << "\n";
+				return 0;
+		}
+
 		std::vector<char> nodes;
-		if (ReadFile(nodes, argv[1]))
+		if (ReadFile(nodes, pegFile.c_str()))
 		{
 			nodes.push_back('\0');
 			
-			RegisterCPlusPlusTemplates();
-
-			std::string folder = argv[2];
-			std::string name = argv[3];
+			RegisterCPlusPlusTemplates(variablesMap.count("no-lines") == 0);
 			
 			Iterator iGrammar(SymbolType_Grammar, &nodes.front());
 			iGrammar.Print(std::cout);
@@ -192,7 +238,7 @@ int main(int argc, char* argv[])
 			ConvertGrammar(grammar, iGrammar);
 			//std::cout << grammar;
 			
-			GenerateParser(argv[1], folder, name, grammar);
+			GenerateParser(pegFile, folder, name, grammar);
 		}
 	}
 	catch (const std::exception& e)
