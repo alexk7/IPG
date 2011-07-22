@@ -1,8 +1,14 @@
 DONE * replace use of null pointer by boolean return value
 
-* use memory-mapped file
+BAD IDEA! * use memory-mapped file
 	- don't allocate any std::string for node content since we reuse the original mapped memory
 	- that also mean we don't need to "unique" strings, in fact it's better to keep things local
+	=> not working for read-write situations with incremental behavior, which is the "raison d'etre" of IPG!
+	-> maybe hybrid solution?
+	
+* unify Parse and Traverse
+
+* Traverse coroutine design with no temp vector -> true iterator
 
 * memoize choice alternative when
 	- necessary lookahead is more than 1 ?
@@ -22,3 +28,4 @@ DONE * replace use of null pointer by boolean return value
 
 * bring back stand-alone functions: much easier to debug and navigate
 
+* optimize end-of-file check using computed maximum length of some nodes (when not infinite)
