@@ -56,47 +56,47 @@ const char* {{namespace}}::SymbolName({{namespace}}::SymbolType _type)
 	}
 }{{BI_NEWLINE}}
 
-void {{namespace}}::Parser::Parse(SymbolType _type, const char*& p, bool _memoize)
+bool {{namespace}}::Parser::Parse(SymbolType _type, const char*& p, bool _memoize)
 {
 	const char* pBegin = p;
+	bool r = true;
+	char c;
 	switch (_type)
 	{
 		{{#def}}
 		case SymbolType_{{name}}:
 		{
 			if (fail[SymbolType_{{name}}].count(pBegin))
-			{
-				p = 0;
-				return;
-			}
+				return false;
 			EndMap::iterator i = end[SymbolType_{{name}}].find(pBegin);
 			if (i != end[SymbolType_{{name}}].end())
 			{
 				p = i->second;
-				return;
+				return true;
 			}
 			{{>parseCode}}
 			if (_memoize)
 			{
-				if (p)
+				if (r)
 					end[SymbolType_{{name}}][pBegin] = p;
 				else
 					fail[SymbolType_{{name}}].insert(pBegin);
 			}
-			return;
+			return r;
 		}{{BI_NEWLINE}}
 		{{/def}}
 		
 		default:
 			assert(false);
-			p = 0;
-			return;
+			return false;
 	}
 }{{BI_NEWLINE}}
 
-void {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, const char*& p, {{namespace}}::Symbols& v, bool _memoize)
+bool {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, const char*& p, {{namespace}}::Symbols& v, bool _memoize)
 {
 	const char* pBegin = p;
+	bool r = true;
+	char c;
 	switch (_type)
 	{
 		{{#def}}
@@ -104,19 +104,16 @@ void {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, const char
 		case SymbolType_{{name}}:
 		{
 			if (fail[SymbolType_{{name}}].count(pBegin))
-			{
-				p = 0;
-				return;
-			}
+				return false;
 			{{>traverseCode}}
 			if (_memoize)
 			{
-				if (p)
+				if (r)
 					end[SymbolType_{{name}}][pBegin] = p;
 				else
 					fail[SymbolType_{{name}}].insert(pBegin);
 			}
-			return;
+			return r;
 		}{{BI_NEWLINE}}
 		{{/isInternal}}
 		{{/def}}
@@ -126,13 +123,11 @@ void {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, const char
 		case SymbolType_{{name}}:
 		{{/isLeaf}}
 		{{/def}}
-			Parse(_type, p);
-			return;{{BI_NEWLINE}}
+			return Parse(_type, p);{{BI_NEWLINE}}
 			
 		default:
 			assert(false);
-			p = 0;
-			return;
+			return false;
 	}
 }{{BI_NEWLINE}}
 
@@ -179,12 +174,13 @@ void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _
 //*/
 }{{BI_NEWLINE}}
 
-void {{namespace}}::Parser::Visit({{namespace}}::SymbolType _type, const char*& _p, {{namespace}}::Symbols& _v)
+bool {{namespace}}::Parser::Visit({{namespace}}::SymbolType _type, const char*& _p, {{namespace}}::Symbols& _v)
 {
 	const char* pBegin = _p;
-	Parse(_type, _p);
-	if (_p)
+	bool r = Parse(_type, _p);
+	if (r)
 		_v.push_back(Symbol(_type, pBegin));
+	return r;
 }{{BI_NEWLINE}}
 
 {{namespace}}::Iterator::Iterator({{namespace}}::SymbolType _type, const char* _pNode)

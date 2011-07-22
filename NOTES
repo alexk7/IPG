@@ -1,9 +1,24 @@
-1) use memory-mapped file
+DONE * replace use of null pointer by boolean return value
+
+* use memory-mapped file
 	- don't allocate any std::string for node content since we reuse the original mapped memory
 	- that also mean we don't need to "unique" strings, in fact it's better to keep things local
 
-2) memoize choice alternative when necessary lookahead is
-	- more than 1 ?
-	- may pass through another node ? => that respect the restriction not to execution actions on backtracked alternatives, but probably inefficient
+* memoize choice alternative when
+	- necessary lookahead is more than 1 ?
+	- may pass through another node ? => that respect the restriction not to execute actions on backtracked alternatives, but probably inefficient
 	
-3) replace use of null pointer by boolean return value
+* hash table should be as compact as possible
+	- open adressing
+	- optimize when we rehash
+	- keep memos for
+		- long parsing (maybe simply drop shortest one as soon as we hit a non-empty bucket with linear probing?)
+			- not sure, if hash table are per symbol type, lengths should be similar.
+		- result that we may reuse shortly because of backtracking
+		
+* --no-lines does not make any sense: line numbers in generated files are only making sense for the developers of IPG... It should be off by default and be enablable (with --debug flag) only in debug builds.
+
+* inline all non-node definitions
+
+* bring back stand-alone functions: much easier to debug and navigate
+

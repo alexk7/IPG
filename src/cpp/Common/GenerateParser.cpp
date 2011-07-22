@@ -28,6 +28,7 @@ public:
 		{
 			case ExpressionType_Empty:
 			{
+				mSource << mTabs << "r = true;\n";
 				break;
 			}
 				
@@ -37,7 +38,7 @@ public:
 				bool mayUndoVisit = !group.first.isLeaf;
 				DefineBacktrack(_backtrackIndex, mayUndoVisit);
 				Emit(group.first, _memoizeChildren, _backtrackIndex);
-				If("!p");
+				If("!r");
 				OpenBlock();
 				Backtrack(_backtrackIndex, mayUndoVisit);
 				Emit(group.second, _memoizeChildren, _backtrackIndex);
@@ -49,7 +50,7 @@ public:
 			{
 				const Expression::Group& group = expr.GetGroup();
 				Emit(group.first, _memoizeChildren, _backtrackIndex);
-				If("p");
+				If("r");
 				OpenBlock();
 				Emit(group.second, _memoizeChildren, -1);
 				CloseBlock();
@@ -62,7 +63,8 @@ public:
 				mTraverse = false;
 				DefineBacktrack(_backtrackIndex, false);
 				Emit(expr.GetChild(), _memoizeChildren, _backtrackIndex);
-				mSource << mTabs << boost::format("if (p) p = 0; else p = %1%;\n") % BacktrackVar(_backtrackIndex);
+				mSource << mTabs << "r = !r;\n";
+				mSource << mTabs << boost::format("p = %1%;\n") % BacktrackVar(_backtrackIndex);
 				mTraverse = traverse;
 				break;
 			}
@@ -76,12 +78,13 @@ public:
 				bool mayUndoVisit = !child.isLeaf;
 				DefineBacktrack(_backtrackIndex, mayUndoVisit);
 				Emit(child, _memoizeChildren, _backtrackIndex);
-				If("!p");
+				If("!r");
 				OpenBlock();
 				Backtrack(_backtrackIndex, mayUndoVisit);
 				mSource << mTabs << "break;\n";
 				CloseBlock();
 				CloseBlock();
+				mSource << mTabs << "r = true;\n";
 				break;
 			}
 				
@@ -94,34 +97,34 @@ public:
 					const DefValue& defval = def.second;
 					if (defval.isNode)
 					{
-						mSource << mTabs << boost::format("Visit(SymbolType_%1%, p, v);\n") % nonTerminal;
+						mSource << mTabs << boost::format("r = Visit(SymbolType_%1%, p, v);\n") % nonTerminal;
 						break;
 					}
 					else if (!defval.isLeaf)
 					{
-						mSource << mTabs << boost::format("Traverse(SymbolType_%1%, p, v, %2%);\n") % nonTerminal % _memoizeChildren;
+						mSource << mTabs << boost::format("r = Traverse(SymbolType_%1%, p, v, %2%);\n") % nonTerminal % _memoizeChildren;
 						break;
 					}
 				}
-				mSource << mTabs << boost::format("Parse(SymbolType_%1%, p, %2%);\n") % nonTerminal % _memoizeChildren;
+				mSource << mTabs << boost::format("r = Parse(SymbolType_%1%, p, %2%);\n") % nonTerminal % _memoizeChildren;
 				break;
 			}
 				
 			case ExpressionType_Range:
 			{
-				Advance(str(boost::format("*p >= \'%1%\' && *p <= \'%2%\'") % EscapeChar(expr.GetFirst()) % EscapeChar(expr.GetLast())));
+				Advance(str(boost::format("c >= \'%1%\' && c <= \'%2%\'") % EscapeChar(expr.GetFirst()) % EscapeChar(expr.GetLast())));
 				break;
 			}
 				
 			case ExpressionType_Char:
 			{
-				Advance(str(boost::format("*p == \'%1%\'") % EscapeChar(expr.GetChar())));
+				Advance(str(boost::format("c == \'%1%\'") % EscapeChar(expr.GetChar())));
 				break;
 			}
 				
 			case ExpressionType_Dot:
 			{
-				Advance("*p != 0");
+				Advance("c != 0");
 				break;
 			}
 				
@@ -134,10 +137,8 @@ public:
 	
 	void Advance(std::string _cond)
 	{
-		mSource << mTabs << boost::format("if (%1%)\n") % _cond;
-		mSource << mTabs.Next() << "++p;\n";
-		mSource << mTabs << "else\n";
-		mSource << mTabs.Next() << "p = 0;\n";
+		mSource << mTabs << "c = *p++;\n";
+		mSource << mTabs << boost::format("r = (%1%);\n") % _cond;
 	}
 	
 	void If(std::string _cond)

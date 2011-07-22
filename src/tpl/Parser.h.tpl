@@ -27,12 +27,12 @@ namespace {{namespace}}
 	class Parser
 	{
 	public:
-		void Parse(SymbolType _type, const char*& _p, bool _memoize = true);
-		void Traverse(SymbolType _type, const char*& _p, Symbols& _children, bool _memoize = true);
+		bool Parse(SymbolType _type, const char*& _p, bool _memoize = true);
+		bool Traverse(SymbolType _type, const char*& _p, Symbols& _children, bool _memoize = true);
 		void Print(std::ostream& _os, SymbolType _type, const char* _pNode, int _tabs = 0, int _maxLineSize = 100);{{BI_NEWLINE}}
 		
 	private:
-		void Visit(SymbolType _type, const char*& _p, Symbols& _v);
+		bool Visit(SymbolType _type, const char*& _p, Symbols& _v);
 		EndMap end[SymbolTypeCount];
 		FailSet fail[SymbolTypeCount];
 	};{{BI_NEWLINE}}
