@@ -27,12 +27,12 @@ namespace {{namespace}}
 	class Parser
 	{
 	public:
-		const char* Parse(SymbolType _type, const char* _symbol, bool _memoize = true);
-		const char* Traverse(SymbolType _type, const char* _symbol, Symbols& _children, bool _memoize = true);
+		void Parse(SymbolType _type, const char*& _p, bool _memoize = true);
+		void Traverse(SymbolType _type, const char*& _p, Symbols& _children, bool _memoize = true);
 		void Print(std::ostream& _os, SymbolType _type, const char* _pNode, int _tabs = 0, int _maxLineSize = 100);{{BI_NEWLINE}}
 		
 	private:
-		const char* Visit(SymbolType _type, const char* _p, Symbols& _v);
+		void Visit(SymbolType _type, const char*& _p, Symbols& _v);
 		EndMap end[SymbolTypeCount];
 		FailSet fail[SymbolTypeCount];
 	};{{BI_NEWLINE}}
@@ -47,8 +47,8 @@ namespace {{namespace}}
 		SymbolType GetType() const;
 		const char* Begin() const;
 		const char* End() const;
-		Iterator GetChild(SymbolType _childT);
-		Iterator GetNext(SymbolType _childT);
+		Iterator GetChild(SymbolType _childT) const;
+		Iterator GetNext(SymbolType _childT) const;
 		void Print(std::ostream& _os, int _tabs = 0, int _maxLineSize = 100);{{BI_NEWLINE}}
 		
 	private:
@@ -56,13 +56,13 @@ namespace {{namespace}}
 		Iterator(const Iterator& _iOther, SymbolType _childType);
 		void GoToNext(SymbolType _childType);
 		void SkipSiblingsWithWrongType(SymbolType _childType);
-		boost::shared_ptr<Symbols> GetChildren();{{BI_NEWLINE}}
+		boost::shared_ptr<Symbols> GetChildren() const;{{BI_NEWLINE}}
 		
 		SymbolType mType;
 		const char* mpNode;
 		boost::shared_ptr<Symbols> mpSiblings;
 		Symbols::iterator miCurrent;
-		boost::shared_ptr<Symbols> mpChildren;
+		mutable boost::shared_ptr<Symbols> mpChildren;
 		boost::shared_ptr<Parser> mpParser;
 	};{{BI_NEWLINE}}
 

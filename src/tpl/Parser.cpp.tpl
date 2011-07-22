@@ -56,77 +56,92 @@ const char* {{namespace}}::SymbolName({{namespace}}::SymbolType _type)
 	}
 }{{BI_NEWLINE}}
 
-const char* {{namespace}}::Parser::Parse(SymbolType _type, const char* _pBegin, bool _memoize)
+void {{namespace}}::Parser::Parse(SymbolType _type, const char*& p, bool _memoize)
 {
-	const char* p = _pBegin;
+	const char* pBegin = p;
 	switch (_type)
 	{
 		{{#def}}
 		case SymbolType_{{name}}:
 		{
-			if (fail[SymbolType_{{name}}].count(_pBegin))
-				return 0;
-			EndMap::iterator i = end[SymbolType_{{name}}].find(_pBegin);
+			if (fail[SymbolType_{{name}}].count(pBegin))
+			{
+				p = 0;
+				return;
+			}
+			EndMap::iterator i = end[SymbolType_{{name}}].find(pBegin);
 			if (i != end[SymbolType_{{name}}].end())
-				return i->second;
+			{
+				p = i->second;
+				return;
+			}
 			{{>parseCode}}
 			if (_memoize)
 			{
 				if (p)
-					end[SymbolType_{{name}}][_pBegin] = p;
+					end[SymbolType_{{name}}][pBegin] = p;
 				else
-					fail[SymbolType_{{name}}].insert(_pBegin);
+					fail[SymbolType_{{name}}].insert(pBegin);
 			}
-		  return p;
+			return;
 		}{{BI_NEWLINE}}
 		{{/def}}
 		
 		default:
 			assert(false);
-			return 0;
+			p = 0;
+			return;
 	}
 }{{BI_NEWLINE}}
 
-const char* {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, const char* _pBegin, {{namespace}}::Symbols& v, bool _memoize)
+void {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, const char*& p, {{namespace}}::Symbols& v, bool _memoize)
 {
-	const char* p = _pBegin;
+	const char* pBegin = p;
 	switch (_type)
 	{
 		{{#def}}
 		{{#isInternal}}
 		case SymbolType_{{name}}:
 		{
-			if (fail[SymbolType_{{name}}].count(_pBegin))
-				return 0;
+			if (fail[SymbolType_{{name}}].count(pBegin))
+			{
+				p = 0;
+				return;
+			}
 			{{>traverseCode}}
 			if (_memoize)
 			{
 				if (p)
-					end[SymbolType_{{name}}][_pBegin] = p;
+					end[SymbolType_{{name}}][pBegin] = p;
 				else
-					fail[SymbolType_{{name}}].insert(_pBegin);
+					fail[SymbolType_{{name}}].insert(pBegin);
 			}
-			return p;
+			return;
 		}{{BI_NEWLINE}}
 		{{/isInternal}}
 		{{/def}}
+		
 		{{#def}}
 		{{#isLeaf}}
 		case SymbolType_{{name}}:
 		{{/isLeaf}}
 		{{/def}}
-			return Parse(_type, p);{{BI_NEWLINE}}
+			Parse(_type, p);
+			return;{{BI_NEWLINE}}
 			
 		default:
 			assert(false);
-			return 0;
+			p = 0;
+			return;
 	}
 }{{BI_NEWLINE}}
 
 void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _type, const char* _pNode, int _tabs, int _maxLineSize)
 {
 	Symbols children;
-	const char* pEnd = Traverse(_type, _pNode, children);
+	const char* pEnd = _pNode;
+	Traverse(_type, pEnd, children);
+	//std::cout << children.size() << "\n";
 	if (!pEnd)
 		throw std::runtime_error(str(boost::format("Parsing Failed for \"%1%\"") % SymbolName(_type)));{{BI_NEWLINE}}
 
@@ -164,12 +179,12 @@ void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _
 //*/
 }{{BI_NEWLINE}}
 
-const char* {{namespace}}::Parser::Visit({{namespace}}::SymbolType _type, const char* _p, {{namespace}}::Symbols& _v)
+void {{namespace}}::Parser::Visit({{namespace}}::SymbolType _type, const char*& _p, {{namespace}}::Symbols& _v)
 {
-	const char* pEnd = Parse(_type, _p);
-	if (pEnd)
-		_v.push_back(Symbol(_type, _p));
-	return pEnd;
+	const char* pBegin = _p;
+	Parse(_type, _p);
+	if (_p)
+		_v.push_back(Symbol(_type, pBegin));
 }{{BI_NEWLINE}}
 
 {{namespace}}::Iterator::Iterator({{namespace}}::SymbolType _type, const char* _pNode)
@@ -218,16 +233,18 @@ const char* {{namespace}}::Iterator::Begin() const
 const char* {{namespace}}::Iterator::End() const
 {
 	assert(mpNode);
-	return mpParser->Parse(mType, mpNode);
+	const char* p = mpNode;
+	mpParser->Parse(mType, p);
+	return p;
 }{{BI_NEWLINE}}
 
-{{namespace}}::Iterator {{namespace}}::Iterator::GetChild({{namespace}}::SymbolType _childT)
+{{namespace}}::Iterator {{namespace}}::Iterator::GetChild({{namespace}}::SymbolType _childT) const
 {
 	assert(mpNode != 0);
 	return Iterator(mpParser, GetChildren(), _childT);
 }{{BI_NEWLINE}}
 
-{{namespace}}::Iterator {{namespace}}::Iterator::GetNext({{namespace}}::SymbolType _childT)
+{{namespace}}::Iterator {{namespace}}::Iterator::GetNext({{namespace}}::SymbolType _childT) const
 {
 	assert(mpNode != 0);
 	return Iterator(*this, _childT);
@@ -270,12 +287,13 @@ void {{namespace}}::Iterator::SkipSiblingsWithWrongType({{namespace}}::SymbolTyp
 	mpNode = (miCurrent != iEnd) ? miCurrent->second : 0 ;
 }{{BI_NEWLINE}}
 
-boost::shared_ptr<{{namespace}}::Symbols> {{namespace}}::Iterator::GetChildren()
+boost::shared_ptr<{{namespace}}::Symbols> {{namespace}}::Iterator::GetChildren() const
 {
 	if (!mpChildren)
 	{
 		Symbols children;
-		mpParser->Traverse(mType, mpNode, children);
+		const char* p = mpNode;
+		mpParser->Traverse(mType, p, children);
 		mpChildren.reset(new Symbols);
 		mpChildren->swap(children);			
 	}

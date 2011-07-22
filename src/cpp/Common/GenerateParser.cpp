@@ -94,16 +94,16 @@ public:
 					const DefValue& defval = def.second;
 					if (defval.isNode)
 					{
-						mSource << mTabs << boost::format("p = Visit(SymbolType_%1%, p, v);\n") % nonTerminal;
+						mSource << mTabs << boost::format("Visit(SymbolType_%1%, p, v);\n") % nonTerminal;
 						break;
 					}
 					else if (!defval.isLeaf)
 					{
-						mSource << mTabs << boost::format("p = Traverse(SymbolType_%1%, p, v, %2%);\n") % nonTerminal % _memoizeChildren;
+						mSource << mTabs << boost::format("Traverse(SymbolType_%1%, p, v, %2%);\n") % nonTerminal % _memoizeChildren;
 						break;
 					}
 				}
-				mSource << mTabs << boost::format("p = Parse(SymbolType_%1%, p, %2%);\n") % nonTerminal % _memoizeChildren;
+				mSource << mTabs << boost::format("Parse(SymbolType_%1%, p, %2%);\n") % nonTerminal % _memoizeChildren;
 				break;
 			}
 				
