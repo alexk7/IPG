@@ -154,8 +154,6 @@ static void ConvertGrammar(Grammar& _grammar, Iterator _iGrammar)
 		char arrowType = *(iArrow.Begin() + 1);
 		if (arrowType == '=')
 			newDef.second.isNode = true;
-		if (arrowType == '=' || arrowType == '<')
-			newDef.second.isMemoized = true;
 	}
 	
 	_grammar.ComputeIsLeaf();

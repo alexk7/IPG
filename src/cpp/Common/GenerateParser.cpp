@@ -221,9 +221,6 @@ void GenerateParser(std::string _srcPath, std::string _folder, std::string _name
 			pDef->ShowSection("isNode");
 		else
 			pDef->ShowSection("isNotNode");
-		
-		if (i->second.isMemoized)
-			pDef->ShowSection("isMemoized");
 			
 		if (i->second.isLeaf)
 			pDef->ShowSection("isLeaf");

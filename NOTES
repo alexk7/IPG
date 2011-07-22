@@ -6,6 +6,8 @@ BAD IDEA! * use memory-mapped file
 	=> not working for read-write situations with incremental behavior, which is the "raison d'etre" of IPG!
 	-> maybe hybrid solution?
 	
+DONE * remove isMemoized
+	
 * unify Parse and Traverse
 
 * Traverse coroutine design with no temp vector -> true iterator

@@ -20,7 +20,7 @@ Range     <= Char ('-' Char)?
 Char      <= '\\' ([nrt'"\[\]\\] / [1-9][0-9]*)
            / !'\\' .
 
-LEFTARROW <= '<' ('-' / '=' / '<') Spacing
+LEFTARROW <= '<' ('-' / '=') Spacing
 SLASH     <- '/' Spacing
 AND       <- '&' Spacing
 NOT       <- '!' Spacing

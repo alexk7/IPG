@@ -20,8 +20,6 @@ void Print(std::ostream& _os, const Defs& _defs)
 		_os << i->first << " <";
 		if (i->second.isNode)
 			_os << "=";
-		else if (i->second.isMemoized)
-			_os << "<";
 		else
 			_os << "-";
 		_os << " " << i->second;

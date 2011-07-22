@@ -5,9 +5,8 @@
 
 struct DefValue : Expression
 {
-	DefValue() : isNode(false), isMemoized(false) {}
-	bool isNode;     //exists in the traversal interface
-	bool isMemoized; //memoized to avoid backtracking in traversal
+	DefValue() : isNode(false) {}
+	bool isNode; //exists in the traversal interface
 };
 
 typedef std::map<std::string, DefValue> Defs;
