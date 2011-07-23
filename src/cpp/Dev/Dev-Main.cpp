@@ -60,21 +60,20 @@ static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 	
 	for (Iterator iSeq = _iExpr.GetChild(SymbolType_Sequence); iSeq; ++iSeq)
 	{
-		for (Iterator iPrefix = iSeq.GetChild(SymbolType_Prefix); iPrefix; ++iPrefix)
+		for (Iterator iItem = iSeq.GetChild(SymbolType_Item); iItem; ++iItem)
 		{
-			char cPrefix = *iPrefix.Begin();
-			Iterator iSuffix = iPrefix.GetChild(SymbolType_Suffix);
-			Iterator iPrimary = iSuffix.GetChild(SymbolType_Primary);
+			char cPrefix = *iItem.Begin();
 			
-			if (Iterator iId = iPrimary.GetChild(SymbolType_Identifier))
+			Iterator iPrimary = iItem.GetChild(SymbolType_Primary);
+			if (Iterator iId = iPrimary.GetChild(SymbolType_IDENTIFIER))
 			{
-				primary.SetNonTerminal(boost::lexical_cast<std::string>(iId));
+				primary.SetNonTerminal(boost::lexical_cast<std::string>(iId.GetChild(SymbolType_Identifier)));
 			}
 			else if (Iterator iExpr = iPrimary.GetChild(SymbolType_Expression))
 			{
 				ConvertExpression(primary, iExpr);
 			}
-			else if (Iterator iLiteral = iPrimary.GetChild(SymbolType_Literal))
+			else if (Iterator iLiteral = iPrimary.GetChild(SymbolType_LITERAL))
 			{
 				for (Iterator iChar = iLiteral.GetChild(SymbolType_Char); iChar; ++iChar)
 				{
@@ -82,7 +81,7 @@ static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 					primary.AddGroupItem(ExpressionType_Sequence, charExpr);
 				}
 			}
-			else if (Iterator iClass = iPrimary.GetChild(SymbolType_Class))
+			else if (Iterator iClass = iPrimary.GetChild(SymbolType_CLASS))
 			{
 				for (Iterator iRange = iClass.GetChild(SymbolType_Range); iRange; ++iRange)
 				{
@@ -143,15 +142,14 @@ static void ConvertGrammar(Grammar& _grammar, Iterator _iGrammar)
 {
 	for (Iterator iDef = _iGrammar.GetChild(SymbolType_Definition); iDef; ++iDef)
 	{
-		Iterator iId = iDef.GetChild(SymbolType_Identifier);
-		Iterator iArrow = iId.GetNext(SymbolType_LEFTARROW);
-		Iterator iExpr = iArrow.GetNext(SymbolType_Expression);
+		Iterator iId = iDef.GetChild(SymbolType_IDENTIFIER);
+		Iterator iExpr = iId.GetNext(SymbolType_Expression);
 		
 		Expression expr;
 		ConvertExpression(expr, iExpr);
 		
-		Def& newDef = AddDef(_grammar.defs, boost::lexical_cast<std::string>(iId), expr);
-		char arrowType = *(iArrow.Begin() + 1);
+		Def& newDef = AddDef(_grammar.defs, boost::lexical_cast<std::string>(iId.GetChild(SymbolType_Identifier)), expr);
+		char arrowType = *(iId.End() + 1);
 		if (arrowType == '=')
 			newDef.second.isNode = true;
 	}

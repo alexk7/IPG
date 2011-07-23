@@ -22,7 +22,7 @@ public:
 	{
 	}
 	
-	void Emit(const Expression& expr, bool _memoizeChildren, int _backtrackIndex)
+	void Emit(const Expression& expr, int _backtrackIndex)
 	{
 		switch (expr.GetType())
 		{
@@ -37,11 +37,11 @@ public:
 				const Expression::Group& group = expr.GetGroup();
 				bool mayUndoVisit = !group.first.isLeaf;
 				DefineBacktrack(_backtrackIndex, mayUndoVisit);
-				Emit(group.first, _memoizeChildren, _backtrackIndex);
+				Emit(group.first, _backtrackIndex);
 				If("!r");
 				OpenBlock();
 				Backtrack(_backtrackIndex, mayUndoVisit);
-				Emit(group.second, _memoizeChildren, _backtrackIndex);
+				Emit(group.second, _backtrackIndex);
 				CloseBlock();
 				break;
 			}
@@ -49,10 +49,10 @@ public:
 			case ExpressionType_Sequence:
 			{
 				const Expression::Group& group = expr.GetGroup();
-				Emit(group.first, _memoizeChildren, _backtrackIndex);
+				Emit(group.first, _backtrackIndex);
 				If("r");
 				OpenBlock();
-				Emit(group.second, _memoizeChildren, -1);
+				Emit(group.second, -1);
 				CloseBlock();
 				break;
 			}
@@ -62,7 +62,7 @@ public:
 				bool traverse = mTraverse;
 				mTraverse = false;
 				DefineBacktrack(_backtrackIndex, false);
-				Emit(expr.GetChild(), _memoizeChildren, _backtrackIndex);
+				Emit(expr.GetChild(), _backtrackIndex);
 				mSource << mTabs << "r = !r;\n";
 				mSource << mTabs << boost::format("p = %1%;\n") % BacktrackVar(_backtrackIndex);
 				mTraverse = traverse;
@@ -77,7 +77,7 @@ public:
 				const Expression& child = expr.GetChild();
 				bool mayUndoVisit = !child.isLeaf;
 				DefineBacktrack(_backtrackIndex, mayUndoVisit);
-				Emit(child, _memoizeChildren, _backtrackIndex);
+				Emit(child, _backtrackIndex);
 				If("!r");
 				OpenBlock();
 				Backtrack(_backtrackIndex, mayUndoVisit);
@@ -91,22 +91,19 @@ public:
 			case ExpressionType_NonTerminal:
 			{
 				const std::string& nonTerminal = expr.GetNonTerminal();
-				if (mTraverse)
+				const Def& def = *mGrammar.defs.find(nonTerminal);
+				const DefValue& defval = def.second;
+				if (defval.isNode)
 				{
-					const Def& def = *mGrammar.defs.find(nonTerminal);
-					const DefValue& defval = def.second;
-					if (defval.isNode)
-					{
+					if (mTraverse)
 						mSource << mTabs << boost::format("r = Visit(SymbolType_%1%, p, v);\n") % nonTerminal;
-						break;
-					}
-					else if (!defval.isLeaf)
-					{
-						mSource << mTabs << boost::format("r = Traverse(SymbolType_%1%, p, v, %2%);\n") % nonTerminal % _memoizeChildren;
-						break;
-					}
+					else
+						mSource << mTabs << boost::format("r = Parse(SymbolType_%1%, p);\n") % nonTerminal;
 				}
-				mSource << mTabs << boost::format("r = Parse(SymbolType_%1%, p, %2%);\n") % nonTerminal % _memoizeChildren;
+				else
+				{
+					Emit(defval, _backtrackIndex);
+				}
 				break;
 			}
 				
@@ -210,12 +207,10 @@ void GenerateParser(std::string _srcPath, std::string _folder, std::string _name
 	dict.SetValue("namespace", _name);
 
 	Defs::const_iterator i, iEnd = _grammar.defs.end();
-	long value = 0;
 	for (i = _grammar.defs.begin(); i != iEnd; ++i)
 	{
 		ctemplate::TemplateDictionary* pDef = dict.AddSectionDictionary("def");
 		pDef->SetValue("name", i->first);
-		pDef->SetIntValue("value", value++);
 		
 		if (i->second.isNode)
 			pDef->ShowSection("isNode");
@@ -229,7 +224,7 @@ void GenerateParser(std::string _srcPath, std::string _folder, std::string _name
 		
 		std::ostringstream parseCodeStream;
 		ParserGenerator parserGenerator(parseCodeStream, _grammar);
-		parserGenerator.Emit(i->second, i->second.isNode, -1);
+		parserGenerator.Emit(i->second, -1);
 		
 		std::string parseCodeFilename = "parseCode_" + i->first;
 		std::string parseCode = parseCodeStream.str();
@@ -239,7 +234,7 @@ void GenerateParser(std::string _srcPath, std::string _folder, std::string _name
 		
 		std::ostringstream traverseCodeStream;
 		ParserGenerator traverserGenerator(traverseCodeStream, _grammar, true);
-		traverserGenerator.Emit(i->second, i->second.isNode, -1);
+		traverserGenerator.Emit(i->second, -1);
 		
 		std::string traverseCodeFilename = "traverseCode_" + i->first;
 		std::string traverseCode = traverseCodeStream.str();

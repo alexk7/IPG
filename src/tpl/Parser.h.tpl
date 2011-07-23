@@ -11,7 +11,9 @@ namespace {{namespace}}
 	enum SymbolType
 	{
 		{{#def}}
-		SymbolType_{{name}} = {{value}},
+		{{#isNode}}
+		SymbolType_{{name}},
+		{{/isNode}}
 		{{/def}}
 		SymbolTypeCount
 	};{{BI_NEWLINE}}
@@ -27,8 +29,8 @@ namespace {{namespace}}
 	class Parser
 	{
 	public:
-		bool Parse(SymbolType _type, const char*& _p, bool _memoize = true);
-		bool Traverse(SymbolType _type, const char*& _p, Symbols& _children, bool _memoize = true);
+		bool Parse(SymbolType _type, const char*& _p);
+		bool Traverse(SymbolType _type, const char*& _p, Symbols& _children);
 		void Print(std::ostream& _os, SymbolType _type, const char* _pNode, int _tabs = 0, int _maxLineSize = 100);{{BI_NEWLINE}}
 		
 	private:

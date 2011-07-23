@@ -50,13 +50,15 @@ const char* {{namespace}}::SymbolName({{namespace}}::SymbolType _type)
 	switch (_type)
 	{
 		{{#def}}
+		{{#isNode}}
 		case SymbolType_{{name}}: return "{{name}}";
+		{{/isNode}}
 		{{/def}}
 		default: throw std::runtime_error(str(boost::format("Invalid Symbol Type: %1%") % _type));
 	}
 }{{BI_NEWLINE}}
 
-bool {{namespace}}::Parser::Parse(SymbolType _type, const char*& p, bool _memoize)
+bool {{namespace}}::Parser::Parse(SymbolType _type, const char*& p)
 {
 	const char* pBegin = p;
 	bool r = true;
@@ -64,6 +66,7 @@ bool {{namespace}}::Parser::Parse(SymbolType _type, const char*& p, bool _memoiz
 	switch (_type)
 	{
 		{{#def}}
+		{{#isNode}}
 		case SymbolType_{{name}}:
 		{
 			if (fail[SymbolType_{{name}}].count(pBegin))
@@ -75,15 +78,13 @@ bool {{namespace}}::Parser::Parse(SymbolType _type, const char*& p, bool _memoiz
 				return true;
 			}
 			{{>parseCode}}
-			if (_memoize)
-			{
-				if (r)
-					end[SymbolType_{{name}}][pBegin] = p;
-				else
-					fail[SymbolType_{{name}}].insert(pBegin);
-			}
+			if (r)
+				end[SymbolType_{{name}}][pBegin] = p;
+			else
+				fail[SymbolType_{{name}}].insert(pBegin);
 			return r;
 		}{{BI_NEWLINE}}
+		{{/isNode}}
 		{{/def}}
 		
 		default:
@@ -92,7 +93,7 @@ bool {{namespace}}::Parser::Parse(SymbolType _type, const char*& p, bool _memoiz
 	}
 }{{BI_NEWLINE}}
 
-bool {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, const char*& p, {{namespace}}::Symbols& v, bool _memoize)
+bool {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, const char*& p, {{namespace}}::Symbols& v)
 {
 	const char* pBegin = p;
 	bool r = true;
@@ -100,30 +101,20 @@ bool {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, const char
 	switch (_type)
 	{
 		{{#def}}
-		{{#isInternal}}
+		{{#isNode}}
 		case SymbolType_{{name}}:
 		{
 			if (fail[SymbolType_{{name}}].count(pBegin))
 				return false;
 			{{>traverseCode}}
-			if (_memoize)
-			{
-				if (r)
-					end[SymbolType_{{name}}][pBegin] = p;
-				else
-					fail[SymbolType_{{name}}].insert(pBegin);
-			}
+			if (r)
+				end[SymbolType_{{name}}][pBegin] = p;
+			else
+				fail[SymbolType_{{name}}].insert(pBegin);
 			return r;
 		}{{BI_NEWLINE}}
-		{{/isInternal}}
+		{{/isNode}}
 		{{/def}}
-		
-		{{#def}}
-		{{#isLeaf}}
-		case SymbolType_{{name}}:
-		{{/isLeaf}}
-		{{/def}}
-			return Parse(_type, p);{{BI_NEWLINE}}
 			
 		default:
 			assert(false);
@@ -167,9 +158,7 @@ void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _
 	{
 		_os << "Memo Count:\n";
 		for (size_t k = 0; k < SymbolTypeCount; ++k)
-		{
 			_os << boost::format("%1% %|20t|End: %2% %|40t|Fail: %3%\n") % SymbolName(SymbolType(k)) % end[k].size() % fail[k].size();
-		}
 	}
 //*/
 }{{BI_NEWLINE}}
