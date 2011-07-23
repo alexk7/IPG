@@ -56,38 +56,40 @@ static char GetChar(Iterator _iChar)
 
 static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 {
+	assert(_iExpr.IsA(SymbolType_Expression));
 	Expression sequence, primary, charExpr;
 	
-	for (Iterator iSeq = _iExpr.GetChild(SymbolType_Sequence); iSeq; ++iSeq)
+	for (Iterator iSeq = _iExpr.GetChild(); iSeq.IsA(SymbolType_Sequence); ++iSeq)
 	{
-		for (Iterator iItem = iSeq.GetChild(SymbolType_Item); iItem; ++iItem)
+		for (Iterator iItem = iSeq.GetChild(); iItem.IsA(SymbolType_Item); ++iItem)
 		{
 			char cPrefix = *iItem.Begin();
 			
 			Iterator iPrimary = iItem.GetChild(SymbolType_Primary);
-			if (Iterator iId = iPrimary.GetChild(SymbolType_IDENTIFIER))
+			Iterator i = iPrimary.GetChild();
+			if (i.IsA(SymbolType_IDENTIFIER))
 			{
-				primary.SetNonTerminal(boost::lexical_cast<std::string>(iId.GetChild(SymbolType_Identifier)));
+				primary.SetNonTerminal(boost::lexical_cast<std::string>(i.GetChild(SymbolType_Identifier)));
 			}
-			else if (Iterator iExpr = iPrimary.GetChild(SymbolType_Expression))
+			else if (i.IsA(SymbolType_Expression))
 			{
-				ConvertExpression(primary, iExpr);
+				ConvertExpression(primary, i);
 			}
-			else if (Iterator iLiteral = iPrimary.GetChild(SymbolType_LITERAL))
+			else if (i.IsA(SymbolType_LITERAL))
 			{
-				for (Iterator iChar = iLiteral.GetChild(SymbolType_Char); iChar; ++iChar)
+				for (Iterator iChar = i.GetChild(); iChar.IsA(SymbolType_Char); ++iChar)
 				{
 					charExpr.SetChar(GetChar(iChar));
 					primary.AddGroupItem(ExpressionType_Sequence, charExpr);
 				}
 			}
-			else if (Iterator iClass = iPrimary.GetChild(SymbolType_CLASS))
+			else if (i.IsA(SymbolType_CLASS))
 			{
-				for (Iterator iRange = iClass.GetChild(SymbolType_Range); iRange; ++iRange)
+				for (Iterator iRange = i.GetChild(); iRange.IsA(SymbolType_Range); ++iRange)
 				{
 					Iterator iChar = iRange.GetChild(SymbolType_Char);
 					char firstChar = GetChar(iChar);
-					if (++iChar)
+					if ((++iChar).IsA(SymbolType_Char))
 					{
 						char lastChar = GetChar(iChar);
 						charExpr.SetRange(firstChar, lastChar);
@@ -140,16 +142,16 @@ static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 
 static void ConvertGrammar(Grammar& _grammar, Iterator _iGrammar)
 {
-	for (Iterator iDef = _iGrammar.GetChild(SymbolType_Definition); iDef; ++iDef)
+	for (Iterator iDef = _iGrammar.GetChild(); iDef.IsA(SymbolType_Definition); ++iDef)
 	{
-		Iterator iId = iDef.GetChild(SymbolType_IDENTIFIER);
-		Iterator iExpr = iId.GetNext(SymbolType_Expression);
+		Iterator i = iDef.GetChild(SymbolType_IDENTIFIER);
+		std::string id = boost::lexical_cast<std::string>(i.GetChild(SymbolType_Identifier));
+		char arrowType = i.End()[1];
 		
 		Expression expr;
-		ConvertExpression(expr, iExpr);
+		ConvertExpression(expr, ++i);
 		
-		Def& newDef = AddDef(_grammar.defs, boost::lexical_cast<std::string>(iId.GetChild(SymbolType_Identifier)), expr);
-		char arrowType = *(iId.End() + 1);
+		Def& newDef = AddDef(_grammar.defs, id, expr);
 		if (arrowType == '=')
 			newDef.second.isNode = true;
 	}
@@ -228,7 +230,8 @@ int main(int argc, char* argv[])
 			
 			RegisterCPlusPlusTemplates(variablesMap.count("no-lines") == 0);
 			
-			Iterator iGrammar(SymbolType_Grammar, &nodes.front());
+			boost::shared_ptr<Parser> pParser(new Parser);
+			Iterator iGrammar(pParser, SymbolType_Grammar, &nodes.front());
 			iGrammar.Print(std::cout);
 			
 			Grammar grammar;
