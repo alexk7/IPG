@@ -1,6 +1,7 @@
 #include "Common.h"
 #include "GenerateParser.h"
 #include "Grammar.h"
+#include "Utility.h"
 
 #include <ctemplate/template.h>
 
