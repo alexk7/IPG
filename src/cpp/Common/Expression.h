@@ -1,8 +1,6 @@
 #ifndef EXPRESSION_H_
 #define EXPRESSION_H_
 
-#include <boost/variant.hpp>
-
 enum ExpressionType
 {
 	ExpressionType_Empty,
@@ -31,7 +29,10 @@ class Expression
 public:
 	typedef std::pair<Expression, Expression> Group;
 
-	Expression() : mType(ExpressionType_Empty), isLeaf(false) {}
+	Expression();
+	explicit Expression(const Expression& _rhs);
+	~Expression();
+	bool operator==(const Expression& _rhs) const;
 	void Swap(Expression& _other);
 	
 	void AddGroupItem(ExpressionType _groupType, Expression& _item);
@@ -39,17 +40,17 @@ public:
 	void SetNonTerminal(std::string _identifier);
 	void SetRange(char _first, char _last);
 	void SetChar(char _value);
-	void SetDot() { mType = ExpressionType_Dot; }
-	void SetEmpty() { mType = ExpressionType_Empty; }
+	void SetDot();
+	void SetEmpty();
 	
 	void Print(std::ostream& _os, ExpressionType parentType = ExpressionType_Empty) const;
-	ExpressionType GetType() const { return mType; }
+	ExpressionType GetType() const;
 	
 	char GetChar() const;
 	char GetFirst() const;
 	char GetLast() const;
 	
-	const std::string& GetNonTerminal() const;
+	std::string GetNonTerminal() const;
 	
 	Group& GetGroup();
 	const Group& GetGroup() const;
@@ -59,20 +60,19 @@ public:
 	
 	bool isLeaf;
 	
-private:    
+private:
 	void PrintChildren(std::ostream& _os, const char* _separator, ExpressionType _parentType) const;
 	void PrintChildWithPrefix(std::ostream& _os, char _prefix) const;
 	void PrintChildWithSuffix(std::ostream& _os, char _prefix) const;
 	static void PrintRangeChar(std::ostream& _os, char _char);
-	template <class T> T& SetType(ExpressionType _type);
 	
-	typedef boost::variant<
-		char,
-		std::pair<char, char>,
-		std::string,
-		boost::recursive_wrapper<Expression>,
-		boost::recursive_wrapper<Group>
-	> Data;
+	union Data
+	{
+		char chars[2];
+		char* pString;
+		Expression* pExpression;
+		Group* pGroup;
+	};
 	
 	ExpressionType mType;
 	Data mData;
@@ -82,16 +82,7 @@ bool IsGroup(ExpressionType _type);
 bool IsContainer(ExpressionType _type);
 bool IsSingleChar(ExpressionType _type);
 
-namespace std
-{
-	template <>
-	inline void swap(Expression& _e1, Expression& _e2) { _e1.Swap(_e2); }
-}
-
-inline std::ostream& operator<<(std::ostream& _os, const Expression& _e)
-{
-	_e.Print(_os);
-	return _os;
-}
+void swap(Expression& _lhs, Expression& _rhs);
+std::ostream& operator<<(std::ostream& _os, const Expression& _e);
 
 #endif /* EXPRESSION_H_ */
