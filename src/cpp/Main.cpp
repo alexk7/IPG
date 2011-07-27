@@ -118,7 +118,7 @@ static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 			}
 			else if (cSuffix == '+')
 			{
-				Expression zeroOrMore = primary;
+				Expression zeroOrMore(primary);
 				zeroOrMore.SetContainer(ExpressionType_ZeroOrMore, zeroOrMore);
 				primary.AddGroupItem(ExpressionType_Sequence, zeroOrMore);
 			}

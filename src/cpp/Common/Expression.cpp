@@ -1,12 +1,106 @@
 #include "Common.h"
 #include "Expression.h"
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
 
-template <class T>
-T& Expression::SetType(ExpressionType _type)
+using namespace std;
+
+Expression::Expression() : mType(ExpressionType_Empty), isLeaf(false)
 {
-	mType = _type;
-	mData = T();
-	return boost::get<T>(mData);
+	memset(&mData, 0, sizeof(mData));
+}
+
+Expression::Expression(const Expression& _rhs) : mType(_rhs.mType), isLeaf(false)
+{
+	switch (mType)
+	{
+		case ExpressionType_Empty:
+		case ExpressionType_Dot:
+		case ExpressionType_Range:
+		case ExpressionType_Char:
+			memcpy(&mData, &_rhs.mData, sizeof(mData));
+			break;
+		
+		case ExpressionType_NonTerminal:
+			mData.pString = new char[strlen(_rhs.mData.pString)];
+			strcpy(mData.pString, _rhs.mData.pString);
+			break;
+
+		case ExpressionType_Choice:
+		case ExpressionType_Sequence:
+			mData.pGroup = new Group(*_rhs.mData.pGroup);
+			break;
+		
+		case ExpressionType_Not:
+		case ExpressionType_ZeroOrMore:
+			mData.pExpression = new Expression(*_rhs.mData.pExpression);
+			break;
+				
+		default:
+			assert(false);
+	}
+}
+
+Expression::~Expression()
+{
+	switch (mType)
+	{
+		case ExpressionType_Empty:
+		case ExpressionType_Dot:
+		case ExpressionType_Range:
+		case ExpressionType_Char:
+			break;
+		
+		case ExpressionType_NonTerminal:
+			delete [] mData.pString;
+			break;
+
+		case ExpressionType_Choice:
+		case ExpressionType_Sequence:
+			delete mData.pGroup;
+			break;
+		
+		case ExpressionType_Not:
+		case ExpressionType_ZeroOrMore:
+			delete mData.pExpression;
+			break;
+				
+		default:
+			assert(false);
+	}
+}
+
+bool Expression::operator==(const Expression& _rhs) const
+{
+	if (mType != _rhs.mType)
+		return false;
+		
+	switch (mType)
+	{
+		case ExpressionType_Empty:
+		case ExpressionType_Dot:
+			return true;
+		
+		case ExpressionType_Range:
+		case ExpressionType_Char:
+			return memcmp(&mData, &_rhs.mData, sizeof(mData)) == 0;
+		
+		case ExpressionType_NonTerminal:
+			return strcmp(mData.pString, _rhs.mData.pString) == 0;
+
+		case ExpressionType_Choice:
+		case ExpressionType_Sequence:
+			return *mData.pGroup == *_rhs.mData.pGroup;
+		
+		case ExpressionType_Not:
+		case ExpressionType_ZeroOrMore:
+			return *mData.pExpression == *_rhs.mData.pExpression;
+				
+		default:
+			assert(false);
+			return false;		
+	}
 }
 
 void Expression::Swap(Expression& _other)
@@ -35,9 +129,10 @@ void Expression::AddGroupItem(ExpressionType _groupType, Expression& _child)
 		Expression me;
 		Swap(me);
 		
-		Group& group = SetType<Group>(_groupType);
-		group.first.Swap(me);
-		group.second.Swap(_child);
+		mData.pGroup = new Group;
+		mType = _groupType;
+		mData.pGroup->first.Swap(me);
+		mData.pGroup->second.Swap(_child);
 	}
 }
 
@@ -52,36 +147,56 @@ void Expression::SetContainer(ExpressionType _containerType, Expression& _child)
 		assert(IsContainer(_containerType));
 		
 		//This is important because we may have this == &_child
-		Expression tmp;
-		tmp.Swap(_child);
+		Expression child;
+		child.Swap(_child);
 		
-		Expression& child = SetType<Expression>(_containerType);
-		child.Swap(tmp);
+		SetEmpty();
+		mData.pExpression = new Expression;
+		mType = _containerType;
+		mData.pExpression->Swap(child);
 	}
 }
 
 void Expression::SetNonTerminal(std::string _identifier)
 {
-	SetType<std::string>(ExpressionType_NonTerminal).swap(_identifier);
+	SetEmpty();
+	mData.pString = new char[_identifier.size() + 1];
+	strcpy(mData.pString, _identifier.c_str());
+	mType = ExpressionType_NonTerminal;
 }
 
 void Expression::SetRange(char _first, char _last)
 {
+	SetEmpty();
+	mData.chars[0] = _first;
+	mData.chars[1] = _last;
 	mType = ExpressionType_Range;
-	mData = std::make_pair(_first, _last);
 }
 
 void Expression::SetChar(char _value)
 {
+	SetEmpty();
+	mData.chars[0] = _value;
 	mType = ExpressionType_Char;
-	mData = _value;
+}
+
+void Expression::SetDot()
+{
+	SetEmpty();
+	mType = ExpressionType_Dot;
+}
+
+void Expression::SetEmpty()
+{
+	Expression me;
+	Swap(me);
 }
 
 void Expression::Print(std::ostream& _os, ExpressionType parentType) const
 {
 	switch (mType)
 	{
-		case ExpressionType_Empty:       _os << "ε";                            break;
+		case ExpressionType_Empty:                                              break;
 		case ExpressionType_Choice:      PrintChildren(_os, " / ", parentType); break;
 		case ExpressionType_Sequence:    PrintChildren(_os, " ", parentType);   break;
 		case ExpressionType_Not:         PrintChildWithPrefix(_os, '!');        break;
@@ -108,11 +223,10 @@ void Expression::Print(std::ostream& _os, ExpressionType parentType) const
 			
 		case ExpressionType_Range:
 		{
-			std::pair<char, char> p = boost::get<std::pair<char, char> >(mData);
 			_os.put('[');
-			PrintRangeChar(_os, p.first);
+			PrintRangeChar(_os, GetFirst());
 			_os.put('-');
-			PrintRangeChar(_os, p.second);
+			PrintRangeChar(_os, GetLast());
 			_os.put(']');
 			break;
 		}
@@ -123,15 +237,15 @@ void Expression::Print(std::ostream& _os, ExpressionType parentType) const
 
 void Expression::PrintChildren(std::ostream& _os, const char* _separator, ExpressionType parentType) const
 {
-	const Group& p = boost::get<Group>(mData);
+	const Group& g = GetGroup();
 	
 	bool needParens = parentType > mType;
 	if (needParens)
 		_os.put('(');
 	
-	p.first.Print(_os, mType);
+	g.first.Print(_os, mType);
 	_os << _separator;
-	p.second.Print(_os, mType);
+	g.second.Print(_os, mType);
 	
 	if (needParens)
 		_os.put(')');
@@ -166,49 +280,49 @@ void Expression::PrintRangeChar(std::ostream& _os, char _char)
 char Expression::GetChar() const
 {
 	assert(mType == ExpressionType_Char);
-	return boost::get<char>(mData);
+	return mData.chars[0];
 }
 
 char Expression::GetFirst() const
 {
 	assert(mType == ExpressionType_Range);
-	return boost::get<std::pair<char, char> >(mData).first;
+	return mData.chars[0];
 }
 
 char Expression::GetLast() const
 {
 	assert(mType == ExpressionType_Range);
-	return boost::get<std::pair<char, char> >(mData).second;
+	return mData.chars[1];
 }
 
-const std::string& Expression::GetNonTerminal() const
+string Expression::GetNonTerminal() const
 {
 	assert(mType == ExpressionType_NonTerminal);
-	return boost::get<std::string>(mData);
+	return mData.pString;
 }
 
 Expression::Group& Expression::GetGroup()
 {
 	assert(IsGroup(mType));
-	return boost::get<Group>(mData);
+	return *mData.pGroup;
 }
 
 const Expression::Group& Expression::GetGroup() const
 {
 	assert(IsGroup(mType));
-	return boost::get<Group>(mData);
+	return *mData.pGroup;
 }
 
 Expression& Expression::GetChild()
 {
 	assert(IsContainer(mType));
-	return boost::get<Expression>(mData);
+	return *mData.pExpression;
 }
 
 const Expression& Expression::GetChild() const
 {
 	assert(IsContainer(mType));
-	return boost::get<Expression>(mData);
+	return *mData.pExpression;
 }
 
 bool IsGroup(ExpressionType _type)
@@ -240,4 +354,20 @@ bool IsSingleChar(ExpressionType _type)
 		case ExpressionType_Dot:         return true;
 		default: /* not a single char */ return false;
 	}
+}
+
+ExpressionType Expression::GetType() const
+{
+	return mType;
+}
+
+void swap(Expression& _lhs, Expression& _rhs)
+{
+	_lhs.Swap(_rhs);
+}
+
+std::ostream& operator<<(std::ostream& _os, const Expression& _e)
+{
+	_e.Print(_os);
+	return _os;
 }

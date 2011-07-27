@@ -1,19 +1,24 @@
 #include "Common.h"
 #include "GenerateParser.h"
 #include "Grammar.h"
+#include "Utility.h"
 
 #include <ctemplate/template.h>
 
+using namespace std;
+using namespace boost;
+using namespace ctemplate;
+
 class ParserGenerator
 {
-	std::ostream& mSource;
+	ostream& mSource;
 	const Grammar& mGrammar;
 	Tabs mTabs;
 	int mNextBacktrackIndex;
 	bool mTraverse;
 	
 public:
-	ParserGenerator(std::ostream& _source, const Grammar& _grammar, bool _traverse = false)
+	ParserGenerator(ostream& _source, const Grammar& _grammar, bool _traverse = false)
 	: mSource(_source)
 	, mGrammar(_grammar)
 	, mTabs(3)
@@ -28,7 +33,7 @@ public:
 		{
 			case ExpressionType_Empty:
 			{
-				mSource << mTabs << "r = true;\n";
+				Line("r = true;");
 				break;
 			}
 				
@@ -63,8 +68,8 @@ public:
 				mTraverse = false;
 				DefineBacktrack(_backtrackIndex, false);
 				Emit(expr.GetChild(), _backtrackIndex);
-				mSource << mTabs << "r = !r;\n";
-				mSource << mTabs << boost::format("p = %1%;\n") % BacktrackVar(_backtrackIndex);
+				Line("r = !r;");
+				Line(format("p = %1%;") % BacktrackVar(_backtrackIndex));
 				mTraverse = traverse;
 				break;
 			}
@@ -72,7 +77,7 @@ public:
 			case ExpressionType_ZeroOrMore:
 			{
 				_backtrackIndex = -1;
-				mSource << mTabs << "for (;;)\n";
+				Line("for (;;)");
 				OpenBlock();
 				const Expression& child = expr.GetChild();
 				bool mayUndoVisit = !child.isLeaf;
@@ -81,24 +86,24 @@ public:
 				If("!r");
 				OpenBlock();
 				Backtrack(_backtrackIndex, mayUndoVisit);
-				mSource << mTabs << "break;\n";
+				Line("break;");
 				CloseBlock();
 				CloseBlock();
-				mSource << mTabs << "r = true;\n";
+				Line("r = true;");
 				break;
 			}
 				
 			case ExpressionType_NonTerminal:
 			{
-				const std::string& nonTerminal = expr.GetNonTerminal();
+				const string& nonTerminal = expr.GetNonTerminal();
 				const Def& def = *mGrammar.defs.find(nonTerminal);
 				const DefValue& defval = def.second;
 				if (defval.isNode)
 				{
 					if (mTraverse)
-						mSource << mTabs << boost::format("r = Visit(SymbolType_%1%, p, v);\n") % nonTerminal;
+						Line(format("r = Visit(SymbolType_%1%, p, v);") % nonTerminal);
 					else
-						mSource << mTabs << boost::format("r = Parse(SymbolType_%1%, p);\n") % nonTerminal;
+						Line(format("r = Parse(SymbolType_%1%, p);") % nonTerminal);
 				}
 				else
 				{
@@ -109,13 +114,13 @@ public:
 				
 			case ExpressionType_Range:
 			{
-				Advance(str(boost::format("c >= \'%1%\' && c <= \'%2%\'") % EscapeChar(expr.GetFirst()) % EscapeChar(expr.GetLast())));
+				Advance(format("c >= \'%1%\' && c <= \'%2%\'") % EscapeChar(expr.GetFirst()) % EscapeChar(expr.GetLast()));
 				break;
 			}
 				
 			case ExpressionType_Char:
 			{
-				Advance(str(boost::format("c == \'%1%\'") % EscapeChar(expr.GetChar())));
+				Advance(format("c == \'%1%\'") % EscapeChar(expr.GetChar()));
 				break;
 			}
 				
@@ -132,30 +137,37 @@ public:
 		}
 	}
 	
-	void Advance(std::string _cond)
+	template <class T>
+	void Line(const T& _stmt)
 	{
-		mSource << mTabs << "c = *p++;\n";
-		mSource << mTabs << boost::format("r = (%1%);\n") % _cond;
+		mSource << mTabs << _stmt << "\n";
 	}
 	
-	void If(std::string _cond)
+	template <class T>
+	void Advance(const T& _cond)
 	{
-		mSource << mTabs << boost::format("if (%1%)\n") % _cond;
+		Line("c = *p++;");
+		Line(format("r = (%1%);") % _cond);
+	}
+	
+	void If(string _cond)
+	{
+		Line(format("if (%1%)") % _cond);
 	}
 	
 	void OpenBlock()
 	{
-		mSource << mTabs << "{\n";
+		Line("{");
 		++mTabs;
 	}
 	
 	void CloseBlock()
 	{
 		--mTabs;
-		mSource << mTabs << "}\n";
+		Line("}");
 	}
 	
-	static std::string Not(std::string _expr)
+	static string Not(string _expr)
 	{
 		return "!" + _expr;
 	}
@@ -165,35 +177,35 @@ public:
 		if (_backtrackIndex == -1)
 		{
 			_backtrackIndex = mNextBacktrackIndex++;
-			mSource << mTabs << boost::format("const char* %1% = p;\n") % BacktrackVar(_backtrackIndex);
+			Line(format("const char* %1% = p;") % BacktrackVar(_backtrackIndex));
 			if (mTraverse && _mayUndoVisit)
-				mSource << mTabs << boost::format("size_t %1% = v.size();\n") % BacktrackVar(_backtrackIndex, 's');
+				Line(format("size_t %1% = v.size();\n") % BacktrackVar(_backtrackIndex, 's'));
 		}
 	}
 	
 	void Backtrack(int _backtrackIndex, bool _undoVisit)
 	{
-		mSource << mTabs << boost::format("p = %1%;\n") % BacktrackVar(_backtrackIndex);
+		Line(format("p = %1%;\n") % BacktrackVar(_backtrackIndex));
 		if (mTraverse && _undoVisit)
-			mSource << mTabs << boost::format("v.erase(v.begin() + %1%, v.end());\n") % BacktrackVar(_backtrackIndex, 's');
+			Line(format("v.erase(v.begin() + %1%, v.end());\n") % BacktrackVar(_backtrackIndex, 's'));
 	}
 	
-	static std::string BacktrackVar(int _backtrackIndex, char _prefix = 'b')
+	static string BacktrackVar(int _backtrackIndex, char _prefix = 'b')
 	{
 		assert(_backtrackIndex != -1);
 		if (_backtrackIndex == 1)
-			return str(boost::format("%1%") % _prefix);
+			return str(format("%1%") % _prefix);
 		else
-			return str(boost::format("%1%%2%") % _prefix % _backtrackIndex);
+			return str(format("%1%%2%") % _prefix % _backtrackIndex);
 	}
 };
 
-static void WriteAutoGenNotice(std::ostream& _os, const std::string& _srcPath)
+static void WriteAutoGenNotice(ostream& _os, const string& _srcPath)
 {
 	time_t now = time(NULL);
 	char time_buffer[26];
 
-	boost::format fmt(
+	format fmt(
 		"// This file was automatically generated by IPG on %1%"
 		"// (from %2%)\n"
 		"// DO NOT EDIT!\n");
@@ -201,15 +213,15 @@ static void WriteAutoGenNotice(std::ostream& _os, const std::string& _srcPath)
 	_os << fmt % ctime_r(&now, time_buffer) % _srcPath;
 }
 
-void GenerateParser(std::string _srcPath, std::string _folder, std::string _name, const Grammar& _grammar)
+void GenerateParser(string _srcPath, string _folder, string _name, const Grammar& _grammar)
 {
-	ctemplate::TemplateDictionary dict(_name);
+	TemplateDictionary dict(_name);
 	dict.SetValue("namespace", _name);
 
 	Defs::const_iterator i, iEnd = _grammar.defs.end();
 	for (i = _grammar.defs.begin(); i != iEnd; ++i)
 	{
-		ctemplate::TemplateDictionary* pDef = dict.AddSectionDictionary("def");
+		TemplateDictionary* pDef = dict.AddSectionDictionary("def");
 		pDef->SetValue("name", i->first);
 		
 		if (i->second.isNode)
@@ -222,48 +234,48 @@ void GenerateParser(std::string _srcPath, std::string _folder, std::string _name
 //		else
 //			pDef->ShowSection("isInternal");
 		
-		std::ostringstream parseCodeStream;
+		ostringstream parseCodeStream;
 		ParserGenerator parserGenerator(parseCodeStream, _grammar);
 		parserGenerator.Emit(i->second, -1);
 		
-		std::string parseCodeFilename = "parseCode_" + i->first;
-		std::string parseCode = parseCodeStream.str();
-		ctemplate::StringToTemplateCache(parseCodeFilename, parseCode, ctemplate::STRIP_BLANK_LINES);
+		string parseCodeFilename = "parseCode_" + i->first;
+		string parseCode = parseCodeStream.str();
+		StringToTemplateCache(parseCodeFilename, parseCode, STRIP_BLANK_LINES);
 		
 		pDef->AddIncludeDictionary("parseCode")->SetFilename(parseCodeFilename);
 		
-		std::ostringstream traverseCodeStream;
+		ostringstream traverseCodeStream;
 		ParserGenerator traverserGenerator(traverseCodeStream, _grammar, true);
 		traverserGenerator.Emit(i->second, -1);
 		
-		std::string traverseCodeFilename = "traverseCode_" + i->first;
-		std::string traverseCode = traverseCodeStream.str();
-		ctemplate::StringToTemplateCache(traverseCodeFilename, traverseCode, ctemplate::STRIP_BLANK_LINES);
+		string traverseCodeFilename = "traverseCode_" + i->first;
+		string traverseCode = traverseCodeStream.str();
+		StringToTemplateCache(traverseCodeFilename, traverseCode, STRIP_BLANK_LINES);
 
 		pDef->AddIncludeDictionary("traverseCode")->SetFilename(traverseCodeFilename);
 	}
 
-	std::string headerText;
-	if (!ctemplate::ExpandTemplate("Parser.h.tpl", ctemplate::STRIP_BLANK_LINES, &dict, &headerText))
-		throw std::runtime_error("CTemplate Parser.h.tpl expansion failed!");
+	string headerText;
+	if (!ExpandTemplate("Parser.h.tpl", STRIP_BLANK_LINES, &dict, &headerText))
+		throw runtime_error("CTemplate Parser.h.tpl expansion failed!");
 	
-	std::ofstream headerFile;
-	headerFile.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+	ofstream headerFile;
+	headerFile.exceptions(ofstream::failbit | ofstream::badbit);
 	headerFile.open((_folder + _name + ".h").c_str());
 	WriteAutoGenNotice(headerFile, _srcPath);
-	headerFile << boost::format("#ifndef %1%_H\n#define %1%_H\n\n") % boost::to_upper_copy(_name);
+	headerFile << format("#ifndef %1%_H\n#define %1%_H\n\n") % to_upper_copy(_name);
 	headerFile << headerText;
 	headerFile << "\n#endif\n";
 	
 	dict.SetValue("header", headerText);
 
-	std::string sourceText;
-	if (!ctemplate::ExpandTemplate("Parser.cpp.tpl", ctemplate::STRIP_BLANK_LINES, &dict, &sourceText))
-		throw std::runtime_error("CTemplate Parser.cpp.tpl expansion failed!");
+	string sourceText;
+	if (!ExpandTemplate("Parser.cpp.tpl", STRIP_BLANK_LINES, &dict, &sourceText))
+		throw runtime_error("CTemplate Parser.cpp.tpl expansion failed!");
 	
-	std::ofstream sourceFile;
-	sourceFile.exceptions(std::ofstream::failbit | std::ofstream::badbit);
-	std::string sourcePath = _folder + _name + ".cpp";
+	ofstream sourceFile;
+	sourceFile.exceptions(ofstream::failbit | ofstream::badbit);
+	string sourcePath = _folder + _name + ".cpp";
 	sourceFile.open(sourcePath.c_str());
 	WriteAutoGenNotice(sourceFile, _srcPath);
 	sourceFile << sourceText;	

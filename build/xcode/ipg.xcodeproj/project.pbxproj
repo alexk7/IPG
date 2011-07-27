@@ -38,6 +38,7 @@
 
 /* Begin PBXBuildFile section */
 		6223E33513C39426003142F3 /* Dev-Main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6223E33413C39426003142F3 /* Dev-Main.cpp */; settings = {COMPILER_FLAGS = "-DIPG_DEV"; }; };
+		62662B0513DE3AB00029BDB6 /* Utility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62662B0413DE3AB00029BDB6 /* Utility.cpp */; };
 		626A495913C20B5B00D24233 /* Expression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D69713BBAF6F00F9609A /* Expression.cpp */; };
 		626A495A13C20B5B00D24233 /* Grammar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D69913BBAF6F00F9609A /* Grammar.cpp */; };
 		626A495B13C20B5B00D24233 /* Common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D0D68713BBADF900F9609A /* Common.cpp */; };
@@ -110,6 +111,8 @@
 		6223E33413C39426003142F3 /* Dev-Main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = "Dev-Main.cpp"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		625BDA4613CB95FE00EE6FD6 /* NOTES */ = {isa = PBXFileReference; lastKnownFileType = text; name = NOTES; path = ../../NOTES; sourceTree = "<group>"; };
 		625BDA4913CBB08C00EE6FD6 /* diff-parsers.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "diff-parsers.sh"; sourceTree = "<group>"; };
+		62662B0413DE3AB00029BDB6 /* Utility.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Utility.cpp; sourceTree = "<group>"; };
+		62662B0713DE3AE60029BDB6 /* Utility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utility.h; sourceTree = "<group>"; };
 		626A495513C20B3B00D24233 /* libcommon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libcommon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		626A496B13C212C100D24233 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; name = LICENSE; path = ../../LICENSE; sourceTree = "<group>"; };
 		62942A2B13C3A52B00C2DAA9 /* Dev-PEGParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = "Dev-PEGParser.cpp"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
@@ -320,6 +323,8 @@
 				62D0D68C13BBADF900F9609A /* GenerateParser.h */,
 				62D0D68D13BBADF900F9609A /* ReadFile.cpp */,
 				62D0D68E13BBADF900F9609A /* ReadFile.h */,
+				62662B0413DE3AB00029BDB6 /* Utility.cpp */,
+				62662B0713DE3AE60029BDB6 /* Utility.h */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -544,6 +549,7 @@
 				626A495B13C20B5B00D24233 /* Common.cpp in Sources */,
 				626A495D13C20B5B00D24233 /* GenerateParser.cpp in Sources */,
 				626A495E13C20B5B00D24233 /* ReadFile.cpp in Sources */,
+				62662B0513DE3AB00029BDB6 /* Utility.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
