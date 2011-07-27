@@ -1,3 +1,6 @@
+8-bit chars: utf-8 ftw!
+64-bit pointers: memory-mapped huge files ftw!
+
 DONE * replace use of null pointer by boolean return value
 
 BAD IDEA! * use memory-mapped file
@@ -23,6 +26,7 @@ DONE * remove isMemoized
 		- long parsing (maybe simply drop shortest one as soon as we hit a non-empty bucket with linear probing?)
 			- not sure, if hash table are per symbol type, lengths should be similar.
 		- result that we may reuse shortly because of backtracking
+	- one hash table for "skip nodes", one for "real nodes" 
 		
 * --no-lines does not make any sense: line numbers in generated files are only making sense for the developers of IPG... It should be off by default and be enablable (with --debug flag) only in debug builds.
 

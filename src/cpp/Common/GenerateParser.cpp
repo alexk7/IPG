@@ -217,10 +217,10 @@ void GenerateParser(std::string _srcPath, std::string _folder, std::string _name
 		else
 			pDef->ShowSection("isNotNode");
 			
-		if (i->second.isLeaf)
-			pDef->ShowSection("isLeaf");
-		else
-			pDef->ShowSection("isInternal");
+//		if (i->second.isLeaf)
+//			pDef->ShowSection("isLeaf");
+//		else
+//			pDef->ShowSection("isInternal");
 		
 		std::ostringstream parseCodeStream;
 		ParserGenerator parserGenerator(parseCodeStream, _grammar);

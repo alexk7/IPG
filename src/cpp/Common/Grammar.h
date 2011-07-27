@@ -16,11 +16,13 @@ class Grammar
 {
 public:
 	void ComputeIsLeaf();
+//	void CreateSkipNodes();
 
 	Defs defs;
 	
 private:
 	void ComputeIsLeaf(Expression* _pExpression, std::set<DefValue*>& _visited);
+//	void CreateSkipNodes(Expression* _pExpression, const std::string& _name, int& _index);
 };
 
 Def& AddDef(Defs&, const std::string& _name, Expression&);
