@@ -1,50 +1,30 @@
 #include "Common.h"
 #include "Utility.h"
 
-Tabs::Tabs(int _tabLevel) : mTabLevel(_tabLevel)
+EscapeChar::EscapeChar(char _c) : c(_c)
 {
 }
 
-Tabs& Tabs::operator++()
+std::ostream& operator<<(std::ostream& _os, EscapeChar _e)
 {
-	++mTabLevel;
-	return *this;
-}
-
-Tabs& Tabs::operator--()
-{
-	--mTabLevel;
-	return *this;
-}
-
-Tabs Tabs::Next() const
-{
-	return Tabs(mTabLevel + 1);
-}
-
-size_t Tabs::GetTabLevel() const
-{
-	return mTabLevel;
-}
-
-std::ostream& operator<<(std::ostream& _os, Tabs _tabs)
-{
-	size_t tabLevel = _tabs.GetTabLevel();
-	while (tabLevel--)
-		_os.put('\t');
-	return _os;
-}
-
-std::string EscapeChar(char _c)
-{
-	switch (_c)
+	char c = _e.c;
+	switch (c)
 	{
-		case '\\': return "\\\\";
-		case '\n': return "\\n";
-		case '\r': return "\\r";
-		case '\t': return "\\t";
-		case '\'': return "\\\'";
-		case '\"': return "\\\"";
-		default: return std::string(1, _c);
+		case '\n': c = 'n'; break;
+		case '\r': c = 'r'; break;
+		case '\t': c = 't'; break;
+		
+		case '\\':
+		case '\'':
+		case '\"':
+			break;
+			
+		default:
+			_os.put(c);
+			return _os;
 	}
+	
+	_os.put('\\');
+	_os.put(c);
+	return _os;
 }

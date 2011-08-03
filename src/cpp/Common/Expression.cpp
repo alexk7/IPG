@@ -1,5 +1,6 @@
 #include "Common.h"
 #include "Expression.h"
+#include "Grammar.h"
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
@@ -69,6 +70,13 @@ Expression::~Expression()
 		default:
 			assert(false);
 	}
+}
+
+Expression& Expression::operator=(const Expression& _rhs)
+{
+	Expression rhs(_rhs);
+	Swap(rhs);
+	return *this;
 }
 
 bool Expression::operator==(const Expression& _rhs) const
@@ -323,6 +331,36 @@ const Expression& Expression::GetChild() const
 {
 	assert(IsContainer(mType));
 	return *mData.pExpression;
+}
+
+bool Expression::IsSimple(const Grammar& _g) const
+{
+	switch (mType)
+	{
+		case ExpressionType_Empty:
+		case ExpressionType_Dot:
+		case ExpressionType_Range:
+		case ExpressionType_Char:
+			return true;
+		
+		case ExpressionType_NonTerminal:
+		{
+			const DefValue& defValue = _g.defs.find(mData.pString)->second;
+			return defValue.isMemoized || defValue.IsSimple(_g);
+		}
+
+		case ExpressionType_Choice:
+		case ExpressionType_Sequence:
+		case ExpressionType_ZeroOrMore:
+			return false;
+		
+		case ExpressionType_Not:
+			return mData.pExpression->IsSimple(_g);
+			
+		default:
+			assert(false);
+			return false;		
+	}
 }
 
 bool IsGroup(ExpressionType _type)

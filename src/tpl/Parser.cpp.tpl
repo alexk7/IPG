@@ -27,17 +27,19 @@ namespace
 		char c = _e.c;
 		switch (c)
 		{
-			case '\\': c = '\\'; break;
-			case '\n': c = 'n';  break;
-			case '\r': c = 'r';  break;
-			case '\t': c = 't';  break;
-			case '\'': c = '\''; break;
-			case '\"': c = '\"'; break;
+			case '\n': c = 'n'; break;
+			case '\r': c = 'r'; break;
+			case '\t': c = 't'; break;{{BI_NEWLINE}}
 			
+			case '\\':
+			case '\'':
+			case '\"':
+				break;{{BI_NEWLINE}}
+				
 			default:
 				_os.put(c);
 				return _os;
-		}
+		}{{BI_NEWLINE}}
 		
 		_os.put('\\');
 		_os.put(c);

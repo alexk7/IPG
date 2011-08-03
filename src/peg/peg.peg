@@ -10,7 +10,7 @@ Primary    <= IDENTIFIER !LEFTARROW
             / LITERAL / CLASS / DOT
 
 # Lexical syntax
-IDENTIFIER <= Identifier Spacing
+IDENTIFIER <- Identifier Spacing
 Identifier <= [a-zA-Z_][a-zA-Z0-9_]*
 
 LITERAL   <= ( ['] (!['] Char)* [']
@@ -20,7 +20,7 @@ Range     <= Char ('-' Char)?
 Char      <= '\\' ([nrt'"\[\]\\] / [1-9][0-9]*)
            / !'\\' .
 
-LEFTARROW <- '<' ('-' / '=') Spacing
+LEFTARROW <= '<' ('-' / '=') Spacing
 SLASH     <- '/' Spacing
 AND       <- '&' Spacing
 NOT       <- '!' Spacing

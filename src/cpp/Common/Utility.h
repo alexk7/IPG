@@ -1,20 +1,12 @@
 #ifndef IPG_UTILITY_H_
 #define IPG_UTILITY_H_
 
-class Tabs
+struct EscapeChar
 {
-public:
-	Tabs(int _tabLevel = 0);
-	Tabs& operator++();
-	Tabs& operator--();
-	Tabs Next() const;
-	size_t GetTabLevel() const;
-	
-private:
-	int mTabLevel;
+	EscapeChar(char _c);
+	char c;
 };
 
-std::ostream& operator<<(std::ostream& _os, Tabs _tabs);
-std::string EscapeChar(char _c);
-
+std::ostream& operator<<(std::ostream& _os, EscapeChar _e);
+	
 #endif

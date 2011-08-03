@@ -67,9 +67,9 @@ static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 			
 			Iterator iPrimary = iItem.GetChild(SymbolType_Primary);
 			Iterator i = iPrimary.GetChild();
-			if (i.IsA(SymbolType_IDENTIFIER))
+			if (i.IsA(SymbolType_Identifier))
 			{
-				primary.SetNonTerminal(boost::lexical_cast<std::string>(i.GetChild(SymbolType_Identifier)));
+				primary.SetNonTerminal(boost::lexical_cast<std::string>(i));
 			}
 			else if (i.IsA(SymbolType_Expression))
 			{
@@ -144,19 +144,23 @@ static void ConvertGrammar(Grammar& _grammar, Iterator _iGrammar)
 {
 	for (Iterator iDef = _iGrammar.GetChild(); iDef.IsA(SymbolType_Definition); ++iDef)
 	{
-		Iterator i = iDef.GetChild(SymbolType_IDENTIFIER);
-		std::string id = boost::lexical_cast<std::string>(i.GetChild(SymbolType_Identifier));
-		char arrowType = i.End()[1];
+		Iterator i = iDef.GetChild(SymbolType_Identifier);
+		std::string id = boost::lexical_cast<std::string>(i);
+		char arrowType = (++i).Begin()[1];
 		
 		Expression expr;
 		ConvertExpression(expr, ++i);
 		
 		Def& newDef = AddDef(_grammar.defs, id, expr);
 		if (arrowType == '=')
+		{
 			newDef.second.isNode = true;
+			newDef.second.isMemoized = true;
+		}
 	}
 	
 	_grammar.ComputeIsLeaf();
+	_grammar.CreateSkipNodes();
 }
 
 static void RegisterTemplate(const ctemplate::TemplateString&  _key, const ctemplate::TemplateString&  _content)
@@ -232,11 +236,11 @@ int main(int argc, char* argv[])
 			
 			boost::shared_ptr<Parser> pParser(new Parser);
 			Iterator iGrammar(pParser, SymbolType_Grammar, &nodes.front());
-			iGrammar.Print(std::cout);
+			//iGrammar.Print(std::cout);
 			
 			Grammar grammar;
 			ConvertGrammar(grammar, iGrammar);
-			//std::cout << grammar;
+			std::cout << grammar;
 			
 			GenerateParser(pegFile, folder, name, grammar);
 		}

@@ -5,8 +5,9 @@
 
 struct DefValue : Expression
 {
-	DefValue() : isNode(false) {}
+	DefValue() : isNode(false), isMemoized(false) {}
 	bool isNode; //exists in the traversal interface
+	bool isMemoized;
 };
 
 typedef std::map<std::string, DefValue> Defs;
@@ -16,13 +17,13 @@ class Grammar
 {
 public:
 	void ComputeIsLeaf();
-//	void CreateSkipNodes();
+	void CreateSkipNodes();
 
 	Defs defs;
 	
 private:
 	void ComputeIsLeaf(Expression* _pExpression, std::set<DefValue*>& _visited);
-//	void CreateSkipNodes(Expression* _pExpression, const std::string& _name, int& _index);
+	void CreateSkipNodes(Expression& _expr, const std::string& _name, int& _index);
 };
 
 Def& AddDef(Defs&, const std::string& _name, Expression&);

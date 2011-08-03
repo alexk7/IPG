@@ -1,6 +1,8 @@
 #ifndef EXPRESSION_H_
 #define EXPRESSION_H_
 
+class Grammar;
+
 enum ExpressionType
 {
 	ExpressionType_Empty,
@@ -32,6 +34,8 @@ public:
 	Expression();
 	explicit Expression(const Expression& _rhs);
 	~Expression();
+		
+	Expression& operator=(const Expression& _rhs);
 	bool operator==(const Expression& _rhs) const;
 	void Swap(Expression& _other);
 	
@@ -58,6 +62,7 @@ public:
 	Expression& GetChild();
 	const Expression& GetChild() const;
 	
+	bool IsSimple(const Grammar& _g) const;
 	bool isLeaf;
 	
 private:

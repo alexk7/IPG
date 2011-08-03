@@ -13,7 +13,7 @@ class ParserGenerator
 {
 	ostream& mSource;
 	const Grammar& mGrammar;
-	Tabs mTabs;
+	int mTabs;
 	int mNextBacktrackIndex;
 	bool mTraverse;
 	
@@ -140,7 +140,11 @@ public:
 	template <class T>
 	void Line(const T& _stmt)
 	{
-		mSource << mTabs << _stmt << "\n";
+		int tabs = mTabs;
+		while (tabs--)
+			mSource.put('\t');
+		mSource << _stmt;
+		mSource.put('\n');
 	}
 	
 	template <class T>
@@ -224,7 +228,7 @@ void GenerateParser(string _srcPath, string _folder, string _name, const Grammar
 		TemplateDictionary* pDef = dict.AddSectionDictionary("def");
 		pDef->SetValue("name", i->first);
 		
-		if (i->second.isNode)
+		if (i->second.isMemoized)
 			pDef->ShowSection("isNode");
 		else
 			pDef->ShowSection("isNotNode");
