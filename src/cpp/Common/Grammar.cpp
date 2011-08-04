@@ -72,7 +72,10 @@ void Grammar::CreateSkipNodes(Expression& _expr, const std::string& _name, int& 
 				Expression& second = _expr.GetGroup().second;
 				ExpressionType secondType = second.GetType();
 				if (secondType != type || !second.GetGroup().first.isLeaf)
+				{
+					skipExpr.AddGroupItem(type, second);
 					break;
+				}
 				
 				Expression tmp;
 				tmp.Swap(second);
@@ -81,12 +84,12 @@ void Grammar::CreateSkipNodes(Expression& _expr, const std::string& _name, int& 
 			
 			if (skipExpr.IsSimple(*this))
 			{
-				_expr.GetGroup().first.Swap(skipExpr);
+				_expr.Swap(skipExpr);
 			}
 			else
 			{
 				std::string skipName = str(boost::format("%1%_%2%") % _name % _index++);
-				_expr.GetGroup().first.SetNonTerminal(skipName);
+				_expr.SetNonTerminal(skipName);
 				DefValue& defValue = AddDef(defs, skipName, skipExpr).second;
 				defValue.isMemoized = true;
 				defValue.isLeaf = true;
@@ -95,9 +98,8 @@ void Grammar::CreateSkipNodes(Expression& _expr, const std::string& _name, int& 
 		else
 		{
 			CreateSkipNodes(_expr.GetGroup().first, _name, _index);
+			CreateSkipNodes(_expr.GetGroup().second, _name, _index);
 		}
-		
-		CreateSkipNodes(_expr.GetGroup().second, _name, _index);
 	}
 	else if (IsContainer(type))
 	{
