@@ -24,6 +24,7 @@ public:
 private:
 	void ComputeIsLeaf(Expression* _pExpression, std::set<DefValue*>& _visited);
 	void CreateSkipNodes(Expression& _expr, const std::string& _name, int& _index);
+	void CreateSkipNode(Expression& _refExpr, Expression& _skipExpr, const std::string& _name, int& _index);
 };
 
 Def& AddDef(Defs&, const std::string& _name, Expression&);

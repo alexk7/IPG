@@ -99,7 +99,8 @@ bool Expression::operator==(const Expression& _rhs) const
 
 		case ExpressionType_Choice:
 		case ExpressionType_Sequence:
-			return *mData.pGroup == *_rhs.mData.pGroup;
+			return mData.pGroup->first == _rhs.mData.pGroup->first &&
+			       mData.pGroup->second == _rhs.mData.pGroup->second;
 		
 		case ExpressionType_Not:
 		case ExpressionType_ZeroOrMore:

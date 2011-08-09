@@ -29,7 +29,7 @@ enum ExpressionType
 class Expression
 {
 public:
-	typedef std::pair<Expression, Expression> Group;
+	struct Group;
 
 	Expression();
 	explicit Expression(const Expression& _rhs);
@@ -81,6 +81,12 @@ private:
 	
 	ExpressionType mType;
 	Data mData;
+};
+
+struct Expression::Group
+{
+	Expression first;
+	Expression second;
 };
 
 bool IsGroup(ExpressionType _type);

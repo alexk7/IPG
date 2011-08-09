@@ -53,6 +53,24 @@ void Grammar::CreateSkipNodes()
 	}
 }
 
+void Grammar::CreateSkipNode(Expression& _refExpr, Expression& _skipExpr, const std::string& _name, int& _index)
+{
+	if (_skipExpr.IsSimple(*this))
+	{
+		_refExpr.Swap(_skipExpr);
+	}
+	else
+	{
+		std::string skipName = str(boost::format("%1%_%2%") % _name % _index++);
+		
+		DefValue& defValue = AddDef(defs, skipName, _skipExpr).second;
+		defValue.isMemoized = true;
+		defValue.isLeaf = true;
+		
+		_refExpr.SetNonTerminal(skipName);
+	}
+}
+
 void Grammar::CreateSkipNodes(Expression& _expr, const std::string& _name, int& _index)
 {
 	if (_expr.isLeaf)
@@ -61,44 +79,48 @@ void Grammar::CreateSkipNodes(Expression& _expr, const std::string& _name, int& 
 	ExpressionType type = _expr.GetType();
 	if (IsGroup(type))
 	{
-		const Expression& first = _expr.GetGroup().first;
-		if (first.isLeaf)
+		Expression::Group* pGroup = &_expr.GetGroup();
+		if (pGroup->first.isLeaf)
 		{
 			Expression skipExpr;
 			for (;;)
 			{
-				skipExpr.AddGroupItem(type, _expr.GetGroup().first);
+				skipExpr.AddGroupItem(type, pGroup->first);
 				
-				Expression& second = _expr.GetGroup().second;
-				ExpressionType secondType = second.GetType();
-				if (secondType != type || !second.GetGroup().first.isLeaf)
-				{
-					skipExpr.AddGroupItem(type, second);
+				Expression second;
+				second.Swap(pGroup->second);
+				_expr.Swap(second);
+				
+				if (_expr.GetType() != type)
 					break;
-				}
-				
-				Expression tmp;
-				tmp.Swap(second);
-				_expr.Swap(tmp);
+					
+				pGroup = &_expr.GetGroup();
+				if (!pGroup->first.isLeaf)
+					break;
 			}
 			
-			if (skipExpr.IsSimple(*this))
-			{
-				_expr.Swap(skipExpr);
-			}
+			Expression refExpr;
+			CreateSkipNode(refExpr, skipExpr, _name, _index);
+
+			if (_expr.isLeaf)
+				CreateSkipNode(_expr, _expr, _name, _index);
 			else
-			{
-				std::string skipName = str(boost::format("%1%_%2%") % _name % _index++);
-				_expr.SetNonTerminal(skipName);
-				DefValue& defValue = AddDef(defs, skipName, skipExpr).second;
-				defValue.isMemoized = true;
-				defValue.isLeaf = true;
-			}
+				CreateSkipNodes(_expr, _name, _index);
+					
+			Expression newGroup;
+			newGroup.AddGroupItem(type, refExpr);
+			newGroup.AddGroupItem(type, _expr);
+			
+			_expr.Swap(newGroup);
 		}
 		else
 		{
-			CreateSkipNodes(_expr.GetGroup().first, _name, _index);
-			CreateSkipNodes(_expr.GetGroup().second, _name, _index);
+			CreateSkipNodes(pGroup->first, _name, _index);
+			
+			if (pGroup->second.isLeaf)
+				CreateSkipNode(pGroup->second, pGroup->second, _name, _index);
+			else
+				CreateSkipNodes(pGroup->second, _name, _index);
 		}
 	}
 	else if (IsContainer(type))
