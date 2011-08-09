@@ -98,12 +98,19 @@ public:
 				const string& nonTerminal = expr.GetNonTerminal();
 				const Def& def = *mGrammar.defs.find(nonTerminal);
 				const DefValue& defval = def.second;
-				if (defval.isNode)
+				if (defval.isMemoized)
 				{
 					if (mTraverse)
-						Line(format("r = Visit(SymbolType_%1%, p, v);") % nonTerminal);
+					{
+						if (defval.isNode)
+							Line(format("r = Visit(SymbolType_%1%, p, v);") % nonTerminal);
+						else
+							Line(format("r = Traverse(SymbolType_%1%, p, v);") % nonTerminal);
+					}
 					else
+					{
 						Line(format("r = Parse(SymbolType_%1%, p);") % nonTerminal);
+					}
 				}
 				else
 				{
