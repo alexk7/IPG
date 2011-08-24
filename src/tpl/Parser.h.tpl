@@ -38,6 +38,12 @@ namespace {{namespace}}
 		bool Visit(SymbolType _type, const char*& _p, Symbols& _v);
 		EndMap end[SymbolTypeCount];
 		FailSet fail[SymbolTypeCount];
+		
+		{{#def}}
+		{{#isNode}}
+		bool Parse_{{name}}(const char*& p);
+		{{/isNode}}
+		{{/def}}
 	};{{BI_NEWLINE}}
 	
 	class Iterator

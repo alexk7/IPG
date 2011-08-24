@@ -60,39 +60,49 @@ const char* {{namespace}}::SymbolName({{namespace}}::SymbolType _type)
 	}
 }{{BI_NEWLINE}}
 
+{{#def}}
+{{#isNode}}
+bool {{namespace}}::Parser::Parse_{{name}}(const char*& p)
+{
+	bool r = true;
+	char c;
+	{{>parseCode}}
+	return r;
+}{{BI_NEWLINE}}
+
+{{/isNode}}
+{{/def}}
+
 bool {{namespace}}::Parser::Parse(SymbolType _type, const char*& p)
 {
 	const char* pBegin = p;
+	if (fail[_type].count(pBegin))
+		return false;
+	EndMap::iterator i = end[_type].find(pBegin);
+	if (i != end[_type].end())
+	{
+		p = i->second;
+		return true;
+	}{{BI_NEWLINE}}
+	
 	bool r = true;
-	char c;
 	switch (_type)
 	{
 		{{#def}}
 		{{#isNode}}
-		case SymbolType_{{name}}:
-		{
-			if (fail[SymbolType_{{name}}].count(pBegin))
-				return false;
-			EndMap::iterator i = end[SymbolType_{{name}}].find(pBegin);
-			if (i != end[SymbolType_{{name}}].end())
-			{
-				p = i->second;
-				return true;
-			}
-			{{>parseCode}}
-			if (r)
-				end[SymbolType_{{name}}][pBegin] = p;
-			else
-				fail[SymbolType_{{name}}].insert(pBegin);
-			return r;
-		}{{BI_NEWLINE}}
+		case SymbolType_{{name}}: r = Parse_{{name}}(p); break;
 		{{/isNode}}
 		{{/def}}
-		
 		default:
 			assert(false);
 			return false;
-	}
+	}{{BI_NEWLINE}}
+	
+	if (r)
+		end[_type][pBegin] = p;
+	else
+		fail[_type].insert(pBegin);
+	return r;
 }{{BI_NEWLINE}}
 
 bool {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, const char*& p, {{namespace}}::Symbols& v)

@@ -21,7 +21,7 @@ public:
 	ParserGenerator(ostream& _source, const Grammar& _grammar, bool _traverse = false)
 	: mSource(_source)
 	, mGrammar(_grammar)
-	, mTabs(3)
+	, mTabs(1)
 	, mNextBacktrackIndex(1)
 	, mTraverse(_traverse)
 	{
