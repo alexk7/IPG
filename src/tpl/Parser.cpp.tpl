@@ -163,7 +163,7 @@ void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _
 	_os << "\"\n";{{BI_NEWLINE}}
 	
 	for (Symbols::iterator i = children.begin(), iEnd = children.end(); i != iEnd; ++i)
-		Print(_os, i->first, i->second, _tabs + 1, _maxLineSize);
+		Print(_os, i->type, i->value, _tabs + 1, _maxLineSize);
 
 //*
 	if (_tabs == 0)
@@ -180,16 +180,16 @@ bool {{namespace}}::Parser::Visit({{namespace}}::SymbolType _type, const char*& 
 	const char* pBegin = _p;
 	bool r = Parse(_type, _p);
 	if (r)
-		_v.push_back(Symbol(_type, pBegin));
+	{
+		Symbol symbol = { _type, _p - pBegin, pBegin };
+		_v.push_back(symbol);
+	}
 	return r;
 }{{BI_NEWLINE}}
 
 std::ostream& {{namespace}}::operator<<(std::ostream& _os, const {{namespace}}::Iterator& _i)
 {
 	if (_i)
-	{
-		for (const char *p = _i.Begin(), *pEnd = _i.End(); p != pEnd; ++p)
-			_os.put(*p);
-	}
+		_os.write(_i->value, _i->length);
 	return _os;
 }{{BI_NEWLINE}}

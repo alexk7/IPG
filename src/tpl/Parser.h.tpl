@@ -19,7 +19,13 @@ namespace {{namespace}}
 		SymbolTypeCount = SymbolTypeInvalid
 	};{{BI_NEWLINE}}
 
-	typedef std::pair<SymbolType, const char*> Symbol;
+	struct Symbol
+	{
+		SymbolType type;
+		size_t length;
+		const char* value;
+	};
+	
 	typedef std::vector<Symbol> Symbols;
 	typedef std::tr1::unordered_map<const char*, const char*> EndMap;
 	typedef std::tr1::unordered_set<const char*> FailSet;
@@ -37,7 +43,7 @@ namespace {{namespace}}
 	private:
 		bool Visit(SymbolType _type, const char*& _p, Symbols& _v);
 		EndMap end[SymbolTypeCount];
-		FailSet fail[SymbolTypeCount];
+		FailSet fail[SymbolTypeCount];{{BI_NEWLINE}}
 		
 		{{#def}}
 		{{#isNode}}
@@ -50,16 +56,17 @@ namespace {{namespace}}
 	{
 	public:
 		Iterator() {}
-		bool IsA(SymbolType _type) const { return mpSiblings && mi->first == _type; }
+		bool IsA(SymbolType _type) const { return mpSiblings && mi->type == _type; }
 		operator bool() const { return mpSiblings; }
 		
 		Iterator(boost::shared_ptr<Parser> _pParser, SymbolType _type, const char* _p) : mpParser(_pParser)
 		{
 			Symbols children;
-			mpEnd = _p;
-			if (_pParser->Traverse(_type, mpEnd, children))
+			const char* pEnd = _p;
+			if (_pParser->Traverse(_type, pEnd, children))
 			{
-				mpSiblings.reset(new Symbols(1, Symbol(_type, _p)));
+				Symbol symbol = { _type, pEnd - _p, _p };
+				mpSiblings.reset(new Symbols(1, symbol));
 				mi = mpSiblings->begin();
 				if (!children.empty())
 				{
@@ -80,9 +87,9 @@ namespace {{namespace}}
 			else
 			{
 				Symbols children;
-				mpEnd = mi->second;
-				bool r = mpParser->Traverse(mi->first, mpEnd, children);
-				assert(r);
+				const char* pEnd = mi->value;
+				bool r = mpParser->Traverse(mi->type, pEnd, children);
+				assert(r && pEnd == mi->value + mi->length);
 				if (!children.empty())
 				{
 					mpChildren.reset(new Symbols);
@@ -91,18 +98,32 @@ namespace {{namespace}}
 			}
 			return *this;
 		}
+		
+		const Symbol& operator*() const
+		{
+			assert(mpSiblings && mi != mpSiblings->end());
+			return *mi;
+		}
+		
+		const Symbol* operator->() const
+		{
+			assert(mpSiblings && mi != mpSiblings->end());
+			return mi.operator->();
+		}
 
+/*
 		const char* Begin() const
 		{
 			assert(mpSiblings && mi != mpSiblings->end());
-			return mi->second;
+			return mi->value;
 		}
 		
 		const char* End() const
 		{
 			assert(mpSiblings && mi != mpSiblings->end());
-			return mpEnd;
+			return mi->value + mi->length;
 		}
+*/
 		
 		Iterator GetChild() const
 		{
@@ -119,7 +140,7 @@ namespace {{namespace}}
 		void Print(std::ostream& _os, int _tabs = 0, int _maxLineSize = 100)
 		{
 			assert(mpSiblings && mi != mpSiblings->end());
-			mpParser->Print(_os, mi->first, mi->second, _tabs, _maxLineSize);
+			mpParser->Print(_os, mi->type, mi->value, _tabs, _maxLineSize);
 		}
 	
 	private:
@@ -128,10 +149,10 @@ namespace {{namespace}}
 			if (_pSiblings)
 			{
 				mi = _pSiblings->begin();
-				mpEnd = mi->second;
+				const char* pEnd = mi->value;
 				Symbols children;
-				bool r =_pParser->Traverse(mi->first, mpEnd, children);
-				assert(r);
+				bool r =_pParser->Traverse(mi->type, pEnd, children);
+				assert(r && pEnd == mi->value + mi->length);
 				if (!children.empty())
 				{
 					mpChildren.reset(new Symbols);
@@ -143,7 +164,6 @@ namespace {{namespace}}
 		boost::shared_ptr<Parser> mpParser;
 		boost::shared_ptr<Symbols> mpSiblings, mpChildren;
 		Symbols::iterator mi;
-		const char* mpEnd;
 	};{{BI_NEWLINE}}
 
 	std::ostream& operator<<(std::ostream& _os, const Iterator& _i);

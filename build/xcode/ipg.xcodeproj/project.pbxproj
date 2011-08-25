@@ -500,7 +500,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rm -f ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.cpp\nrm -f ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.h\n${BUILT_PRODUCTS_DIR}/ipg --no-lines ${SRCROOT}/../../src/peg/peg.peg ${SRCROOT}/../../src/cpp/Dev/Dev- PEGParser";
+			shellScript = "rm -f ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.cpp\nrm -f ${SRCROOT}/../../src/cpp/IPG-Dev/PEGParser.h\n${BUILT_PRODUCTS_DIR}/ipg ${SRCROOT}/../../src/peg/peg.peg ${SRCROOT}/../../src/cpp/Dev/Dev- PEGParser";
 			showEnvVarsInLog = 0;
 		};
 		62942A6513C4A21A00C2DAA9 /* Generate Parser Source Template String */ = {

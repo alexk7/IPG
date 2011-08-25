@@ -22,7 +22,7 @@ using namespace PEGParser;
 
 static char GetChar(Iterator _iChar)
 {
-	const char* p = _iChar.Begin();
+	const char* p = _iChar->value;
 	char c = *p;
 	if (c == '\\')
 	{
@@ -63,7 +63,7 @@ static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 	{
 		for (Iterator iItem = iSeq.GetChild(); iItem.IsA(SymbolType_Item); ++iItem)
 		{
-			char cPrefix = *iItem.Begin();
+			char cPrefix = *iItem->value;
 			
 			Iterator iPrimary = iItem.GetChild(SymbolType_Primary);
 			Iterator i = iPrimary.GetChild();
@@ -106,7 +106,7 @@ static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 				primary.SetDot();
 			}
 			
-			char cSuffix = *iPrimary.End();
+			char cSuffix = iPrimary->value[iPrimary->length];
 			if (cSuffix == '?')
 			{
 				Expression empty;
@@ -146,7 +146,7 @@ static void ConvertGrammar(Grammar& _grammar, Iterator _iGrammar)
 	{
 		Iterator i = iDef.GetChild(SymbolType_Identifier);
 		std::string id = boost::lexical_cast<std::string>(i);
-		char arrowType = (++i).Begin()[1];
+		char arrowType = (++i)->value[1];
 		
 		Expression expr;
 		ConvertExpression(expr, ++i);
