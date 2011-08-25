@@ -69,7 +69,7 @@ static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 			Iterator i = iPrimary.GetChild();
 			if (i.IsA(SymbolType_Identifier))
 			{
-				primary.SetNonTerminal(boost::lexical_cast<std::string>(i));
+				primary.SetNonTerminal(std::string(i->value, i->length));
 			}
 			else if (i.IsA(SymbolType_Expression))
 			{
@@ -145,7 +145,7 @@ static void ConvertGrammar(Grammar& _grammar, Iterator _iGrammar)
 	for (Iterator iDef = _iGrammar.GetChild(); iDef.IsA(SymbolType_Definition); ++iDef)
 	{
 		Iterator i = iDef.GetChild(SymbolType_Identifier);
-		std::string id = boost::lexical_cast<std::string>(i);
+		std::string id(i->value, i->length);
 		char arrowType = (++i)->value[1];
 		
 		Expression expr;

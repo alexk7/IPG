@@ -186,10 +186,3 @@ bool {{namespace}}::Parser::Visit({{namespace}}::SymbolType _type, const char*& 
 	}
 	return r;
 }{{BI_NEWLINE}}
-
-std::ostream& {{namespace}}::operator<<(std::ostream& _os, const {{namespace}}::Iterator& _i)
-{
-	if (_i)
-		_os.write(_i->value, _i->length);
-	return _os;
-}{{BI_NEWLINE}}

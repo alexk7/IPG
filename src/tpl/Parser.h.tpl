@@ -110,20 +110,6 @@ namespace {{namespace}}
 			assert(mpSiblings && mi != mpSiblings->end());
 			return mi.operator->();
 		}
-
-/*
-		const char* Begin() const
-		{
-			assert(mpSiblings && mi != mpSiblings->end());
-			return mi->value;
-		}
-		
-		const char* End() const
-		{
-			assert(mpSiblings && mi != mpSiblings->end());
-			return mi->value + mi->length;
-		}
-*/
 		
 		Iterator GetChild() const
 		{
@@ -165,6 +151,4 @@ namespace {{namespace}}
 		boost::shared_ptr<Symbols> mpSiblings, mpChildren;
 		Symbols::iterator mi;
 	};{{BI_NEWLINE}}
-
-	std::ostream& operator<<(std::ostream& _os, const Iterator& _i);
 }
