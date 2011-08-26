@@ -64,7 +64,8 @@ static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 		{
 			char cPrefix = *iItem->value;
 			
-			Iterator iPrimary = iItem.GetChild(SymbolType_Primary);
+			Iterator iPrimary = iItem.GetChild();
+			assert(iPrimary->type == SymbolType_Primary);
 			Iterator i = iPrimary.GetChild();
 			if (i->type == SymbolType_Identifier)
 			{
@@ -86,7 +87,8 @@ static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 			{
 				for (Iterator iRange = i.GetChild(); iRange->type == SymbolType_Range; ++iRange)
 				{
-					Iterator iChar = iRange.GetChild(SymbolType_Char);
+					Iterator iChar = iRange.GetChild();
+					assert(iChar->type == SymbolType_Char);
 					char firstChar = GetChar(iChar);
 					if ((++iChar)->type == SymbolType_Char)
 					{
@@ -143,7 +145,8 @@ static void ConvertGrammar(Grammar& _grammar, Iterator _iGrammar)
 {
 	for (Iterator iDef = _iGrammar.GetChild(); iDef->type == SymbolType_Definition; ++iDef)
 	{
-		Iterator i = iDef.GetChild(SymbolType_Identifier);
+		Iterator i = iDef.GetChild();
+		assert(i->type == SymbolType_Identifier);
 		std::string id(i->value, i->length);
 		char arrowType = (++i)->value[1];
 		

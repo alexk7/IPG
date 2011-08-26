@@ -116,13 +116,6 @@ namespace {{namespace}}
 			return Iterator(mpParser, mpChildren);
 		}
 		
-		Iterator GetChild(SymbolType _type) const
-		{
-			Iterator i = GetChild();
-			assert(i->type == _type);
-			return i;
-		}
-		
 		void Print(std::ostream& _os, int _tabs = 0, int _maxLineSize = 100)
 		{
 			assert(mpSiblings && mi != mpSiblings->end());
