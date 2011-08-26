@@ -101,14 +101,16 @@ namespace {{namespace}}
 		
 		const Symbol& operator*() const
 		{
-			assert(mpSiblings && mi != mpSiblings->end());
-			return *mi;
+			static Symbol invalidSymbol = { SymbolTypeInvalid };
+			if (mpSiblings && mi != mpSiblings->end())
+				return *mi;
+			else
+				return invalidSymbol;
 		}
 		
 		const Symbol* operator->() const
 		{
-			assert(mpSiblings && mi != mpSiblings->end());
-			return mi.operator->();
+			return &**this;
 		}
 		
 		Iterator GetChild() const
