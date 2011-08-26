@@ -57,7 +57,6 @@ namespace {{namespace}}
 	public:
 		Iterator() {}
 		bool IsA(SymbolType _type) const { return mpSiblings && mi->type == _type; }
-		operator bool() const { return mpSiblings; }
 		
 		Iterator(boost::shared_ptr<Parser> _pParser, SymbolType _type, const char* _p) : mpParser(_pParser)
 		{
