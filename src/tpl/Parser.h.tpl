@@ -59,48 +59,27 @@ namespace {{namespace}}
 		
 		Iterator(boost::shared_ptr<Parser> _pParser, SymbolType _type, const char* _p) : mpParser(_pParser)
 		{
-			Symbols children;
 			const char* pEnd = _p;
-			if (_pParser->Traverse(_type, pEnd, children))
+			if (_pParser->Parse(_type, pEnd))
 			{
 				Symbol symbol = { _type, pEnd - _p, _p };
 				mpSiblings.reset(new Symbols(1, symbol));
 				mi = mpSiblings->begin();
-				if (!children.empty())
-				{
-					mpChildren.reset(new Symbols);
-					mpChildren->swap(children);
-				}
 			}
 		}
 		
 		Iterator& operator++()
 		{
-			assert(mpSiblings && mi != mpSiblings->end());
-			mpChildren.reset();
+			assert(mpSiblings);
 			if (++mi == mpSiblings->end())
-			{
 				mpSiblings.reset();
-			}
-			else
-			{
-				Symbols children;
-				const char* pEnd = mi->value;
-				bool r = mpParser->Traverse(mi->type, pEnd, children);
-				assert(r && pEnd == mi->value + mi->length);
-				if (!children.empty())
-				{
-					mpChildren.reset(new Symbols);
-					mpChildren->swap(children);
-				}
-			}
 			return *this;
 		}
 		
 		const Symbol& operator*() const
 		{
 			static Symbol invalidSymbol = { SymbolTypeInvalid };
-			if (mpSiblings && mi != mpSiblings->end())
+			if (mpSiblings)
 				return *mi;
 			else
 				return invalidSymbol;
@@ -113,7 +92,22 @@ namespace {{namespace}}
 		
 		Iterator GetChild() const
 		{
-			return Iterator(mpParser, mpChildren);
+			Iterator i;
+			if (mpSiblings)
+			{
+				Symbols children;
+				const char* p = mi->value;
+				bool r = mpParser->Traverse(mi->type, p, children);
+				assert(r && p == mi->value + mi->length);
+				boost::shared_ptr<Symbols> pChildren;
+				if (!children.empty())
+				{
+					pChildren.reset(new Symbols);
+					pChildren->swap(children);
+				}
+				i = Iterator(mpParser, pChildren);
+			}
+			return i;
 		}
 		
 		void Print(std::ostream& _os, int _tabs = 0, int _maxLineSize = 100)
@@ -126,22 +120,11 @@ namespace {{namespace}}
 		Iterator(boost::shared_ptr<Parser> _pParser, boost::shared_ptr<Symbols> _pSiblings) : mpParser(_pParser), mpSiblings(_pSiblings)
 		{
 			if (_pSiblings)
-			{
 				mi = _pSiblings->begin();
-				const char* pEnd = mi->value;
-				Symbols children;
-				bool r =_pParser->Traverse(mi->type, pEnd, children);
-				assert(r && pEnd == mi->value + mi->length);
-				if (!children.empty())
-				{
-					mpChildren.reset(new Symbols);
-					mpChildren->swap(children);
-				}
-			}
 		}
 		
 		boost::shared_ptr<Parser> mpParser;
-		boost::shared_ptr<Symbols> mpSiblings, mpChildren;
+		boost::shared_ptr<Symbols> mpSiblings;
 		Symbols::iterator mi;
 	};{{BI_NEWLINE}}
 }
