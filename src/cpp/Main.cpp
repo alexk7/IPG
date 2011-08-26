@@ -14,7 +14,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
-//#include <boost/iostreams/device/mapped_file.hpp>
 
 #include <ctemplate/template.h>
 
@@ -56,40 +55,40 @@ static char GetChar(Iterator _iChar)
 
 static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 {
-	assert(_iExpr.IsA(SymbolType_Expression));
+	assert(_iExpr->type == SymbolType_Expression);
 	Expression sequence, primary, charExpr;
 	
-	for (Iterator iSeq = _iExpr.GetChild(); iSeq.IsA(SymbolType_Sequence); ++iSeq)
+	for (Iterator iSeq = _iExpr.GetChild(); iSeq->type == SymbolType_Sequence; ++iSeq)
 	{
-		for (Iterator iItem = iSeq.GetChild(); iItem.IsA(SymbolType_Item); ++iItem)
+		for (Iterator iItem = iSeq.GetChild(); iItem->type == SymbolType_Item; ++iItem)
 		{
 			char cPrefix = *iItem->value;
 			
 			Iterator iPrimary = iItem.GetChild(SymbolType_Primary);
 			Iterator i = iPrimary.GetChild();
-			if (i.IsA(SymbolType_Identifier))
+			if (i->type == SymbolType_Identifier)
 			{
 				primary.SetNonTerminal(std::string(i->value, i->length));
 			}
-			else if (i.IsA(SymbolType_Expression))
+			else if (i->type == SymbolType_Expression)
 			{
 				ConvertExpression(primary, i);
 			}
-			else if (i.IsA(SymbolType_LITERAL))
+			else if (i->type == SymbolType_LITERAL)
 			{
-				for (Iterator iChar = i.GetChild(); iChar.IsA(SymbolType_Char); ++iChar)
+				for (Iterator iChar = i.GetChild(); iChar->type == SymbolType_Char; ++iChar)
 				{
 					charExpr.SetChar(GetChar(iChar));
 					primary.AddGroupItem(ExpressionType_Sequence, charExpr);
 				}
 			}
-			else if (i.IsA(SymbolType_CLASS))
+			else if (i->type == SymbolType_CLASS)
 			{
-				for (Iterator iRange = i.GetChild(); iRange.IsA(SymbolType_Range); ++iRange)
+				for (Iterator iRange = i.GetChild(); iRange->type == SymbolType_Range; ++iRange)
 				{
 					Iterator iChar = iRange.GetChild(SymbolType_Char);
 					char firstChar = GetChar(iChar);
-					if ((++iChar).IsA(SymbolType_Char))
+					if ((++iChar)->type == SymbolType_Char)
 					{
 						char lastChar = GetChar(iChar);
 						charExpr.SetRange(firstChar, lastChar);
@@ -142,7 +141,7 @@ static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 
 static void ConvertGrammar(Grammar& _grammar, Iterator _iGrammar)
 {
-	for (Iterator iDef = _iGrammar.GetChild(); iDef.IsA(SymbolType_Definition); ++iDef)
+	for (Iterator iDef = _iGrammar.GetChild(); iDef->type == SymbolType_Definition; ++iDef)
 	{
 		Iterator i = iDef.GetChild(SymbolType_Identifier);
 		std::string id(i->value, i->length);
