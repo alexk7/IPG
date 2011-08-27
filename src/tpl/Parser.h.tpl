@@ -31,7 +31,7 @@ namespace {{namespace}}
 	typedef std::tr1::unordered_set<const char*> FailSet;
 	{{BI_NEWLINE}}
 		
-	const char* SymbolName(SymbolType _type);{{BI_NEWLINE}}
+	const char* SymbolName(SymbolType _type);
 
 	class Parser
 	{
@@ -52,21 +52,15 @@ namespace {{namespace}}
 		{{/def}}
 	};{{BI_NEWLINE}}
 	
+	class Iterator;
+	Iterator Parse(SymbolType _type, const char* _text);
+	
 	class Iterator
 	{
 	public:
 		Iterator() {}
 		
-		Iterator(boost::shared_ptr<Parser> _pParser, SymbolType _type, const char* _p) : mpParser(_pParser)
-		{
-			const char* pEnd = _p;
-			if (_pParser->Parse(_type, pEnd))
-			{
-				Symbol symbol = { _type, pEnd - _p, _p };
-				mpSiblings.reset(new Symbols(1, symbol));
-				mi = mpSiblings->begin();
-			}
-		}
+		friend Iterator Parse(SymbolType _type, const char* _text);
 		
 		Iterator& operator++()
 		{
@@ -126,5 +120,5 @@ namespace {{namespace}}
 		boost::shared_ptr<Parser> mpParser;
 		boost::shared_ptr<Symbols> mpSiblings;
 		Symbols::iterator mi;
-	};{{BI_NEWLINE}}
+	};
 }

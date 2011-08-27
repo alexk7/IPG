@@ -236,8 +236,7 @@ int main(int argc, char* argv[])
 			
 			RegisterCPlusPlusTemplates(variablesMap.count("no-lines") == 0);
 			
-			boost::shared_ptr<Parser> pParser(new Parser);
-			Iterator iGrammar(pParser, SymbolType_Grammar, &nodes.front());
+			Iterator iGrammar = Parse(SymbolType_Grammar, &nodes[0]);
 			//iGrammar.Print(std::cout);
 			
 			Grammar grammar;

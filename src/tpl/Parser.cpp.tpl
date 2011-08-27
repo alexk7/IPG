@@ -186,3 +186,16 @@ bool {{namespace}}::Parser::Visit({{namespace}}::SymbolType _type, const char*& 
 	}
 	return r;
 }{{BI_NEWLINE}}
+
+{{namespace}}::Iterator {{namespace}}::Parse({{namespace}}::SymbolType _type, const char* _text)
+{
+	boost::shared_ptr<Parser> pParser(new Parser);
+	const char* p = _text;
+	if (pParser->Parse(_type, p))
+	{
+		Symbol symbol = { _type, p - _text, _text };
+		boost::shared_ptr<Symbols> pSymbols(new Symbols(1, symbol));
+		return Iterator(pParser, pSymbols);
+	}
+	return Iterator();
+}{{BI_NEWLINE}}
