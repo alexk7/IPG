@@ -6,12 +6,17 @@
 #include <iomanip>
 #include <algorithm>
 #include <boost/format.hpp>
+#include <tr1/unordered_map>
+#include <tr1/unordered_set>
 #endif{{BI_NEWLINE}}
 
 {{header}}
 
 namespace
 {
+	typedef std::tr1::unordered_map<const char*, const char*> EndMap;
+	typedef std::tr1::unordered_set<const char*> FailSet;{{BI_NEWLINE}}
+
 	struct EscapeChar
 	{
 		EscapeChar(char _c);
@@ -47,6 +52,25 @@ namespace
 	}
 }{{BI_NEWLINE}}
 
+class {{namespace}}::Context
+{
+public:
+	bool Parse(SymbolType _type, const char*& _p);
+	bool Traverse(SymbolType _type, const char*& _p, Symbols& _children);
+	void Print(std::ostream& _os, SymbolType _type, const char* _pNode, int _tabs = 0, int _maxLineSize = 100);{{BI_NEWLINE}}
+	
+private:
+	bool Visit(SymbolType _type, const char*& _p, Symbols& _v);
+	EndMap end[SymbolTypeCount];
+	FailSet fail[SymbolTypeCount];{{BI_NEWLINE}}
+	
+	{{#def}}
+	{{#isNode}}
+	bool Parse_{{name}}(const char*& p);
+	{{/isNode}}
+	{{/def}}
+};
+
 const char* {{namespace}}::SymbolName({{namespace}}::SymbolType _type)
 {
 	switch (_type)
@@ -62,7 +86,7 @@ const char* {{namespace}}::SymbolName({{namespace}}::SymbolType _type)
 
 {{#def}}
 {{#isNode}}
-bool {{namespace}}::Parser::Parse_{{name}}(const char*& p)
+bool {{namespace}}::Context::Parse_{{name}}(const char*& p)
 {
 	bool r = true;
 	char c;
@@ -73,7 +97,7 @@ bool {{namespace}}::Parser::Parse_{{name}}(const char*& p)
 {{/isNode}}
 {{/def}}
 
-bool {{namespace}}::Parser::Parse(SymbolType _type, const char*& p)
+bool {{namespace}}::Context::Parse(SymbolType _type, const char*& p)
 {
 	const char* pBegin = p;
 	if (fail[_type].count(pBegin))
@@ -105,7 +129,7 @@ bool {{namespace}}::Parser::Parse(SymbolType _type, const char*& p)
 	return r;
 }{{BI_NEWLINE}}
 
-bool {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, const char*& p, {{namespace}}::Symbols& v)
+bool {{namespace}}::Context::Traverse({{namespace}}::SymbolType _type, const char*& p, {{namespace}}::Symbols& v)
 {
 	const char* pBegin = p;
 	bool r = true;
@@ -134,7 +158,7 @@ bool {{namespace}}::Parser::Traverse({{namespace}}::SymbolType _type, const char
 	}
 }{{BI_NEWLINE}}
 
-void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _type, const char* _pNode, int _tabs, int _maxLineSize)
+void {{namespace}}::Context::Print(std::ostream& _os, {{namespace}}::SymbolType _type, const char* _pNode, int _tabs, int _maxLineSize)
 {
 	Symbols children;
 	const char* pEnd = _pNode;
@@ -175,7 +199,7 @@ void {{namespace}}::Parser::Print(std::ostream& _os, {{namespace}}::SymbolType _
 //*/
 }{{BI_NEWLINE}}
 
-bool {{namespace}}::Parser::Visit({{namespace}}::SymbolType _type, const char*& _p, {{namespace}}::Symbols& _v)
+bool {{namespace}}::Context::Visit({{namespace}}::SymbolType _type, const char*& _p, {{namespace}}::Symbols& _v)
 {
 	const char* pBegin = _p;
 	bool r = Parse(_type, _p);
@@ -189,13 +213,13 @@ bool {{namespace}}::Parser::Visit({{namespace}}::SymbolType _type, const char*& 
 
 {{namespace}}::Iterator {{namespace}}::Parse({{namespace}}::SymbolType _type, const char* _text)
 {
-	boost::shared_ptr<Parser> pParser(new Parser);
+	boost::shared_ptr<Context> pContext(new Context);
 	const char* p = _text;
-	if (pParser->Parse(_type, p))
+	if (pContext->Parse(_type, p))
 	{
 		Symbol symbol = { _type, p - _text, _text };
 		boost::shared_ptr<Symbols> pSymbols(new Symbols(1, symbol));
-		return Iterator(pParser, pSymbols);
+		return Iterator(pContext, pSymbols);
 	}
 	return Iterator();
 }{{BI_NEWLINE}}
@@ -232,7 +256,7 @@ const {{namespace}}::Symbol* {{namespace}}::Iterator::operator->() const
 	{
 		Symbols children;
 		const char* p = mi->value;
-		bool r = mpParser->Traverse(mi->type, p, children);
+		bool r = mpContext->Traverse(mi->type, p, children);
 		assert(r && p == mi->value + mi->length);
 		boost::shared_ptr<Symbols> pChildren;
 		if (!children.empty())
@@ -240,7 +264,7 @@ const {{namespace}}::Symbol* {{namespace}}::Iterator::operator->() const
 			pChildren.reset(new Symbols);
 			pChildren->swap(children);
 		}
-		return Iterator(mpParser, pChildren);
+		return Iterator(mpContext, pChildren);
 	}
 	return Iterator();
 }{{BI_NEWLINE}}
@@ -248,11 +272,11 @@ const {{namespace}}::Symbol* {{namespace}}::Iterator::operator->() const
 void {{namespace}}::Iterator::Print(std::ostream& _os, int _tabs, int _maxLineSize)
 {
 	if (mpSiblings)
-		mpParser->Print(_os, mi->type, mi->value, _tabs, _maxLineSize);
+		mpContext->Print(_os, mi->type, mi->value, _tabs, _maxLineSize);
 }{{BI_NEWLINE}}
 
-{{namespace}}::Iterator::Iterator(boost::shared_ptr<Parser> _pParser, boost::shared_ptr<Symbols> _pSiblings)
-: mpParser(_pParser)
+{{namespace}}::Iterator::Iterator(boost::shared_ptr<Context> _pParser, boost::shared_ptr<Symbols> _pSiblings)
+: mpContext(_pParser)
 , mpSiblings(_pSiblings)
 {
 	if (_pSiblings)
