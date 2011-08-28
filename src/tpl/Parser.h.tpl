@@ -72,7 +72,7 @@ namespace {{namespace}}
 		
 		const Symbol& operator*() const
 		{
-			static Symbol invalidSymbol = { SymbolTypeInvalid };
+			static const Symbol invalidSymbol = { SymbolTypeInvalid };
 			if (mpSiblings)
 				return *mi;
 			else
@@ -86,7 +86,6 @@ namespace {{namespace}}
 		
 		Iterator GetChild() const
 		{
-			Iterator i;
 			if (mpSiblings)
 			{
 				Symbols children;
@@ -99,15 +98,15 @@ namespace {{namespace}}
 					pChildren.reset(new Symbols);
 					pChildren->swap(children);
 				}
-				i = Iterator(mpParser, pChildren);
+				return Iterator(mpParser, pChildren);
 			}
-			return i;
+			return Iterator();
 		}
 		
 		void Print(std::ostream& _os, int _tabs = 0, int _maxLineSize = 100)
 		{
-			assert(mpSiblings && mi != mpSiblings->end());
-			mpParser->Print(_os, mi->type, mi->value, _tabs, _maxLineSize);
+			if (mpSiblings)
+				mpParser->Print(_os, mi->type, mi->value, _tabs, _maxLineSize);
 		}
 	
 	private:
