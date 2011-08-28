@@ -199,3 +199,62 @@ bool {{namespace}}::Parser::Visit({{namespace}}::SymbolType _type, const char*& 
 	}
 	return Iterator();
 }{{BI_NEWLINE}}
+
+{{namespace}}::Iterator::Iterator()
+{
+}{{BI_NEWLINE}}
+
+{{namespace}}::Iterator& {{namespace}}::Iterator::operator++()
+{
+	assert(mpSiblings);
+	if (++mi == mpSiblings->end())
+		mpSiblings.reset();
+	return *this;
+}{{BI_NEWLINE}}
+
+const {{namespace}}::Symbol& {{namespace}}::Iterator::operator*() const
+{
+	static const Symbol invalidSymbol = { SymbolTypeInvalid };
+	if (mpSiblings)
+		return *mi;
+	else
+		return invalidSymbol;
+}{{BI_NEWLINE}}
+
+const {{namespace}}::Symbol* {{namespace}}::Iterator::operator->() const
+{
+	return &**this;
+}{{BI_NEWLINE}}
+
+{{namespace}}::Iterator {{namespace}}::Iterator::GetChild() const
+{
+	if (mpSiblings)
+	{
+		Symbols children;
+		const char* p = mi->value;
+		bool r = mpParser->Traverse(mi->type, p, children);
+		assert(r && p == mi->value + mi->length);
+		boost::shared_ptr<Symbols> pChildren;
+		if (!children.empty())
+		{
+			pChildren.reset(new Symbols);
+			pChildren->swap(children);
+		}
+		return Iterator(mpParser, pChildren);
+	}
+	return Iterator();
+}{{BI_NEWLINE}}
+
+void {{namespace}}::Iterator::Print(std::ostream& _os, int _tabs, int _maxLineSize)
+{
+	if (mpSiblings)
+		mpParser->Print(_os, mi->type, mi->value, _tabs, _maxLineSize);
+}{{BI_NEWLINE}}
+
+{{namespace}}::Iterator::Iterator(boost::shared_ptr<Parser> _pParser, boost::shared_ptr<Symbols> _pSiblings)
+: mpParser(_pParser)
+, mpSiblings(_pSiblings)
+{
+	if (_pSiblings)
+		mi = _pSiblings->begin();
+}{{BI_NEWLINE}}

@@ -58,63 +58,17 @@ namespace {{namespace}}
 	class Iterator
 	{
 	public:
-		Iterator() {}
-		
 		friend Iterator Parse(SymbolType _type, const char* _text);
+
+		Iterator();
+		Iterator& operator++();
+		const Symbol& operator*() const;
+		const Symbol* operator->() const;
+		Iterator GetChild() const;
+		void Print(std::ostream& _os, int _tabs = 0, int _maxLineSize = 100);
 		
-		Iterator& operator++()
-		{
-			assert(mpSiblings);
-			if (++mi == mpSiblings->end())
-				mpSiblings.reset();
-			return *this;
-		}
-		
-		const Symbol& operator*() const
-		{
-			static const Symbol invalidSymbol = { SymbolTypeInvalid };
-			if (mpSiblings)
-				return *mi;
-			else
-				return invalidSymbol;
-		}
-		
-		const Symbol* operator->() const
-		{
-			return &**this;
-		}
-		
-		Iterator GetChild() const
-		{
-			if (mpSiblings)
-			{
-				Symbols children;
-				const char* p = mi->value;
-				bool r = mpParser->Traverse(mi->type, p, children);
-				assert(r && p == mi->value + mi->length);
-				boost::shared_ptr<Symbols> pChildren;
-				if (!children.empty())
-				{
-					pChildren.reset(new Symbols);
-					pChildren->swap(children);
-				}
-				return Iterator(mpParser, pChildren);
-			}
-			return Iterator();
-		}
-		
-		void Print(std::ostream& _os, int _tabs = 0, int _maxLineSize = 100)
-		{
-			if (mpSiblings)
-				mpParser->Print(_os, mi->type, mi->value, _tabs, _maxLineSize);
-		}
-	
 	private:
-		Iterator(boost::shared_ptr<Parser> _pParser, boost::shared_ptr<Symbols> _pSiblings) : mpParser(_pParser), mpSiblings(_pSiblings)
-		{
-			if (_pSiblings)
-				mi = _pSiblings->begin();
-		}
+		Iterator(boost::shared_ptr<Parser> _pParser, boost::shared_ptr<Symbols> _pSiblings);
 		
 		boost::shared_ptr<Parser> mpParser;
 		boost::shared_ptr<Symbols> mpSiblings;
