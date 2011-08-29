@@ -23,33 +23,31 @@ namespace {{namespace}}
 		const char* value;
 	};{{BI_NEWLINE}}
 	
-	typedef std::vector<Symbol> Symbols;
-		
 	const char* SymbolName(SymbolType _type);{{BI_NEWLINE}}
-
-	class Context;
+	
+	class Context;{{BI_NEWLINE}}
 	
 	class Iterator
 	{
 	public:
-		friend Iterator Parse(SymbolType _type, const char* _text);
+		friend Iterator Traverse(SymbolType _type, const char* _text);
+		friend Iterator Traverse(const Iterator& _iParent);
+		friend void DebugPrint(std::ostream& _os, const Iterator& _i, int _tabs, int _maxLineSize);{{BI_NEWLINE}}
 
 		Iterator();
 		Iterator& operator++();
 		const Symbol& operator*() const;
-		const Symbol* operator->() const;
-		Iterator GetChild() const;
-		void Print(std::ostream& _os, int _tabs = 0, int _maxLineSize = 100);
+		const Symbol* operator->() const;{{BI_NEWLINE}}
 		
 	private:
-		Iterator(boost::shared_ptr<Context> _pParser, boost::shared_ptr<Symbols> _pSiblings);
-		
-		typedef std::vector<Symbol> Symbols;
+		Iterator(boost::shared_ptr<Context> _pContext, boost::shared_ptr< std::vector<Symbol> > _pSiblings);{{BI_NEWLINE}}
 		
 		boost::shared_ptr<Context> mpContext;
-		boost::shared_ptr<Symbols> mpSiblings;
-		Symbols::iterator mi;
-	};
+		boost::shared_ptr< std::vector<Symbol> > mpSiblings;
+		std::vector<Symbol>::iterator mi;
+	};{{BI_NEWLINE}}
 	
-	Iterator Parse(SymbolType _type, const char* _text);{{BI_NEWLINE}}
+	Iterator Traverse(SymbolType _type, const char* _text);
+	Iterator Traverse(const Iterator& _iParent);
+	void DebugPrint(std::ostream& _os, const Iterator& _i, int _tabs = 0, int _maxLineSize = 100);
 }{{BI_NEWLINE}}

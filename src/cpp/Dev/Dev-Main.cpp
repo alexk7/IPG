@@ -58,15 +58,15 @@ static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 	assert(_iExpr->type == SymbolType_Expression);
 	Expression sequence, primary, charExpr;
 	
-	for (Iterator iSeq = _iExpr.GetChild(); iSeq->type == SymbolType_Sequence; ++iSeq)
+	for (Iterator iSeq = Traverse(_iExpr); iSeq->type == SymbolType_Sequence; ++iSeq)
 	{
-		for (Iterator iItem = iSeq.GetChild(); iItem->type == SymbolType_Item; ++iItem)
+		for (Iterator iItem = Traverse(iSeq); iItem->type == SymbolType_Item; ++iItem)
 		{
 			char cPrefix = *iItem->value;
 			
-			Iterator iPrimary = iItem.GetChild();
+			Iterator iPrimary = Traverse(iItem);
 			assert(iPrimary->type == SymbolType_Primary);
-			Iterator i = iPrimary.GetChild();
+			Iterator i = Traverse(iPrimary);
 			if (i->type == SymbolType_Identifier)
 			{
 				primary.SetNonTerminal(std::string(i->value, i->length));
@@ -77,7 +77,7 @@ static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 			}
 			else if (i->type == SymbolType_LITERAL)
 			{
-				for (Iterator iChar = i.GetChild(); iChar->type == SymbolType_Char; ++iChar)
+				for (Iterator iChar = Traverse(i); iChar->type == SymbolType_Char; ++iChar)
 				{
 					charExpr.SetChar(GetChar(iChar));
 					primary.AddGroupItem(ExpressionType_Sequence, charExpr);
@@ -85,9 +85,9 @@ static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 			}
 			else if (i->type == SymbolType_CLASS)
 			{
-				for (Iterator iRange = i.GetChild(); iRange->type == SymbolType_Range; ++iRange)
+				for (Iterator iRange = Traverse(i); iRange->type == SymbolType_Range; ++iRange)
 				{
-					Iterator iChar = iRange.GetChild();
+					Iterator iChar = Traverse(iRange);
 					assert(iChar->type == SymbolType_Char);
 					char firstChar = GetChar(iChar);
 					if ((++iChar)->type == SymbolType_Char)
@@ -143,9 +143,9 @@ static void ConvertExpression(Expression& _expr, Iterator _iExpr)
 
 static void ConvertGrammar(Grammar& _grammar, Iterator _iGrammar)
 {
-	for (Iterator iDef = _iGrammar.GetChild(); iDef->type == SymbolType_Definition; ++iDef)
+	for (Iterator iDef = Traverse(_iGrammar); iDef->type == SymbolType_Definition; ++iDef)
 	{
-		Iterator i = iDef.GetChild();
+		Iterator i = Traverse(iDef);
 		assert(i->type == SymbolType_Identifier);
 		std::string id(i->value, i->length);
 		char arrowType = (++i)->value[1];
@@ -236,8 +236,8 @@ int main(int argc, char* argv[])
 			
 			RegisterCPlusPlusTemplates(variablesMap.count("no-lines") == 0);
 			
-			Iterator iGrammar = Parse(SymbolType_Grammar, &nodes[0]);
-			//iGrammar.Print(std::cout);
+			Iterator iGrammar = Traverse(SymbolType_Grammar, &nodes[0]);
+			//DebugPrint(std::cout, iGrammar);
 			
 			Grammar grammar;
 			ConvertGrammar(grammar, iGrammar);
