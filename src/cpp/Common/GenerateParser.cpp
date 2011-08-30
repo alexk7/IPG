@@ -15,14 +15,16 @@ class ParserGenerator
 	const Grammar& mGrammar;
 	int mTabs;
 	int mNextBacktrackIndex;
+	int mNextCharIndex;
 	bool mTraverse;
 	
 public:
 	ParserGenerator(ostream& _source, const Grammar& _grammar, bool _traverse = false)
 	: mSource(_source)
 	, mGrammar(_grammar)
-	, mTabs(1)
+	, mTabs(2)
 	, mNextBacktrackIndex(1)
+	, mNextCharIndex(0)
 	, mTraverse(_traverse)
 	{
 	}
@@ -98,42 +100,46 @@ public:
 				const string& nonTerminal = expr.GetNonTerminal();
 				const Def& def = *mGrammar.defs.find(nonTerminal);
 				const DefValue& defval = def.second;
-				if (defval.isMemoized)
+				if (mTraverse)
 				{
-					if (mTraverse)
-					{
-						if (defval.isNode)
-							Line(format("r = Visit(_ctx, SymbolType_%1%, p, v);") % nonTerminal);
-						else
-							Line(format("r = GetChildren(_ctx, SymbolType_%1%, p, v);") % nonTerminal);
-					}
+					if (defval.isNode)
+						Line(format("r = Visit(_ctx, SymbolType_%1%, p, v);") % nonTerminal);
+					else if (defval.isMemoized)
+						Line(format("r = TraverseText(_ctx, SymbolType_%1%, p, v);") % nonTerminal);
 					else
-					{
-						Line(format("r = Parse(_ctx, SymbolType_%1%, p);") % nonTerminal);
-					}
+						Line(format("r = Traverse_%1%(_ctx, p, v);") % nonTerminal);
 				}
 				else
 				{
-					Emit(defval, _backtrackIndex);
+					if (defval.isMemoized)
+						Line(format("r = ParseText(_ctx, SymbolType_%1%, p);") % nonTerminal);
+					else
+						Line(format("r = Parse_%1%(_ctx, p);") % nonTerminal);
 				}
 				break;
 			}
 				
 			case ExpressionType_Range:
 			{
-				Advance(format("c >= \'%1%\' && c <= \'%2%\'") % EscapeChar(expr.GetFirst()) % EscapeChar(expr.GetLast()));
+				int charIndex = mNextCharIndex++;
+				Line(format("char c%1% = *p++;") % charIndex);
+				Line(format("r = (c%1% >= \'%2%\' && c%1% <= \'%3%\');") % charIndex % EscapeChar(expr.GetFirst()) % EscapeChar(expr.GetLast()));
 				break;
 			}
 				
 			case ExpressionType_Char:
 			{
-				Advance(format("c == \'%1%\'") % EscapeChar(expr.GetChar()));
+				int charIndex = mNextCharIndex++;
+				Line(format("char c%1% = *p++;") % charIndex);
+				Line(format("r = (c%1% == \'%2%\');") % charIndex % EscapeChar(expr.GetChar()));
 				break;
 			}
 				
 			case ExpressionType_Dot:
 			{
-				Advance("c != 0");
+				int charIndex = mNextCharIndex++;
+				Line(format("char c%1% = *p++;") % charIndex);
+				Line(format("r = (c%1% != 0);") % charIndex);
 				break;
 			}
 				
@@ -152,13 +158,6 @@ public:
 			mSource.put('\t');
 		mSource << _stmt;
 		mSource.put('\n');
-	}
-	
-	template <class T>
-	void Advance(const T& _cond)
-	{
-		Line("c = *p++;");
-		Line(format("r = (%1%);") % _cond);
 	}
 	
 	void If(string _cond)

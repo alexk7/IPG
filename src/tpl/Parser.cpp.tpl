@@ -56,12 +56,14 @@ namespace
 		return _os;
 	}{{BI_NEWLINE}}
 	
-	bool Parse(Context& _ctx, SymbolType _type, const char*& p);{{BI_NEWLINE}}
+	bool ParseText(Context& _ctx, SymbolType _type, const char*& p);{{BI_NEWLINE}}
 	
 	{{#def}}
-	{{#isNode}}
 	bool Parse_{{name}}(Context& _ctx, const char*& p);
-	{{/isNode}}
+	{{/def}}
+	
+	{{#def}}
+	bool Traverse_{{name}}(Context& _ctx, const char*& p, vector<Symbol>& _v);
 	{{/def}}
 }{{BI_NEWLINE}}
 
@@ -82,15 +84,15 @@ class {{namespace}}::Context
 {
 public:
 	EndMap end[SymbolTypeCount];
-	FailSet fail[SymbolTypeCount];{{BI_NEWLINE}}
-};
+	FailSet fail[SymbolTypeCount];
+};{{BI_NEWLINE}}
 
 namespace
 {
 	bool Visit(Context& _ctx, SymbolType _type, const char*& _p, vector<Symbol>& _v)
 	{
 		const char* pBegin = _p;
-		bool r = Parse(_ctx, _type, _p);
+		bool r = ParseText(_ctx, _type, _p);
 		if (r)
 		{
 			Symbol symbol = { _type, _p - pBegin, pBegin };
@@ -99,7 +101,7 @@ namespace
 		return r;
 	}{{BI_NEWLINE}}
 
-	bool Parse(Context& _ctx, SymbolType _type, const char*& p)
+	bool ParseText(Context& _ctx, SymbolType _type, const char*& p)
 	{
 		const char* pBegin = p;
 		if (_ctx.fail[_type].count(pBegin))
@@ -132,52 +134,56 @@ namespace
 	}{{BI_NEWLINE}}
 	
 	{{#def}}
-	{{#isNode}}
 	bool Parse_{{name}}(Context& _ctx, const char*& p)
 	{
 		bool r = true;
-		char c;
 		{{>parseCode}}
 		return r;
 	}{{BI_NEWLINE}}
 
-	{{/isNode}}
 	{{/def}}
 	
-	bool GetChildren(Context& _ctx, SymbolType _type, const char*& p, vector<Symbol>& v)
+	bool TraverseText(Context& _ctx, SymbolType _type, const char*& p, vector<Symbol>& v)
 	{
 		const char* pBegin = p;
+		if (_ctx.fail[_type].count(pBegin))
+			return false;{{BI_NEWLINE}}
+			
 		bool r = true;
-		char c;
 		switch (_type)
 		{
 			{{#def}}
 			{{#isNode}}
-			case SymbolType_{{name}}:
-			{
-				if (_ctx.fail[SymbolType_{{name}}].count(pBegin))
-					return false;
-				{{>traverseCode}}
-				if (r)
-					_ctx.end[SymbolType_{{name}}][pBegin] = p;
-				else
-					_ctx.fail[SymbolType_{{name}}].insert(pBegin);
-				return r;
-			}{{BI_NEWLINE}}
+			case SymbolType_{{name}}: r = Traverse_{{name}}(_ctx, p, v); break;
 			{{/isNode}}
 			{{/def}}
-				
 			default:
 				assert(false);
 				return false;
-		}
+		}{{BI_NEWLINE}}
+		
+		if (r)
+			_ctx.end[_type][pBegin] = p;
+		else
+			_ctx.fail[_type].insert(pBegin);
+		return r;
 	}
+
+	{{#def}}
+	bool Traverse_{{name}}(Context& _ctx, const char*& p, vector<Symbol>& v)
+	{
+		bool r = true;
+		{{>traverseCode}}
+		return r;
+	}{{BI_NEWLINE}}
+
+	{{/def}}
 	
 	void DebugPrint(ostream& _os, Context& _ctx, SymbolType _type, const char* _pNode, int _tabs, int _maxLineSize)
 	{
 		vector<Symbol> children;
 		const char* pEnd = _pNode;
-		if (!GetChildren(_ctx, _type, pEnd, children))
+		if (!TraverseText(_ctx, _type, pEnd, children))
 			throw runtime_error(str(format("Parsing Failed for \"%1%\"") % SymbolName(_type)));{{BI_NEWLINE}}
 
 		int tabCount = _tabs;
@@ -251,7 +257,7 @@ Iterator {{namespace}}::Traverse(SymbolType _type, const char* _text)
 {
 	shared_ptr<Context> pContext(new Context);
 	const char* p = _text;
-	if (Parse(*pContext, _type, p))
+	if (ParseText(*pContext, _type, p))
 	{
 		Symbol symbol = { _type, p - _text, _text };
 		shared_ptr< vector<Symbol> > pSymbols(new vector<Symbol>(1, symbol));
@@ -267,7 +273,7 @@ Iterator {{namespace}}::Traverse(const Iterator& _iParent)
 		const Symbol& symbol = *_iParent.mi;
 		const char* p = symbol.value;
 		vector<Symbol> children;
-		bool r = GetChildren(*_iParent.mpContext, symbol.type, p, children);
+		bool r = TraverseText(*_iParent.mpContext, symbol.type, p, children);
 		assert(r && p == symbol.value + symbol.length);
 		boost::shared_ptr< vector<Symbol> > pChildren;
 		if (!children.empty())
