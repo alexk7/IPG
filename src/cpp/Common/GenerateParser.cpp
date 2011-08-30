@@ -103,7 +103,7 @@ public:
 					if (mTraverse)
 					{
 						if (defval.isNode)
-							Line(format("r = _ctx.Visit(SymbolType_%1%, p, v);") % nonTerminal);
+							Line(format("r = Visit(_ctx, SymbolType_%1%, p, v);") % nonTerminal);
 						else
 							Line(format("r = GetChildren(_ctx, SymbolType_%1%, p, v);") % nonTerminal);
 					}

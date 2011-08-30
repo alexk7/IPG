@@ -81,25 +81,24 @@ const char* {{namespace}}::SymbolName(SymbolType _type)
 class {{namespace}}::Context
 {
 public:
-	bool Visit(SymbolType _type, const char*& _p, vector<Symbol>& _v);
 	EndMap end[SymbolTypeCount];
 	FailSet fail[SymbolTypeCount];{{BI_NEWLINE}}
 };
 
-bool {{namespace}}::Context::Visit(SymbolType _type, const char*& _p, vector<Symbol>& _v)
-{
-	const char* pBegin = _p;
-	bool r = Parse(*this, _type, _p);
-	if (r)
-	{
-		Symbol symbol = { _type, _p - pBegin, pBegin };
-		_v.push_back(symbol);
-	}
-	return r;
-}{{BI_NEWLINE}}
-
 namespace
 {
+	bool Visit(Context& _ctx, SymbolType _type, const char*& _p, vector<Symbol>& _v)
+	{
+		const char* pBegin = _p;
+		bool r = Parse(_ctx, _type, _p);
+		if (r)
+		{
+			Symbol symbol = { _type, _p - pBegin, pBegin };
+			_v.push_back(symbol);
+		}
+		return r;
+	}{{BI_NEWLINE}}
+
 	bool Parse(Context& _ctx, SymbolType _type, const char*& p)
 	{
 		const char* pBegin = p;
