@@ -19,8 +19,11 @@ using namespace {{namespace}};
 
 namespace
 {
-	typedef unordered_map<const char*, const char*> EndMap;
-	typedef unordered_set<const char*> FailSet;{{BI_NEWLINE}}
+	struct Memo
+	{
+		unordered_map<const char*, const char*> end;
+		unordered_set<const char*> fail;
+	};
 
 	struct EscapeChar
 	{
@@ -83,8 +86,7 @@ const char* {{namespace}}::SymbolName(SymbolType _type)
 class {{namespace}}::Context
 {
 public:
-	EndMap end[SymbolTypeCount];
-	FailSet fail[SymbolTypeCount];
+	Memo memos[SymbolTypeCount];
 };{{BI_NEWLINE}}
 
 namespace
@@ -104,10 +106,10 @@ namespace
 	bool ParseText(Context& _ctx, SymbolType _type, const char*& p)
 	{
 		const char* pBegin = p;
-		if (_ctx.fail[_type].count(pBegin))
+		if (_ctx.memos[_type].fail.count(pBegin))
 			return false;
-		EndMap::iterator i = _ctx.end[_type].find(pBegin);
-		if (i != _ctx.end[_type].end())
+		unordered_map<const char*, const char*>::iterator i = _ctx.memos[_type].end.find(pBegin);
+		if (i != _ctx.memos[_type].end.end())
 		{
 			p = i->second;
 			return true;
@@ -127,9 +129,9 @@ namespace
 		}{{BI_NEWLINE}}
 		
 		if (r)
-			_ctx.end[_type][pBegin] = p;
+			_ctx.memos[_type].end[pBegin] = p;
 		else
-			_ctx.fail[_type].insert(pBegin);
+			_ctx.memos[_type].fail.insert(pBegin);
 		return r;
 	}{{BI_NEWLINE}}
 	
@@ -146,7 +148,7 @@ namespace
 	bool TraverseText(Context& _ctx, SymbolType _type, const char*& p, vector<Symbol>& v)
 	{
 		const char* pBegin = p;
-		if (_ctx.fail[_type].count(pBegin))
+		if (_ctx.memos[_type].fail.count(pBegin))
 			return false;{{BI_NEWLINE}}
 			
 		bool r = true;
@@ -163,9 +165,9 @@ namespace
 		}{{BI_NEWLINE}}
 		
 		if (r)
-			_ctx.end[_type][pBegin] = p;
+			_ctx.memos[_type].end[pBegin] = p;
 		else
-			_ctx.fail[_type].insert(pBegin);
+			_ctx.memos[_type].fail.insert(pBegin);
 		return r;
 	}
 
@@ -213,7 +215,7 @@ namespace
 		{
 			_os << "Memo Count:\n";
 			for (size_t k = 0; k < SymbolTypeCount; ++k)
-				_os << boost::format("%1% %|20t|End: %2% %|40t|Fail: %3%\n") % SymbolName(SymbolType(k)) % _ctx.end[k].size() % _ctx.fail[k].size();
+				_os << boost::format("%1% %|20t|End: %2% %|40t|Fail: %3%\n") % SymbolName(SymbolType(k)) % _ctx.memos[k].end.size() % _ctx.memos[k].fail.size();
 		}
 	//*/
 	}

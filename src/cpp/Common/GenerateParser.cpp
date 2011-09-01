@@ -233,16 +233,16 @@ void GenerateParser(string _srcPath, string _folder, string _name, const Grammar
 	{
 		TemplateDictionary* pDef = dict.AddSectionDictionary("def");
 		pDef->SetValue("name", i->first);
-		
+
+/*		
+		if (i->second.isNode)
+			pDef->ShowSection("isNode");
+		else if (i->second.isMemoized)
+			pDef->ShowSection("isSkip");
+*/
+
 		if (i->second.isMemoized)
 			pDef->ShowSection("isNode");
-		else
-			pDef->ShowSection("isNotNode");
-			
-//		if (i->second.isLeaf)
-//			pDef->ShowSection("isLeaf");
-//		else
-//			pDef->ShowSection("isInternal");
 		
 		ostringstream parseCodeStream;
 		ParserGenerator parserGenerator(parseCodeStream, _grammar);
