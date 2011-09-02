@@ -149,30 +149,35 @@ namespace
 
 	{{/def}}
 	
-	bool TraverseSymbol(Context& _ctx, SymbolType _type, const char*& p, vector<Symbol>& v)
+	bool TraverseMemoized(Context& _ctx, Memo& _memo, TraverseFn* _traverseFn, const char*& p, vector<Symbol>& v)
 	{
-		const char* pBegin = p;
-		if (_ctx.memos[_type].fail.count(pBegin))
+		if (_memo.fail.count(p))
 			return false;{{BI_NEWLINE}}
 			
-		bool r = true;
+		const char* pBegin = p;
+		if (_traverseFn(_ctx, p, v))
+		{
+			_memo.end[pBegin] = p;
+			return true;
+		}{{BI_NEWLINE}}
+		
+		_memo.fail.insert(pBegin);
+		return false;		
+	}
+	
+	bool TraverseSymbol(Context& _ctx, SymbolType _type, const char*& p, vector<Symbol>& v)
+	{
 		switch (_type)
 		{
 			{{#def}}
 			{{#isNode}}
-			case SymbolType_{{name}}: r = Traverse_{{name}}(_ctx, p, v); break;
+			case SymbolType_{{name}}: return TraverseMemoized(_ctx, _ctx.memos[_type], Traverse_{{name}}, p, v);
 			{{/isNode}}
 			{{/def}}
 			default:
 				assert(false);
 				return false;
-		}{{BI_NEWLINE}}
-		
-		if (r)
-			_ctx.memos[_type].end[pBegin] = p;
-		else
-			_ctx.memos[_type].fail.insert(pBegin);
-		return r;
+		}
 	}
 
 	{{#def}}
