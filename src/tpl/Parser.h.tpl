@@ -50,4 +50,4 @@ namespace {{namespace}}
 	Iterator Traverse(SymbolType _type, const char* _text);
 	Iterator Traverse(const Iterator& _iParent);
 	void DebugPrint(std::ostream& _os, const Iterator& _i, int _tabs = 0, int _maxLineSize = 100);
-}{{BI_NEWLINE}}
+}

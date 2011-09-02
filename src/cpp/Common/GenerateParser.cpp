@@ -105,14 +105,14 @@ public:
 					if (defval.isNode)
 						Line(format("r = Visit(_ctx, SymbolType_%1%, p, v);") % nonTerminal);
 					else if (defval.isMemoized)
-						Line(format("r = TraverseText(_ctx, SymbolType_%1%, p, v);") % nonTerminal);
+						Line(format("r = TraverseSymbol(_ctx, SymbolType_%1%, p, v);") % nonTerminal);
 					else
 						Line(format("r = Traverse_%1%(_ctx, p, v);") % nonTerminal);
 				}
 				else
 				{
 					if (defval.isMemoized)
-						Line(format("r = ParseText(_ctx, SymbolType_%1%, p);") % nonTerminal);
+						Line(format("r = ParseSymbol(_ctx, SymbolType_%1%, p);") % nonTerminal);
 					else
 						Line(format("r = Parse_%1%(_ctx, p);") % nonTerminal);
 				}

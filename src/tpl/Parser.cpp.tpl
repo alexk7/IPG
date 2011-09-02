@@ -11,11 +11,10 @@
 #endif{{BI_NEWLINE}}
 
 {{header}}
-
 using namespace std;
 using namespace std::tr1;
 using namespace boost;
-using namespace {{namespace}};
+using namespace {{namespace}};{{BI_NEWLINE}}
 
 namespace
 {
@@ -59,15 +58,13 @@ namespace
 		return _os;
 	}{{BI_NEWLINE}}
 	
-	bool ParseText(Context& _ctx, SymbolType _type, const char*& p);{{BI_NEWLINE}}
+	bool ParseSymbol(Context&, SymbolType, const char*&);{{BI_NEWLINE}}
 	
-	{{#def}}
-	bool Parse_{{name}}(Context& _ctx, const char*& p);
-	{{/def}}
-	
-	{{#def}}
-	bool Traverse_{{name}}(Context& _ctx, const char*& p, vector<Symbol>& _v);
-	{{/def}}
+	typedef bool ParseFn(Context&, const char*&);
+	ParseFn {{#def}}Parse_{{name}}{{#def_separator}}, {{/def_separator}}{{/def}};{{BI_NEWLINE}}
+
+	typedef bool TraverseFn(Context&, const char*&, vector<Symbol>&);
+	TraverseFn {{#def}}Traverse_{{name}}{{#def_separator}}, {{/def_separator}}{{/def}};
 }{{BI_NEWLINE}}
 
 const char* {{namespace}}::SymbolName(SymbolType _type)
@@ -94,7 +91,7 @@ namespace
 	bool Visit(Context& _ctx, SymbolType _type, const char*& _p, vector<Symbol>& _v)
 	{
 		const char* pBegin = _p;
-		bool r = ParseText(_ctx, _type, _p);
+		bool r = ParseSymbol(_ctx, _type, _p);
 		if (r)
 		{
 			Symbol symbol = { _type, _p - pBegin, pBegin };
@@ -103,36 +100,43 @@ namespace
 		return r;
 	}{{BI_NEWLINE}}
 
-	bool ParseText(Context& _ctx, SymbolType _type, const char*& p)
+	bool ParseMemoized(Context& _ctx, Memo& _memo, ParseFn* _parseFn, const char*& p)
 	{
-		const char* pBegin = p;
-		if (_ctx.memos[_type].fail.count(pBegin))
-			return false;
-		unordered_map<const char*, const char*>::iterator i = _ctx.memos[_type].end.find(pBegin);
-		if (i != _ctx.memos[_type].end.end())
+		if (_memo.fail.count(p))
+			return false;{{BI_NEWLINE}}
+			
+		unordered_map<const char*, const char*>::iterator i = _memo.end.find(p);
+		if (i != _memo.end.end())
 		{
 			p = i->second;
 			return true;
 		}{{BI_NEWLINE}}
 		
-		bool r = true;
+		const char* pBegin = p;
+		if (_parseFn(_ctx, p))
+		{
+			_memo.end[pBegin] = p;
+			return true;
+		}{{BI_NEWLINE}}
+		
+		_memo.fail.insert(pBegin);
+		return false;
+	}
+		
+	bool ParseSymbol(Context& _ctx, SymbolType _type, const char*& p)
+	{
+		assert(_type >= 0 && _type < SymbolTypeCount);
 		switch (_type)
 		{
 			{{#def}}
 			{{#isNode}}
-			case SymbolType_{{name}}: r = Parse_{{name}}(_ctx, p); break;
+			case SymbolType_{{name}}: return ParseMemoized(_ctx, _ctx.memos[_type], Parse_{{name}}, p);
 			{{/isNode}}
 			{{/def}}
 			default:
 				assert(false);
 				return false;
-		}{{BI_NEWLINE}}
-		
-		if (r)
-			_ctx.memos[_type].end[pBegin] = p;
-		else
-			_ctx.memos[_type].fail.insert(pBegin);
-		return r;
+		}
 	}{{BI_NEWLINE}}
 	
 	{{#def}}
@@ -145,7 +149,7 @@ namespace
 
 	{{/def}}
 	
-	bool TraverseText(Context& _ctx, SymbolType _type, const char*& p, vector<Symbol>& v)
+	bool TraverseSymbol(Context& _ctx, SymbolType _type, const char*& p, vector<Symbol>& v)
 	{
 		const char* pBegin = p;
 		if (_ctx.memos[_type].fail.count(pBegin))
@@ -185,7 +189,7 @@ namespace
 	{
 		vector<Symbol> children;
 		const char* pEnd = _pNode;
-		if (!TraverseText(_ctx, _type, pEnd, children))
+		if (!TraverseSymbol(_ctx, _type, pEnd, children))
 			throw runtime_error(str(format("Parsing Failed for \"%1%\"") % SymbolName(_type)));{{BI_NEWLINE}}
 
 		int tabCount = _tabs;
@@ -259,7 +263,7 @@ Iterator {{namespace}}::Traverse(SymbolType _type, const char* _text)
 {
 	shared_ptr<Context> pContext(new Context);
 	const char* p = _text;
-	if (ParseText(*pContext, _type, p))
+	if (ParseSymbol(*pContext, _type, p))
 	{
 		Symbol symbol = { _type, p - _text, _text };
 		shared_ptr< vector<Symbol> > pSymbols(new vector<Symbol>(1, symbol));
@@ -275,7 +279,7 @@ Iterator {{namespace}}::Traverse(const Iterator& _iParent)
 		const Symbol& symbol = *_iParent.mi;
 		const char* p = symbol.value;
 		vector<Symbol> children;
-		bool r = TraverseText(*_iParent.mpContext, symbol.type, p, children);
+		bool r = TraverseSymbol(*_iParent.mpContext, symbol.type, p, children);
 		assert(r && p == symbol.value + symbol.length);
 		boost::shared_ptr< vector<Symbol> > pChildren;
 		if (!children.empty())
