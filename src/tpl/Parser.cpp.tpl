@@ -22,7 +22,18 @@ namespace
 	{
 		unordered_map<const char*, const char*> end;
 		unordered_set<const char*> fail;
-	};
+	};{{BI_NEWLINE}}
+	
+	enum SkipType
+	{
+		{{#def}}
+		{{#isSkip}}
+		SkipType_{{name}},
+		{{/isSkip}}
+		{{/def}}
+		SkipTypeInvalid,
+		SkipTypeCount = SkipTypeInvalid
+	};{{BI_NEWLINE}}
 
 	struct EscapeChar
 	{
@@ -83,7 +94,8 @@ const char* {{namespace}}::SymbolName(SymbolType _type)
 class {{namespace}}::Context
 {
 public:
-	Memo memos[SymbolTypeCount];
+	Memo symbolMemos[SymbolTypeCount];
+	Memo skipMemos[SkipTypeCount];
 };{{BI_NEWLINE}}
 
 namespace
@@ -121,17 +133,31 @@ namespace
 		
 		_memo.fail.insert(pBegin);
 		return false;
-	}
+	}{{BI_NEWLINE}}
 		
 	bool ParseSymbol(Context& _ctx, SymbolType _type, const char*& p)
 	{
-		assert(_type >= 0 && _type < SymbolTypeCount);
 		switch (_type)
 		{
 			{{#def}}
 			{{#isNode}}
-			case SymbolType_{{name}}: return ParseMemoized(_ctx, _ctx.memos[_type], Parse_{{name}}, p);
+			case SymbolType_{{name}}: return ParseMemoized(_ctx, _ctx.symbolMemos[_type], Parse_{{name}}, p);
 			{{/isNode}}
+			{{/def}}
+			default:
+				assert(false);
+				return false;
+		}
+	}{{BI_NEWLINE}}
+	
+	bool ParseSkip(Context& _ctx, SkipType _type, const char*& p)
+	{
+		switch (_type)
+		{
+			{{#def}}
+			{{#isSkip}}
+			case SkipType_{{name}}: return ParseMemoized(_ctx, _ctx.skipMemos[_type], Parse_{{name}}, p);
+			{{/isSkip}}
 			{{/def}}
 			default:
 				assert(false);
@@ -163,7 +189,7 @@ namespace
 		
 		_memo.fail.insert(pBegin);
 		return false;		
-	}
+	}{{BI_NEWLINE}}
 	
 	bool TraverseSymbol(Context& _ctx, SymbolType _type, const char*& p, vector<Symbol>& v)
 	{
@@ -171,14 +197,29 @@ namespace
 		{
 			{{#def}}
 			{{#isNode}}
-			case SymbolType_{{name}}: return TraverseMemoized(_ctx, _ctx.memos[_type], Traverse_{{name}}, p, v);
+			case SymbolType_{{name}}: return TraverseMemoized(_ctx, _ctx.symbolMemos[_type], Traverse_{{name}}, p, v);
 			{{/isNode}}
 			{{/def}}
 			default:
 				assert(false);
 				return false;
 		}
-	}
+	}{{BI_NEWLINE}}
+	
+	bool TraverseSkip(Context& _ctx, SkipType _type, const char*& p, vector<Symbol>& v)
+	{
+		switch (_type)
+		{
+			{{#def}}
+			{{#isSkip}}
+			case SkipType_{{name}}: return TraverseMemoized(_ctx, _ctx.skipMemos[_type], Traverse_{{name}}, p, v);
+			{{/isSkip}}
+			{{/def}}
+			default:
+				assert(false);
+				return false;
+		}
+	}{{BI_NEWLINE}}
 
 	{{#def}}
 	bool Traverse_{{name}}(Context& _ctx, const char*& p, vector<Symbol>& v)
@@ -218,15 +259,6 @@ namespace
 		
 		for (vector<Symbol>::iterator i = children.begin(), iEnd = children.end(); i != iEnd; ++i)
 			DebugPrint(_os, _ctx, i->type, i->value, _tabs + 1, _maxLineSize);
-
-	//*
-		if (_tabs == 0)
-		{
-			_os << "Memo Count:\n";
-			for (size_t k = 0; k < SymbolTypeCount; ++k)
-				_os << boost::format("%1% %|20t|End: %2% %|40t|Fail: %3%\n") % SymbolName(SymbolType(k)) % _ctx.memos[k].end.size() % _ctx.memos[k].fail.size();
-		}
-	//*/
 	}
 }{{BI_NEWLINE}}
 

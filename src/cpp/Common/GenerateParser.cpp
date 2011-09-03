@@ -105,14 +105,16 @@ public:
 					if (defval.isNode)
 						Line(format("r = Visit(_ctx, SymbolType_%1%, p, v);") % nonTerminal);
 					else if (defval.isMemoized)
-						Line(format("r = TraverseSymbol(_ctx, SymbolType_%1%, p, v);") % nonTerminal);
+						Line(format("r = TraverseSkip(_ctx, SkipType_%1%, p, v);") % nonTerminal);
 					else
 						Line(format("r = Traverse_%1%(_ctx, p, v);") % nonTerminal);
 				}
 				else
 				{
-					if (defval.isMemoized)
+					if (defval.isNode)
 						Line(format("r = ParseSymbol(_ctx, SymbolType_%1%, p);") % nonTerminal);
+					else if (defval.isMemoized)
+						Line(format("r = ParseSkip(_ctx, SkipType_%1%, p);") % nonTerminal);
 					else
 						Line(format("r = Parse_%1%(_ctx, p);") % nonTerminal);
 				}
@@ -233,16 +235,11 @@ void GenerateParser(string _srcPath, string _folder, string _name, const Grammar
 	{
 		TemplateDictionary* pDef = dict.AddSectionDictionary("def");
 		pDef->SetValue("name", i->first);
-
-/*		
+	
 		if (i->second.isNode)
 			pDef->ShowSection("isNode");
 		else if (i->second.isMemoized)
 			pDef->ShowSection("isSkip");
-*/
-
-		if (i->second.isMemoized)
-			pDef->ShowSection("isNode");
 		
 		ostringstream parseCodeStream;
 		ParserGenerator parserGenerator(parseCodeStream, _grammar);
