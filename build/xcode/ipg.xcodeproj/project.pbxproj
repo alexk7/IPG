@@ -109,6 +109,7 @@
 
 /* Begin PBXFileReference section */
 		6223E33413C39426003142F3 /* Dev-Main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = "Dev-Main.cpp"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
+		624645161428392F00E30916 /* template-converter */ = {isa = PBXFileReference; lastKnownFileType = text.script.perl; name = "template-converter"; path = "perl/template-converter"; sourceTree = "<group>"; };
 		625BDA4613CB95FE00EE6FD6 /* NOTES */ = {isa = PBXFileReference; lastKnownFileType = text; name = NOTES; path = ../../NOTES; sourceTree = "<group>"; };
 		625BDA4913CBB08C00EE6FD6 /* diff-parsers.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "diff-parsers.sh"; sourceTree = "<group>"; };
 		62662B0413DE3AB00029BDB6 /* Utility.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Utility.cpp; sourceTree = "<group>"; };
@@ -183,6 +184,14 @@
 			path = Dev;
 			sourceTree = "<group>";
 		};
+		624645141428390000E30916 /* perl */ = {
+			isa = PBXGroup;
+			children = (
+				624645161428392F00E30916 /* template-converter */,
+			);
+			name = perl;
+			sourceTree = "<group>";
+		};
 		626A493713C2032300D24233 /* Generated Sources */ = {
 			isa = PBXGroup;
 			children = (
@@ -195,6 +204,7 @@
 		626A495013C208B400D24233 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				624645141428390000E30916 /* perl */,
 				62D0D65F13BBA55A00F9609A /* cpp */,
 				62C0024A13C12CCE00CD7EB0 /* sh */,
 				62D0D66213BBA55A00F9609A /* man */,
@@ -408,6 +418,9 @@
 /* Begin PBXProject section */
 		62D0D64813BBA50000F9609A /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+			};
 			buildConfigurationList = 62D0D64B13BBA50000F9609A /* Build configuration list for PBXProject "ipg" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
@@ -517,7 +530,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rm -f ${SRCROOT}/../../src/cpp/Common/Parser.cpp.tpl.h\n/usr/local/bin/template-converter Parser.cpp.tpl ${SRCROOT}/../../src/tpl/Parser.cpp.tpl ${SRCROOT}/../../src/cpp/Common/Parser.cpp.tpl.h";
+			shellScript = "rm -f ${SRCROOT}/../../src/cpp/Common/Parser.cpp.tpl.h\n${SRCROOT}/../../src/perl/template-converter Parser.cpp.tpl ${SRCROOT}/../../src/tpl/Parser.cpp.tpl ${SRCROOT}/../../src/cpp/Common/Parser.cpp.tpl.h";
 			showEnvVarsInLog = 0;
 		};
 		62942A6613C4A26300C2DAA9 /* Generate Parser Header Template String */ = {
@@ -534,7 +547,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rm -f ${SRCROOT}/../../src/cpp/Common/Parser.h.tpl.h\n/usr/local/bin/template-converter Parser.h.tpl ${SRCROOT}/../../src/tpl/Parser.h.tpl ${SRCROOT}/../../src/cpp/Common/Parser.h.tpl.h";
+			shellScript = "rm -f ${SRCROOT}/../../src/cpp/Common/Parser.h.tpl.h\n${SRCROOT}/../../src/perl/template-converter Parser.h.tpl ${SRCROOT}/../../src/tpl/Parser.h.tpl ${SRCROOT}/../../src/cpp/Common/Parser.h.tpl.h";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
