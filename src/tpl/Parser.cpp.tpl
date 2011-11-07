@@ -103,13 +103,11 @@ namespace
 	bool Visit(Context& _ctx, SymbolType _type, const char*& _p, vector<Symbol>& _v)
 	{
 		const char* pBegin = _p;
-		bool r = ParseSymbol(_ctx, _type, _p);
-		if (r)
-		{
-			Symbol symbol = { _type, _p - pBegin, pBegin };
-			_v.push_back(symbol);
-		}
-		return r;
+		bool success = ParseSymbol(_ctx, _type, _p);
+		if (!success) --_p;
+        Symbol symbol = { _type, _p - pBegin, pBegin, success };
+        _v.push_back(symbol);
+		return success;
 	}{{BI_NEWLINE}}
 
 	bool ParseMemoized(Context& _ctx, Memo& _memo, ParseFn* _parseFn, const char*& p)
@@ -300,13 +298,11 @@ Iterator {{namespace}}::Traverse(SymbolType _type, const char* _text)
 {
 	shared_ptr<Context> pContext(new Context);
 	const char* p = _text;
-	if (ParseSymbol(*pContext, _type, p))
-	{
-		Symbol symbol = { _type, p - _text, _text };
-		shared_ptr< vector<Symbol> > pSymbols(new vector<Symbol>(1, symbol));
-		return Iterator(pContext, pSymbols);
-	}
-	return Iterator();
+	bool success = ParseSymbol(*pContext, _type, p);
+    if (!success) --p;
+    Symbol symbol = { _type, p - _text, _text, success };
+    shared_ptr< vector<Symbol> > pSymbols(new vector<Symbol>(1, symbol));
+    return Iterator(pContext, pSymbols);
 }{{BI_NEWLINE}}
 
 Iterator {{namespace}}::Traverse(const Iterator& _iParent)

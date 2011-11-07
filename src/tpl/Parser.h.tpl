@@ -21,6 +21,7 @@ namespace {{namespace}}
 		SymbolType type;
 		size_t length;
 		const char* value;
+        bool success;
 	};{{BI_NEWLINE}}
 	
 	const char* SymbolName(SymbolType _type);{{BI_NEWLINE}}
