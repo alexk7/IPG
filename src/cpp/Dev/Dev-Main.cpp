@@ -225,8 +225,8 @@ int main(int argc, char* argv[])
 
 		if (variablesMap.count("help"))
 		{
-				std::cout << options << "\n";
-				return 0;
+			std::cout << options << "\n";
+            return 0;
 		}
 
 		std::vector<char> nodes;

@@ -15,23 +15,26 @@ namespace {{namespace}}
 		SymbolTypeInvalid,
 		SymbolTypeCount = SymbolTypeInvalid
 	};{{BI_NEWLINE}}
+    
+    typedef char Char;
+    typedef const char* CharItr;
 
 	struct Symbol
 	{
 		SymbolType type;
 		size_t length;
-		const char* value;
+		CharItr value;
         bool success;
 	};{{BI_NEWLINE}}
 	
-	const char* SymbolName(SymbolType _type);{{BI_NEWLINE}}
+	CharItr SymbolName(SymbolType _type);{{BI_NEWLINE}}
 	
 	class Context;{{BI_NEWLINE}}
 	
 	class Iterator
 	{
 	public:
-		friend Iterator Traverse(SymbolType _type, const char* _text);
+		friend Iterator Traverse(SymbolType _type, CharItr _text);
 		friend Iterator Traverse(const Iterator& _iParent);
 		friend void DebugPrint(std::ostream& _os, const Iterator& _i, int _tabs, int _maxLineSize);{{BI_NEWLINE}}
 
@@ -48,7 +51,7 @@ namespace {{namespace}}
 		std::vector<Symbol>::iterator mi;
 	};{{BI_NEWLINE}}
 	
-	Iterator Traverse(SymbolType _type, const char* _text);
+	Iterator Traverse(SymbolType _type, CharItr _text);
 	Iterator Traverse(const Iterator& _iParent);
 	void DebugPrint(std::ostream& _os, const Iterator& _i, int _tabs = 0, int _maxLineSize = 100);
 }

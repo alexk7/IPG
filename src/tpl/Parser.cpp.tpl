@@ -20,8 +20,8 @@ namespace
 {
 	struct Memo
 	{
-		unordered_map<const char*, const char*> end;
-		unordered_set<const char*> fail;
+		unordered_map<CharItr, CharItr> end;
+		unordered_set<CharItr> fail;
 	};{{BI_NEWLINE}}
 	
 	enum SkipType
@@ -37,17 +37,17 @@ namespace
 
 	struct EscapeChar
 	{
-		EscapeChar(char _c);
-		char c;
+		EscapeChar(Char _c);
+		Char c;
 	};{{BI_NEWLINE}}
 	
-	EscapeChar::EscapeChar(char _c) : c(_c)
+	EscapeChar::EscapeChar(Char _c) : c(_c)
 	{
 	}{{BI_NEWLINE}}
 	
 	ostream& operator<<(ostream& _os, EscapeChar _e)
 	{
-		char c = _e.c;
+		Char c = _e.c;
 		switch (c)
 		{
 			case '\n': c = 'n'; break;
@@ -69,16 +69,16 @@ namespace
 		return _os;
 	}{{BI_NEWLINE}}
 	
-	bool ParseSymbol(Context&, SymbolType, const char*&);{{BI_NEWLINE}}
+	bool ParseSymbol(Context&, SymbolType, CharItr&);{{BI_NEWLINE}}
 	
-	typedef bool ParseFn(Context&, const char*&);
+	typedef bool ParseFn(Context&, CharItr&);
 	ParseFn {{#def}}Parse_{{name}}{{#def_separator}}, {{/def_separator}}{{/def}};{{BI_NEWLINE}}
 
-	typedef bool TraverseFn(Context&, const char*&, vector<Symbol>&);
+	typedef bool TraverseFn(Context&, CharItr&, vector<Symbol>&);
 	TraverseFn {{#def}}Traverse_{{name}}{{#def_separator}}, {{/def_separator}}{{/def}};
 }{{BI_NEWLINE}}
 
-const char* {{namespace}}::SymbolName(SymbolType _type)
+CharItr {{namespace}}::SymbolName(SymbolType _type)
 {
 	switch (_type)
 	{
@@ -100,9 +100,9 @@ public:
 
 namespace
 {
-	bool Visit(Context& _ctx, SymbolType _type, const char*& _p, vector<Symbol>& _v)
+	bool Visit(Context& _ctx, SymbolType _type, CharItr& _p, vector<Symbol>& _v)
 	{
-		const char* pBegin = _p;
+		CharItr pBegin = _p;
 		bool success = ParseSymbol(_ctx, _type, _p);
 		if (!success) --_p;
         Symbol symbol = { _type, _p - pBegin, pBegin, success };
@@ -110,19 +110,19 @@ namespace
 		return success;
 	}{{BI_NEWLINE}}
 
-	bool ParseMemoized(Context& _ctx, Memo& _memo, ParseFn* _parseFn, const char*& p)
+	bool ParseMemoized(Context& _ctx, Memo& _memo, ParseFn* _parseFn, CharItr& p)
 	{
 		if (_memo.fail.count(p))
 			return false;{{BI_NEWLINE}}
 			
-		unordered_map<const char*, const char*>::iterator i = _memo.end.find(p);
+		unordered_map<CharItr, CharItr>::iterator i = _memo.end.find(p);
 		if (i != _memo.end.end())
 		{
 			p = i->second;
 			return true;
 		}{{BI_NEWLINE}}
 		
-		const char* pBegin = p;
+		CharItr pBegin = p;
 		if (_parseFn(_ctx, p))
 		{
 			_memo.end[pBegin] = p;
@@ -133,7 +133,7 @@ namespace
 		return false;
 	}{{BI_NEWLINE}}
 		
-	bool ParseSymbol(Context& _ctx, SymbolType _type, const char*& p)
+	bool ParseSymbol(Context& _ctx, SymbolType _type, CharItr& p)
 	{
 		switch (_type)
 		{
@@ -148,7 +148,7 @@ namespace
 		}
 	}{{BI_NEWLINE}}
 	
-	bool ParseSkip(Context& _ctx, SkipType _type, const char*& p)
+	bool ParseSkip(Context& _ctx, SkipType _type, CharItr& p)
 	{
 		switch (_type)
 		{
@@ -164,7 +164,7 @@ namespace
 	}{{BI_NEWLINE}}
 	
 	{{#def}}
-	bool Parse_{{name}}(Context& _ctx, const char*& p)
+	bool Parse_{{name}}(Context& _ctx, CharItr& p)
 	{
 		bool r = true;
 		{{>parseCode}}
@@ -173,12 +173,12 @@ namespace
 
 	{{/def}}
 	
-	bool TraverseMemoized(Context& _ctx, Memo& _memo, TraverseFn* _traverseFn, const char*& p, vector<Symbol>& v)
+	bool TraverseMemoized(Context& _ctx, Memo& _memo, TraverseFn* _traverseFn, CharItr& p, vector<Symbol>& v)
 	{
 		if (_memo.fail.count(p))
 			return false;{{BI_NEWLINE}}
 			
-		const char* pBegin = p;
+		CharItr pBegin = p;
 		if (_traverseFn(_ctx, p, v))
 		{
 			_memo.end[pBegin] = p;
@@ -189,7 +189,7 @@ namespace
 		return false;		
 	}{{BI_NEWLINE}}
 	
-	bool TraverseSymbol(Context& _ctx, SymbolType _type, const char*& p, vector<Symbol>& v)
+	bool TraverseSymbol(Context& _ctx, SymbolType _type, CharItr& p, vector<Symbol>& v)
 	{
 		switch (_type)
 		{
@@ -204,7 +204,7 @@ namespace
 		}
 	}{{BI_NEWLINE}}
 	
-	bool TraverseSkip(Context& _ctx, SkipType _type, const char*& p, vector<Symbol>& v)
+	bool TraverseSkip(Context& _ctx, SkipType _type, CharItr& p, vector<Symbol>& v)
 	{
 		switch (_type)
 		{
@@ -220,7 +220,7 @@ namespace
 	}{{BI_NEWLINE}}
 
 	{{#def}}
-	bool Traverse_{{name}}(Context& _ctx, const char*& p, vector<Symbol>& v)
+	bool Traverse_{{name}}(Context& _ctx, CharItr& p, vector<Symbol>& v)
 	{
 		bool r = true;
 		{{>traverseCode}}
@@ -229,10 +229,10 @@ namespace
 
 	{{/def}}
 	
-	void DebugPrint(ostream& _os, Context& _ctx, SymbolType _type, const char* _pNode, int _tabs, int _maxLineSize)
+	void DebugPrint(ostream& _os, Context& _ctx, SymbolType _type, CharItr _pNode, int _tabs, int _maxLineSize)
 	{
 		vector<Symbol> children;
-		const char* pEnd = _pNode;
+		CharItr pEnd = _pNode;
 		if (!TraverseSymbol(_ctx, _type, pEnd, children))
 			throw runtime_error(str(format("Parsing Failed for \"%1%\"") % SymbolName(_type)));{{BI_NEWLINE}}
 
@@ -243,7 +243,7 @@ namespace
 		_os << SymbolName(_type) << ": \"";{{BI_NEWLINE}}
 
 		size_t lineSize = 0;
-		for (const char* p = _pNode; p != pEnd; ++p)
+		for (CharItr p = _pNode; p != pEnd; ++p)
 		{
 			_os << EscapeChar(*p);
 			if (++lineSize >= _maxLineSize)
@@ -294,10 +294,10 @@ const Symbol* {{namespace}}::Iterator::operator->() const
 		mi = _pSiblings->begin();
 }{{BI_NEWLINE}}
 
-Iterator {{namespace}}::Traverse(SymbolType _type, const char* _text)
+Iterator {{namespace}}::Traverse(SymbolType _type, CharItr _text)
 {
 	shared_ptr<Context> pContext(new Context);
-	const char* p = _text;
+	CharItr p = _text;
 	bool success = ParseSymbol(*pContext, _type, p);
     if (!success) --p;
     Symbol symbol = { _type, p - _text, _text, success };
@@ -310,7 +310,7 @@ Iterator {{namespace}}::Traverse(const Iterator& _iParent)
 	if (_iParent.mpSiblings)
 	{
 		const Symbol& symbol = *_iParent.mi;
-		const char* p = symbol.value;
+		CharItr p = symbol.value;
 		vector<Symbol> children;
 		bool r = TraverseSymbol(*_iParent.mpContext, symbol.type, p, children);
 		assert(r && p == symbol.value + symbol.length);
