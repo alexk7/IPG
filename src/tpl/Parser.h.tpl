@@ -1,6 +1,7 @@
 #ifndef BOOTSTRAP_TEST
 #include <vector>
 #include <boost/shared_ptr.hpp>
+//#include <boost/cstdint.hpp>
 #endif{{BI_NEWLINE}}
 
 namespace {{namespace}}
@@ -17,7 +18,9 @@ namespace {{namespace}}
 	};{{BI_NEWLINE}}
     
     typedef char Char;
-    typedef const char* CharItr;
+    typedef const char* CharItr;{{BI_NEWLINE}}
+    //typedef boost::uint32_t Char;
+    //typedef const boost::uint32_t* CharItr;{{BI_NEWLINE}}
 
 	struct Symbol
 	{
@@ -27,7 +30,7 @@ namespace {{namespace}}
         bool success;
 	};{{BI_NEWLINE}}
 	
-	CharItr SymbolName(SymbolType _type);{{BI_NEWLINE}}
+	const char*  SymbolName(SymbolType _type);{{BI_NEWLINE}}
 	
 	class Context;{{BI_NEWLINE}}
 	

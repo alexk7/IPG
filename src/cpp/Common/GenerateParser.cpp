@@ -124,7 +124,7 @@ public:
 			case ExpressionType_Range:
 			{
 				int charIndex = mNextCharIndex++;
-				Line(format("char c%1% = *p++;") % charIndex);
+				Line(format("Char c%1% = *p++;") % charIndex);
 				Line(format("r = (c%1% >= \'%2%\' && c%1% <= \'%3%\');") % charIndex % EscapeChar(expr.GetFirst()) % EscapeChar(expr.GetLast()));
 				break;
 			}
@@ -132,7 +132,7 @@ public:
 			case ExpressionType_Char:
 			{
 				int charIndex = mNextCharIndex++;
-				Line(format("char c%1% = *p++;") % charIndex);
+				Line(format("Char c%1% = *p++;") % charIndex);
 				Line(format("r = (c%1% == \'%2%\');") % charIndex % EscapeChar(expr.GetChar()));
 				break;
 			}
@@ -140,7 +140,7 @@ public:
 			case ExpressionType_Dot:
 			{
 				int charIndex = mNextCharIndex++;
-				Line(format("char c%1% = *p++;") % charIndex);
+				Line(format("Char c%1% = *p++;") % charIndex);
 				Line(format("r = (c%1% != 0);") % charIndex);
 				break;
 			}
@@ -189,7 +189,7 @@ public:
 		if (_backtrackIndex == -1)
 		{
 			_backtrackIndex = mNextBacktrackIndex++;
-			Line(format("const char* %1% = p;") % BacktrackVar(_backtrackIndex));
+			Line(format("CharItr %1% = p;") % BacktrackVar(_backtrackIndex));
 			if (mTraverse && _mayUndoVisit)
 				Line(format("size_t %1% = v.size();\n") % BacktrackVar(_backtrackIndex, 's'));
 		}

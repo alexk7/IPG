@@ -78,7 +78,7 @@ namespace
 	TraverseFn {{#def}}Traverse_{{name}}{{#def_separator}}, {{/def_separator}}{{/def}};
 }{{BI_NEWLINE}}
 
-CharItr {{namespace}}::SymbolName(SymbolType _type)
+const char* {{namespace}}::SymbolName(SymbolType _type)
 {
 	switch (_type)
 	{
@@ -312,8 +312,9 @@ Iterator {{namespace}}::Traverse(const Iterator& _iParent)
 		const Symbol& symbol = *_iParent.mi;
 		CharItr p = symbol.value;
 		vector<Symbol> children;
-		bool r = TraverseSymbol(*_iParent.mpContext, symbol.type, p, children);
-		assert(r && p == symbol.value + symbol.length);
+		bool success = TraverseSymbol(*_iParent.mpContext, symbol.type, p, children);
+        if (!success) --p;
+		assert(success == symbol.success && p == symbol.value + symbol.length);
 		boost::shared_ptr< vector<Symbol> > pChildren;
 		if (!children.empty())
 		{

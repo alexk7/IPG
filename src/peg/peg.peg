@@ -1,3 +1,5 @@
+# See http://www.bford.info/pub/lang/peg.pdf 
+
 # Hierarchical syntax
 Grammar    <= Spacing Definition+ EndOfFile
 Definition <= IDENTIFIER LEFTARROW Expression
